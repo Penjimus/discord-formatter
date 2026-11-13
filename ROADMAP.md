@@ -286,6 +286,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 5 (rattrapage) | **Remplace** « 12:30:45 compris » : un nombre seul n'est pas un code (heures intactes), sauf `:100:` et `:1234:`, émojis connus, échappés | Demande de l'utilisateur ; exceptions ajoutées par Claude (prudence) |
 | 2026-11-13 | 5 (rattrapage) | Tests I5 du rattrapage remplacés par les tests I4 de l'antislash | Règle changée par l'utilisateur |
 | 2026-11-13 | 5 (rattrapage) | Bibliothèque **emojibase** (option A, légère) ; sélecteur d'émojis construit par l'appli, prévu à l'étape 10 | Choix de l'utilisateur |
+| 2026-11-13 | 5 (rattrapage) | Rattrapage validé par l'utilisateur : `Mes :star\: à 12:30:45, :+1\: et :100\:` collé dans Discord, aucun émoji ni antislash visible. Étape 5 conclue | — |
 
 ---
 
