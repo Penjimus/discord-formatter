@@ -34,7 +34,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [B](#série-b) | Tiret bas collé à des lettres | B1 à B2 (2) | §1, §2.3 |
 | [C](#série-c) | Échappement | C1 à C22 (22) | §11, §4 |
 | [D](#série-d) | Matrice de compatibilité | D1 à D15 (15) | §3, §5, §10 |
-| [E](#série-e) | Couleurs ANSI | E1 à E15, dont E14a à E14g (21) | §3, §6, §10 |
+| [E](#série-e) | Couleurs ANSI | E1 à E16, dont E14a à E14g (22) | §3, §6, §10 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
 | [G](#série-g) | Listes et citations | G1 à G11 (11) | §3, §5 |
 | [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
@@ -45,7 +45,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 
-**Total : 156 tests** (✅ 86 confirmés, ⚠️ 16 écarts, ℹ️ 54 constats).
+**Total : 157 tests** (✅ 87 confirmés, ⚠️ 16 écarts, ℹ️ 54 constats).
 
 ---
 
@@ -197,6 +197,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **E14f** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵ 1. numéro ```` | élément numéroté après un bloc dans une puce | ℹ️ « 1. » s'affiche en puce : la liste continue après le bloc | §3 (listes) |
 | **E14g** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵ texte ```` | texte après un bloc dans une puce | ✅ Texte hors de la liste | §3 (listes) |
 | **E15** | E13 relu par l'auteur (13/11/2026) | confirmer l'effet de `91`, `38;5;196` et `9` | ✅ Confirmé, aucun problème : `91` et `38;5;196` colorent, `9` barre le texte (ordinateur) | §6 |
+| **E16** | `docs/tests-discord/E16-codes-ansi-etendus.txt` : bloc `ansi` avec `90` à `97`, `100` à `107`, `38;5;N` (0, 9, 16, 46, 208, 226, 255), `48;5;N` (21, 196, 240) et `1;91;48;5;21` | couleurs claires, fonds clairs et 256 couleurs appliqués ? | ✅ Tous les codes sont acceptés (14/11/2026) | §6 |
 
 ## Série F
 

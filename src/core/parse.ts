@@ -171,9 +171,15 @@ function applyAnsiCodes(style: AnsiStyle, codes: string): AnsiStyle | null {
     else if (value === 3) next.italic = true;
     else if (value === 4) next.underline = true;
     else if (value === 9) next.strike = true; // Barré (E13, E15).
-    else if (value >= 30 && value <= 37) next.color = value;
-    else if (value >= 40 && value <= 47) next.background = value;
-    else if ((value === 38 || value === 48) && parts[i + 1] === '2' && i + 4 < parts.length) {
+    else if ((value >= 30 && value <= 37) || (value >= 90 && value <= 97)) next.color = value; // Clairs : E16.
+    else if ((value >= 40 && value <= 47) || (value >= 100 && value <= 107)) next.background = value;
+    else if ((value === 38 || value === 48) && parts[i + 1] === '5' && i + 2 < parts.length) {
+      const index = Number(parts[i + 2]);
+      if (index > 255) return null;
+      // Mode 256 couleurs (E13, E15, E16).
+      next[value === 38 ? 'color' : 'background'] = { index };
+      i += 2;
+    } else if ((value === 38 || value === 48) && parts[i + 1] === '2' && i + 4 < parts.length) {
       const [r, g, b] = parts.slice(i + 2, i + 5).map(Number);
       if (![r, g, b].every((part) => part <= 255)) return null;
       // Couleur au choix (X3), fond au choix (E14a).

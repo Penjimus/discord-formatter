@@ -98,8 +98,9 @@ describe('Éditeur → document : réparation vers une forme valide', () => {
   });
 
   it('bloc de puce dont la puce a été supprimée : bloc hors de la liste', () => {
-    const block = parse('- puce\n  ```\n  code\n  ```').blocks[1];
-    const back = editorToDocument(doc(line({}, t('texte')), { type: 'codeBlock', attrs: { block } }));
+    // Étape 9 : le bloc de l'éditeur porte son texte et ses attributs (accord de l'utilisateur).
+    const block = documentToEditor(parse('- puce\n  ```\n  code\n  ```')).content![1];
+    const back = editorToDocument(doc(line({}, t('texte')), block));
     expect(serialize(back)).toBe('texte\n```\ncode\n```');
   });
 });

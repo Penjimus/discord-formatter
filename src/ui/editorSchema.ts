@@ -7,8 +7,23 @@ import { history, redo, undo } from '@tiptap/pm/history';
 import { Plugin } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import type { Node as PmNode } from '@tiptap/pm/model';
-import { analyzeLists, type CodeBlock } from '../core/document';
-import { CODE_MARK, editorToDocument, type EditorNode, type LineAttrs } from './editorConvert';
+import { analyzeLists } from '../core/document';
+import { cssColor } from './ansiPalette';
+import { changeListLevel, codeBlockBackspace, codeBlockEnter, toggleAnsiFlag } from './editorCommands';
+import {
+  ANSI_BACKGROUND_MARK,
+  ANSI_COLOR_MARK,
+  ANSI_FLAG_MARKS,
+  CODE_MARK,
+  editorToAnalysisDocument,
+  type AnsiFlag,
+  type CodeBlockAttrs,
+  type EditorNode,
+  type LineAttrs,
+} from './editorConvert';
+
+const ANSI_MARK_NAMES = [...Object.values(ANSI_FLAG_MARKS), ANSI_COLOR_MARK, ANSI_BACKGROUND_MARK];
+const LINE_MARK_NAMES = ['bold', 'italic', 'underline', 'strike', 'spoiler', CODE_MARK];
 
 const DocumentNode = Node.create({ name: 'doc', topNode: true, content: 'block+' });
 
@@ -19,6 +34,7 @@ const LineNode = Node.create({
   name: 'line',
   group: 'block',
   content: 'inline*',
+  marks: LINE_MARK_NAMES.join(' '),
   addAttributes() {
     return {
       quote: { default: false, rendered: false },
@@ -66,24 +82,38 @@ const TimestampNode = chip('timestamp', (attrs) => {
   return `<t:${String(attrs.seconds)}${style}>`;
 }, ['seconds', 'style']);
 
-/** Bloc de code, affiché tel quel ; il se modifie à droite (étape 9 : à gauche). */
+/**
+ * Bloc de code, modifiable à gauche : son texte est le contenu du bloc ; seules les mises en forme
+ * ANSI y sont permises (rien d'autre n'est interprété, §5). Le langage se choisit dans la barre d'outils.
+ */
 const CodeBlockNode = Node.create({
   name: 'codeBlock',
   group: 'block',
-  atom: true,
-  selectable: true,
+  content: 'text*',
+  marks: ANSI_MARK_NAMES.join(' '),
+  code: true,
+  defining: true,
   addAttributes() {
-    return { block: { default: null, rendered: false } };
+    return {
+      language: { default: '', rendered: false },
+      quote: { default: false, rendered: false },
+      inBullet: { default: false, rendered: false },
+      marks: { default: [], rendered: false },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'pre', preserveWhitespace: 'full' }];
   },
   renderHTML({ node }) {
-    const block = node.attrs.block as CodeBlock;
+    const attrs = node.attrs as CodeBlockAttrs;
     const classes = ['code-block'];
-    if (block.quote) classes.push('line-quote');
-    if (block.inBullet) classes.push('code-block-in-bullet');
-    const language = block.language !== '' ? block.language : 'code';
-    return ['div', { class: classes.join(' '), contenteditable: 'false' },
-      ['div', { class: 'code-block-language' }, language],
-      ['pre', {}, block.code]];
+    if (attrs.quote) classes.push('line-quote');
+    if (attrs.inBullet) classes.push('code-block-in-bullet');
+    if (attrs.language.toLowerCase() === 'ansi') classes.push('code-block-ansi');
+    const language = attrs.language !== '' ? attrs.language : 'bloc de code';
+    return ['div', { class: classes.join(' '), spellcheck: 'false' },
+      ['div', { class: 'code-block-language', contenteditable: 'false' }, language],
+      ['pre', {}, ['code', {}, 0]]];
   },
 });
 
@@ -102,6 +132,29 @@ function simpleMark(name: string, tags: string[], render: string, shortcut?: str
   });
 }
 
+/** Style ANSI (gras, italique, souligné, barré) : affiché comme dans Discord sur ordinateur. */
+function ansiFlagMark(name: string, className: string) {
+  return Mark.create({
+    name,
+    renderHTML() {
+      return ['span', { class: className }, 0];
+    },
+  });
+}
+
+/** Couleur ANSI (texte ou fond) : un code (« 31 ») ou une couleur au choix (« #ffda06 »). */
+function ansiColorMark(name: string, property: 'color' | 'background-color') {
+  return Mark.create({
+    name,
+    addAttributes() {
+      return { color: { default: null, rendered: false } };
+    },
+    renderHTML({ mark }) {
+      return ['span', { style: `${property}: ${cssColor(String(mark.attrs.color))}` }, 0];
+    },
+  });
+}
+
 const marks = [
   simpleMark('bold', ['strong', 'b'], 'strong', 'Mod-b'),
   simpleMark('italic', ['em', 'i'], 'em', 'Mod-i'),
@@ -109,14 +162,45 @@ const marks = [
   simpleMark('strike', ['s', 'del'], 's', 'Mod-Shift-s'),
   simpleMark('spoiler', ['span.spoiler'], 'span', undefined, 'spoiler'),
   simpleMark(CODE_MARK, ['code'], 'code', 'Mod-e'),
+  ansiFlagMark(ANSI_FLAG_MARKS.bold, 'ansi-bold'),
+  ansiFlagMark(ANSI_FLAG_MARKS.italic, 'ansi-italic'),
+  ansiFlagMark(ANSI_FLAG_MARKS.underline, 'ansi-underline'),
+  ansiFlagMark(ANSI_FLAG_MARKS.strike, 'ansi-strike'),
+  ansiColorMark(ANSI_BACKGROUND_MARK, 'background-color'),
+  ansiColorMark(ANSI_COLOR_MARK, 'color'),
 ];
+
+/**
+ * Dans un bloc de code, Ctrl+B, I, U et Maj+S posent les styles ANSI (les styles de texte n'y
+ * existent pas). Passe avant les raccourcis des styles de texte.
+ */
+const CodeBlockShortcuts = Extension.create({
+  name: 'codeBlockShortcuts',
+  priority: 1000,
+  addKeyboardShortcuts() {
+    const ansi = (flag: AnsiFlag) => () => {
+      if (this.editor.state.selection.$from.parent.type.name !== 'codeBlock') return false;
+      toggleAnsiFlag(this.editor, flag);
+      return true;
+    };
+    return {
+      'Mod-b': ansi('bold'),
+      'Mod-i': ansi('italic'),
+      'Mod-u': ansi('underline'),
+      'Mod-Shift-s': ansi('strike'),
+      'Mod-e': () => this.editor.state.selection.$from.parent.type.name === 'codeBlock',
+      Enter: () => codeBlockEnter(this.editor),
+      Backspace: () => codeBlockBackspace(this.editor),
+    };
+  },
+});
 
 /** Numéros et puces affichés comme dans Discord (type imposé par le premier élément, D3). */
 function listMarkers(doc: PmNode): DecorationSet {
   const decorations: Decoration[] = [];
   let message;
   try {
-    message = editorToDocument(doc.toJSON() as EditorNode);
+    message = editorToAnalysisDocument(doc.toJSON() as EditorNode);
   } catch {
     return DecorationSet.empty;
   }
@@ -165,6 +249,18 @@ const LineBehaviour = Extension.create({
           },
         );
       },
+      // Retour arrière sur un élément de liste vide : on quitte la liste (demande de l'utilisateur, étape 9).
+      Backspace: () => {
+        const { state, view } = this.editor;
+        const { $from, empty } = state.selection;
+        const line = $from.parent;
+        if (!empty || line.type.name !== 'line' || line.content.size > 0 || !line.attrs.listKind) return false;
+        view.dispatch(state.tr.setNodeMarkup($from.before(), undefined, { ...line.attrs, listKind: null, listLevel: 0, listStart: null }));
+        return true;
+      },
+      // Tab et Maj+Tab : niveau + et − dans une liste.
+      Tab: () => changeListLevel(this.editor, 1),
+      'Shift-Tab': () => changeListLevel(this.editor, -1),
       'Mod-z': () => undo(this.editor.state, this.editor.view.dispatch),
       'Mod-y': () => redo(this.editor.state, this.editor.view.dispatch),
       'Mod-Shift-z': () => redo(this.editor.state, this.editor.view.dispatch),
@@ -198,5 +294,6 @@ export const EDITOR_EXTENSIONS = [
   TimestampNode,
   CodeBlockNode,
   ...marks,
+  CodeBlockShortcuts,
   LineBehaviour,
 ];

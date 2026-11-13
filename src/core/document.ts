@@ -99,8 +99,16 @@ export interface Rgb {
   readonly b: number;
 }
 
-/** Couleur ANSI : code (30 à 37 pour le texte, 40 à 47 pour le fond), ou couleur au choix (§6). */
-export type AnsiColor = number | Rgb;
+/** Couleur du mode 256 couleurs `38;5;N` / `48;5;N` (E16), N de 0 à 255. */
+export interface Indexed {
+  readonly index: number;
+}
+
+/**
+ * Couleur ANSI : code (30 à 37 et 90 à 97 pour le texte, 40 à 47 et 100 à 107 pour le fond),
+ * couleur au choix ou couleur du mode 256 couleurs (§6, E16).
+ */
+export type AnsiColor = number | Rgb | Indexed;
 
 /** Mise en forme ANSI d'un morceau de texte (§6). */
 export interface AnsiStyle {
@@ -109,7 +117,7 @@ export interface AnsiStyle {
   readonly underline: boolean;
   /** Barré, code `9` (E13, E15). */
   readonly strike: boolean;
-  /** Code 40 à 47, ou fond au choix `48;2;R;G;B` (E14a), ou `null`. */
+  /** Code 40 à 47 ou 100 à 107, fond au choix `48;2;R;G;B` (E14a), `48;5;N` (E16), ou `null`. */
   readonly background: AnsiColor | null;
   readonly color: AnsiColor | null;
 }
@@ -321,25 +329,36 @@ export function codeBlock(content: string, options: CodeBlockOptions = {}): Code
 
 const ANSI_STYLE_CODES = { bold: 1, italic: 3, underline: 4, strike: 9 } as const;
 
-function isRgb(color: AnsiColor): color is Rgb {
-  return typeof color === 'object';
+export function isRgb(color: AnsiColor): color is Rgb {
+  return typeof color === 'object' && 'r' in color;
 }
 
+export function isIndexed(color: AnsiColor): color is Indexed {
+  return typeof color === 'object' && 'index' in color;
+}
+
+const isByte = (value: number) => Number.isInteger(value) && value >= 0 && value <= 255;
+
 /**
- * Vérifie une couleur : code de `min` à `min + 7`, ou couleur au choix (X3, E14a).
- * Renvoie une copie (la couleur au choix est recopiée composante par composante).
+ * Vérifie une couleur : code de `min` à `min + 7` ou, en clair, de `min + 60` à `min + 67` (E16) ;
+ * couleur au choix (X3, E14a) ; couleur du mode 256 couleurs (E16).
+ * Renvoie une copie (les couleurs en objet sont recopiées champ par champ).
  */
 function checkColor(color: AnsiColor | null, min: number, name: string): AnsiColor | null {
   if (color === null) return null;
   if (isRgb(color)) {
-    const parts = [color.r, color.g, color.b];
-    if (!parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
+    if (![color.r, color.g, color.b].every(isByte)) {
       throw new Error(`${name} au choix impossible : rouge, vert et bleu de 0 à 255.`);
     }
     return { r: color.r, g: color.g, b: color.b };
   }
-  if (!(Number.isInteger(color) && color >= min && color <= min + 7)) {
-    throw new Error(`${name} ANSI impossible : code de ${min} à ${min + 7}.`);
+  if (isIndexed(color)) {
+    if (!isByte(color.index)) throw new Error(`${name} du mode 256 couleurs impossible : de 0 à 255.`);
+    return { index: color.index };
+  }
+  const inRange = (start: number) => color >= start && color <= start + 7;
+  if (!(Number.isInteger(color) && (inRange(min) || inRange(min + 60)))) {
+    throw new Error(`${name} ANSI impossible : code de ${min} à ${min + 7} ou de ${min + 60} à ${min + 67}.`);
   }
   return color;
 }
@@ -371,8 +390,11 @@ export function ansiCodes(style: AnsiStyle): string[] {
   for (const key of ['bold', 'italic', 'underline', 'strike'] as const) {
     if (style[key]) codes.push(String(ANSI_STYLE_CODES[key]));
   }
-  const write = (color: AnsiColor, rgbPrefix: string) =>
-    isRgb(color) ? `${rgbPrefix};2;${color.r};${color.g};${color.b}` : String(color);
+  const write = (color: AnsiColor, prefix: string) => {
+    if (isRgb(color)) return `${prefix};2;${color.r};${color.g};${color.b}`;
+    if (isIndexed(color)) return `${prefix};5;${color.index}`;
+    return String(color);
+  };
   if (style.background !== null) codes.push(write(style.background, '48'));
   if (style.color !== null) codes.push(write(style.color, '38'));
   return codes;

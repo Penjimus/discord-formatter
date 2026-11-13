@@ -94,7 +94,7 @@ function replaced(blocks: readonly Block[], changes: ReadonlyMap<number, Block>)
  * Éléments de la même sous-liste que l'élément `index` : même niveau, même parent (G5).
  * Un bloc placé sous une puce ne coupe que les sous-listes plus profondes que sa puce (E14e, E14f).
  */
-function subListIndices(blocks: readonly Block[], index: number): number[] {
+export function subListIndices(blocks: readonly Block[], index: number): number[] {
   const line = blocks[index] as Paragraph;
   const level = line.list!.level;
   const indices = [index];
@@ -117,7 +117,7 @@ function subListIndices(blocks: readonly Block[], index: number): number[] {
  * L'élément `index` et ses sous-éléments, qui changent de niveau avec lui. Un bloc placé sous
  * une puce suit sa puce sans changement (son indentation se déduit de la puce).
  */
-function subtreeIndices(blocks: readonly Block[], index: number): number[] {
+export function subtreeIndices(blocks: readonly Block[], index: number): number[] {
   const line = blocks[index] as Paragraph;
   const indices = [index];
   for (let j = index + 1; j < blocks.length; j++) {

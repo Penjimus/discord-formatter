@@ -163,7 +163,10 @@ describe('Le modèle refuse ce que Discord ne rend pas (§5, §6)', () => {
 
   it('codes_hors_liste_refuses', () => {
     expect(() => ansiText('x', { color: 38 })).toThrow();
-    expect(() => ansiText('x', { color: 91 })).toThrow();
+    // `91` retiré : codes clairs acceptés depuis E16 (demande de l'auteur, 14/11/2026).
+    expect(() => ansiText('x', { color: 98 })).toThrow();
+    expect(() => ansiText('x', { background: 97 })).toThrow();
+    expect(() => ansiText('x', { color: { index: 256 } })).toThrow();
     expect(() => ansiText('x', { background: 48 })).toThrow();
     expect(() => ansiText('x', { background: 31 })).toThrow();
   });
@@ -247,10 +250,40 @@ describe('Lecture des blocs ansi collés (E3, E4, E6, E9 à E13, X3, S11, S12)',
     expect(readBlock(message)).toEqual(codeBlock('code 7\ncode 2', { language: 'ansi' }));
   });
 
+  it('E16_couleurs_claires_et_256_couleurs_lues_et_reecrites', () => {
+    const message = ansi(
+      `${sgr('91')}code 91${RESET}`,
+      `${sgr('38;5;196')}code 38;5;196${RESET}`,
+      `${sgr('9')}code 9${RESET}`,
+      `${sgr('107')}fond 107${RESET} ${sgr('1;91;48;5;21')}combiné${RESET}`,
+    );
+    expect(readBlock(message)).toEqual(ansiBlock([
+      ansiText('code 91', { color: 91 }),
+      ansiText('\n'),
+      ansiText('code 38;5;196', { color: { index: 196 } }),
+      ansiText('\n'),
+      ansiText('code 9', { strike: true }),
+      ansiText('\n'),
+      ansiText('fond 107', { background: 107 }),
+      ansiText(' '),
+      ansiText('combiné', { bold: true, background: { index: 21 }, color: 91 }),
+    ]));
+    // Ordre de l'appli : styles, fond, texte (§6).
+    expect(serialize(parse(message))).toBe(message.replace(sgr('1;91;48;5;21'), sgr('1;48;5;21;91')));
+  });
+
+  it('E16_message_de_test_de_l_auteur_lu_en_couleurs', () => {
+    const files = import.meta.glob<string>('../../docs/tests-discord/E16-*.txt', { query: '?raw', import: 'default', eager: true });
+    const [content] = Object.values(files);
+    const block = readBlock(content.trimEnd());
+    expect(block.segments).not.toBeNull();
+    expect(serialize(parse(serialize(parse(content.trimEnd()))))).toBe(serialize(parse(content.trimEnd())));
+  });
+
   it('E13_codes_non_testes_bloc_entier_conserve_tel_quel', () => {
     // `48;2;R;G;B` retiré de cette liste : testé depuis (E14a). `9` retiré : barré confirmé (E15).
-    // `91` et `38;5;196` sont appliqués par Discord (E15) mais non utilisés par l'appli (§6).
-    for (const codes of ['91', '38;5;196', '1;95', '48;5;1', '01', '1;;4']) {
+    // `91`, `38;5;196`, `1;95`, `48;5;1` retirés : codes étendus lus depuis E16 (demande de l'auteur, 14/11/2026).
+    for (const codes of ['01', '1;;4', '98', '108', '38;5;256', '38;5', '48;5;01']) {
       const message = ansi(`${sgr('31')}a${RESET}`, `${sgr(codes)}code ${codes}${RESET}`);
       const block = readBlock(message);
       expect(block.segments).toBeNull();

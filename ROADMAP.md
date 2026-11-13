@@ -135,7 +135,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Scénarios** : S1, S2, S10, S12, S13 (partiellement S14).
 **Validation** : l'utilisateur écrit à gauche, colle à droite, copie vers Discord, et compare.
 
-### [ ] Étape 9 : Barre d'outils et structure
+### [x] Étape 9 : Barre d'outils et structure
 
 **Objectif** : l'éditeur de gauche devient un vrai traitement de texte pour Discord.
 
@@ -223,6 +223,13 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | Entrée sur une ligne vide mise en page | Retire une couche de mise en page (liste, puis titre ou sous-texte, puis citation), sans créer de ligne | Étape 8 |
 | Ctrl+Z | Annuler | Étape 8 |
 | Ctrl+Y ou Ctrl+Maj+Z | Rétablir | Étape 8 |
+| Tab / Maj+Tab | Niveau + / Niveau − d'un élément de liste (avec ses sous-éléments) | Étape 9 |
+| Retour arrière sur un élément de liste vide | Quitte la liste (la ligne reste, sans puce ni numéro) | Étape 9 |
+| Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Maj+S dans un bloc de code | Gras, italique, souligné, barré **ANSI** (le bloc sans langage devient `ansi`) | Étape 9 |
+| Entrée dans un bloc de code | Nouvelle ligne dans le bloc | Étape 9 |
+| Entrée sur une ligne vide à la fin d'un bloc | Sort du bloc (la ligne vide est retirée) ; sous une puce, crée la puce suivante de même niveau | Étape 9 |
+| Entrée sur une ligne vide au milieu d'un bloc sous une puce ou cité | Rien (une ligne vide casserait le bloc, G11) | Étape 9 |
+| Entrée ou Retour arrière dans un bloc vide | Le bloc redevient une ligne | Étape 9 |
 
 ### Panneau de droite (texte Discord)
 
@@ -342,6 +349,18 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-13 | 8 | Pastilles affichées avec la syntaxe Discord (`<@ID_UTILISATEUR>`, `<t:…>`) ; aperçu lisible à l'étape 10, couleurs ANSI à gauche à l'étape 9 | Hors de l'étape |
 | 2026-11-13 | 8 | Dépendances : `@tiptap/core`, `@tiptap/react`, `@tiptap/pm`, `@codemirror/state`, `@codemirror/view`, `@codemirror/commands` ; schéma de l'éditeur écrit par l'appli (pas de « starter kit ») | Moins de dépendances, schéma calqué sur le document |
 | 2026-11-13 | 8 | Étape validée par l'utilisateur (écriture à gauche, saisie et collage à droite, copie vers Discord) ; section « Raccourcis clavier » ajoutée à cette roadmap, à tenir à jour | Demande de l'utilisateur |
+| 2026-11-13 | 9 | Palette ANSI de l'éditeur : palette répandue dans la communauté, statut « À tester » (§6) ; écart de teinte accepté. 8 couleurs et 8 fonds prédéfinis, plus couleur et fond au choix | Choix de l'utilisateur (1A) |
+| 2026-11-13 | 9 | Langage : champ libre avec suggestions filtrées pendant la frappe (liste §5 + `ansi`) | Choix de l'utilisateur (2A) |
+| 2026-11-13 | 9 | Entrée dans un bloc : sur une ligne vide en fin de bloc, sortie (puce suivante sous une puce) ; au milieu d'un bloc sous une puce ou cité, rien ; lignes vides retirées à l'écriture dans ces blocs | Choix de l'utilisateur (3A) ; G11 |
+| 2026-11-13 | 9 | Blocs de code modifiables à gauche (remplace les pastilles de l'étape 8) ; un bloc laissé vide n'est pas écrit à droite | Nécessaire pour S3, S4 |
+| 2026-11-13 | 9 | Ctrl+B, I, U, Maj+S dans un bloc : styles ANSI ; Tab / Maj+Tab : niveau + / − ; Retour arrière dans un bloc vide : ligne ; bloc `ansi` affiché sur fond sombre (Discord ordinateur) | Décidé par Claude |
+| 2026-11-13 | 9 | Bloc inséré à la place d'une ligne vide sans mise en page, sinon après la ligne du curseur (sous la puce si c'est une puce) ; une liste ajoutée commence au niveau 1 | Décidé par Claude |
+| 2026-11-14 | 9 | Test « bloc de puce dont la puce a été supprimée » : seule la description du bloc dans l'éditeur change (texte et attributs au lieu de la pastille), résultat attendu inchangé | Accord de l'utilisateur |
+| 2026-11-14 | 9 | Retour arrière sur un élément de liste vide : quitte la liste (citation et titre gardés) | Demande de l'utilisateur ; « citation et titre gardés » décidé par Claude |
+| 2026-11-14 | 9 | E16 passé : `90` à `97`, `100` à `107`, `38;5;N`, `48;5;N` appliqués. **Remplace** « `91` et `38;5;196` restent non utilisés » (étape 6) : ces codes sont lus, affichés, écrits et proposés (rangée claire et panneau « 256 » dans la barre) | Demande de l'utilisateur ; testé (E16) |
+| 2026-11-14 | 9 | Tests changés : `91` retiré des couleurs refusées ; `91`, `38;5;196`, `1;95`, `48;5;1` retirés des codes qui gardent le bloc brut (remplacés par `98`, `108`, `38;5;256`, `38;5`, `48;5;01`) | Conséquence de la règle changée par l'utilisateur |
+| 2026-11-14 | 9 | Teintes des codes clairs et des 256 couleurs : valeurs habituelles des terminaux (À tester, §6) | Décidé par Claude ; écart de teinte accepté par l'utilisateur |
+| 2026-11-14 | 9 | Étape validée par l'utilisateur (scénarios S3 à S7 et S11 rejoués, codes ANSI étendus) | — |
 
 ---
 
