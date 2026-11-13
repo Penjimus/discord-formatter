@@ -42,11 +42,15 @@ export function analyzeMessage(message: DiscordDocument): MessageContext {
   let pipes = 0;
   let backticks = 0;
   for (const block of message.blocks) {
-    for (const node of block.content) {
+    // Un bloc de code compte comme un morceau : par prudence, ses accents graves et son contenu
+    // peuvent servir de partenaires à un symbole du texte.
+    const nodes = block.type === 'codeBlock' ? [block] : block.content;
+    for (const node of nodes) {
       if (node.type === 'code') backticks += 2;
       else {
         // Un morceau brut est réécrit tel quel : ses symboles peuvent servir de partenaires.
-        const content = node.type === 'text' ? node.text : node.raw;
+        const content =
+          node.type === 'text' ? node.text : node.type === 'raw' ? node.raw : `\`\`\`${node.code}\`\`\``;
         tildes += countDoubled(content, '~');
         pipes += countDoubled(content, '|');
         backticks += content.split('`').length - 1;

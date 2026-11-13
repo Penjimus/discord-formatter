@@ -59,7 +59,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Tests** : les tests de l'étape 1 relus dans l'autre sens, plus l'aller-retour sur tous les cas.
 **Validation** : l'utilisateur donne 5 à 10 textes à lui ; le compte rendu montre l'aller-retour.
 
-### [ ] Étape 3 : Blocs de structure
+### [x] Étape 3 : Blocs de structure
 
 **Objectif** : titres, sous-texte, citations, listes, blocs de code, en lecture et en écriture.
 
@@ -242,6 +242,15 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 2 | Étape validée par l'utilisateur | — |
 | 2026-11-13 | 2 | Pas de textes supplémentaires : validation sur les 8 exemples de `examples/` | L'utilisateur a déjà fourni ses textes complexes |
 | 2026-11-13 | 2 | `\` suivi de tout caractère autre qu'une lettre non accentuée, un chiffre ou un espace : l'antislash disparaît | C17, C19 ; reste « Documenté » pour les autres symboles |
+| 2026-11-13 | 3 | Modèle « lignes étiquetées » (citation, liste, titre/sous-texte) + bloc de code à part (option A) ; 6 tests de l'étape 2 qui attendaient du brut remplacés par la structure | Choix de l'utilisateur (questions 1 et 2) |
+| 2026-11-13 | 3 | Nouvelles règles « Généralisé » : 2 espaces par sous-niveau, ligne vide = nouvelle liste, ligne vide gardée dans un bloc, spoiler collé à l'ouverture d'un bloc, style continué sur un titre | Réponses de l'utilisateur, sans message de test |
+| 2026-11-13 | 3 | Bloc de code dans une puce non pris en charge (D13 relu brut) en attendant de lever la contradiction avec D13 | Réponse de l'utilisateur à éclaircir |
+| 2026-11-13 | 3 | Convention §2.4 : un style sur plusieurs lignes ne reste ouvert que s'il commence en début de ligne (balise avant le marqueur) ou dans une ligne sans marqueur, et finit en fin de ligne ou dans une ligne sans marqueur ; sinon refermé et rouvert | Prudence : seules ces formes sont testées (A34, X1, X2, X7, X10) |
+| 2026-11-13 | 3 | Formes non testées gardées brutes à la lecture et refusées à l'écriture : sous-texte dans une citation, citation dans une puce, titre de niveau 4+, `>>>`, indentation impaire ou niveau sauté, ligne vide dans un bloc cité, bloc avec texte sur la ligne d'ouverture ou de fermeture | Règle 2 (ne pas inventer) |
+| 2026-11-13 | 3 | Une sous-liste recommence à chaque nouveau parent (type et numéros propres) ; une liste est interrompue par toute autre ligne et par l'entrée ou la sortie d'une citation | Non testé : forme habituelle du markdown, à confirmer |
+| 2026-11-13 | 3 | Les puces lues avec `* ` sont réécrites avec `- ` ; les numéros réécrits successifs (`3. 7. 2.` → `3. 4. 5.`) | Conventions §3 ; même rendu |
+| 2026-11-13 | 3 | Étape validée par l'utilisateur : sorties collées dans Discord (numéros 3-4-5, puce imposée par le premier élément, liste qui repart à 1 après une ligne vide, liste à 2 niveaux en citation, bloc sans lignes vides, bloc `js` sous spoiler, gras continué sur un titre), toutes correctes | — |
+| 2026-11-13 | 3 | Restent ouverts : bloc de code dans une puce (contradiction avec D13), numérotation des sous-listes sous deux parents (`docs/discord-rules.md` §14, points 12 à 14) | À trancher par l'utilisateur |
 
 ---
 

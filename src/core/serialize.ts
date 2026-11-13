@@ -1,18 +1,22 @@
-// Écriture du document en texte Discord (docs/discord-rules.md §1, §2, §5, §11).
+// Écriture du document en texte Discord (docs/discord-rules.md §1, §2, §3, §5, §11).
 import { ZERO_WIDTH_SPACE } from './characters';
 import {
+  analyzeLists,
   MARK_ORDER,
   paragraph,
   text,
+  type Block,
+  type CodeBlock,
   type DiscordDocument,
   type InlineNode,
+  type ListPosition,
   type Mark,
   type Paragraph,
 } from './document';
 import { analyzeMessage, escapeText, type MessageContext } from './escape';
 
 /**
- * Saut de ligne entre deux paragraphes. Il porte les styles communs à la fin de la ligne
+ * Saut de ligne entre deux lignes. Il porte les styles communs à la fin de la ligne
  * précédente et au début de la suivante : ces styles continuent sans être refermés (A17).
  */
 interface LineBreak {
@@ -20,7 +24,25 @@ interface LineBreak {
   readonly marks: readonly Mark[];
 }
 
-type Atom = InlineNode | LineBreak;
+/**
+ * Marqueur de début de ligne (`> `, `  - `, `1. `, `# `…). Il porte les styles qui continuent
+ * d'une ligne à l'autre : leur balise est alors écrite avant lui (`~~- a`, X7, §2.4).
+ */
+interface Prefix {
+  readonly type: 'prefix';
+  readonly text: string;
+  readonly marks: readonly Mark[];
+}
+
+type Atom = InlineNode | CodeBlock | LineBreak | Prefix;
+
+/** Les morceaux du message, et pour chacun le numéro de sa ligne (-1 pour un saut de ligne). */
+interface Layout {
+  atoms: Atom[];
+  readonly lineOf: readonly number[];
+  /** La ligne commence-t-elle par un marqueur ? */
+  readonly prefixed: readonly boolean[];
+}
 
 /** Une balise ouverte sur une suite de morceaux [start, end[ du message. */
 interface Span {
@@ -77,20 +99,114 @@ function moveSpacesOutOfItalic(block: Paragraph): Paragraph {
   }
 }
 
-/** Met tout le message à plat : les morceaux de chaque ligne, séparés par des sauts de ligne. */
-function toAtoms(blocks: readonly Paragraph[]): Atom[] {
+const STYLE_PREFIX: Record<Paragraph['style'], string> = {
+  normal: '',
+  heading1: '# ',
+  heading2: '## ',
+  heading3: '### ',
+  subtext: '-# ',
+};
+
+/** Marqueur de début de ligne : citation, puis liste (2 espaces par niveau), puis titre (§3). */
+function linePrefix(block: Block, position: ListPosition | 'too-deep' | null): string {
+  const quote = block.quote ? '> ' : '';
+  if (block.type === 'codeBlock') return quote;
+  let list = '';
+  if (block.list && position && position !== 'too-deep') {
+    const marker = position.kind === 'ordered' ? `${position.number}. ` : '- ';
+    list = '  '.repeat(block.list.level - 1) + marker;
+  }
+  return quote + list + STYLE_PREFIX[block.style];
+}
+
+/** Morceaux de contenu d'un bloc : le texte d'une ligne, ou le bloc de code entier. */
+function blockContent(block: Block): readonly Atom[] {
+  return block.type === 'codeBlock' ? [block] : block.content;
+}
+
+/** Met tout le message à plat : marqueur et morceaux de chaque ligne, séparés par des sauts de ligne. */
+function toLayout(blocks: readonly Block[]): Layout {
   const atoms: Atom[] = [];
+  const lineOf: number[] = [];
+  const prefixed: boolean[] = [];
+  const positions = analyzeLists(blocks);
+  const contents = blocks.map(blockContent);
   blocks.forEach((block, i) => {
     if (i > 0) {
       // Les lignes vides sont traversées (A27) : on compare les lignes non vides de part et d'autre.
-      const previous = blocks.slice(0, i).reverse().find((b) => b.content.length > 0)?.content.at(-1);
-      const next = blocks.slice(i).find((b) => b.content.length > 0)?.content[0];
+      const previous = contents.slice(0, i).reverse().find((c) => c.length > 0)?.at(-1);
+      const next = contents.slice(i).find((c) => c.length > 0)?.[0];
       const marks = previous && next ? previous.marks.filter((mark) => next.marks.includes(mark)) : [];
       atoms.push({ type: 'break', marks });
+      lineOf.push(-1);
     }
-    atoms.push(...block.content);
+    const prefix = linePrefix(block, positions[i]);
+    prefixed.push(prefix !== '');
+    if (prefix) {
+      atoms.push({ type: 'prefix', text: prefix, marks: [] });
+      lineOf.push(i);
+    }
+    for (const atom of contents[i]) {
+      atoms.push(atom);
+      lineOf.push(i);
+    }
   });
-  return atoms;
+  return { atoms, lineOf, prefixed };
+}
+
+/**
+ * Règle des styles sur plusieurs lignes (§2.4) : un style qui traverse un saut de ligne doit
+ * commencer en début de ligne (avant le marqueur) ou dans une ligne sans marqueur, et finir en fin
+ * de ligne ou dans une ligne sans marqueur. Sinon il est refermé et rouvert au saut de ligne.
+ */
+function settleLineCrossings(layout: Layout): void {
+  const { lineOf, prefixed } = layout;
+  for (let changed = true; changed; ) {
+    changed = false;
+    const atoms = layout.atoms;
+    // 1. Styles portés par chaque marqueur : ceux qui arrivent de la ligne précédente, et ceux
+    //    qui couvrent toute la ligne et continuent sur la suivante.
+    layout.atoms = atoms.map((atom, k) => {
+      if (atom.type !== 'prefix') return atom;
+      const before = atoms[k - 1]?.type === 'break' ? atoms[k - 1].marks : [];
+      let end = k + 1;
+      while (end < atoms.length && atoms[end].type !== 'break') end++;
+      const content = atoms.slice(k + 1, end);
+      const after = atoms[end]?.marks ?? [];
+      const continuing = after.filter((mark) => content.every((a) => a.marks.includes(mark)));
+      const marks = MARK_ORDER.filter((mark) => before.includes(mark) || continuing.includes(mark));
+      return { ...atom, marks };
+    });
+    // 2. Retirer des sauts de ligne les styles qui commencent ou finissent mal.
+    const current = layout.atoms;
+    const removals = new Map<number, Mark[]>();
+    for (const boundary of buildBoundaries(current)) {
+      for (const span of boundary.opens) {
+        const breaks: number[] = [];
+        for (let k = span.start; k < span.end; k++) if (current[k].type === 'break') breaks.push(k);
+        if (breaks.length === 0) continue;
+        const startOk = current[span.start].type === 'prefix' || !prefixed[lineOf[span.start]];
+        const last = span.end - 1;
+        const endOk = span.end >= current.length || current[span.end].type === 'break' || !prefixed[lineOf[last]];
+        // Retirer le style de toute la suite de sauts de ligne (lignes vides comprises, A27).
+        const remove = (k: number) => {
+          let first = k;
+          while (current[first - 1]?.type === 'break') first--;
+          for (let j = first; current[j]?.type === 'break'; j++) {
+            removals.set(j, [...(removals.get(j) ?? []), span.mark]);
+          }
+        };
+        if (!startOk) remove(breaks[0]);
+        if (!endOk) remove(breaks[breaks.length - 1]);
+      }
+    }
+    if (removals.size > 0) {
+      changed = true;
+      layout.atoms = current.map((atom, k) =>
+        removals.has(k) ? { ...atom, marks: atom.marks.filter((m) => !removals.get(k)!.includes(m)) } : atom,
+      );
+    }
+  }
 }
 
 /** Nombre de morceaux consécutifs, à partir de `from`, qui portent ce style. */
@@ -142,10 +258,29 @@ function writeCode(content: string): string {
   return fence + content + fence;
 }
 
+/**
+ * Écrit un bloc de code : saut de ligne après l'ouverture, `U+200B` après le premier de trois
+ * accents graves (Z4), `> ` devant chaque ligne s'il est cité (D10). Rien n'est échappé.
+ */
+function writeCodeBlock(block: CodeBlock): string {
+  const body = block.code.replace(/`(?=``)/g, `\`${ZERO_WIDTH_SPACE}`);
+  const lines = ['```' + block.language, ...body.split('\n'), '```'];
+  return lines.join(block.quote ? '\n> ' : '\n');
+}
+
 /** Les caractères d'un morceau, sans balise. */
-function nodeContent(node: InlineNode): string {
-  if (node.type === 'text') return node.text;
-  return node.type === 'code' ? node.code : node.raw;
+function nodeContent(node: Exclude<Atom, LineBreak>): string {
+  switch (node.type) {
+    case 'text':
+      return node.text;
+    case 'code':
+    case 'codeBlock':
+      return node.code;
+    case 'raw':
+      return node.raw;
+    case 'prefix':
+      return node.text;
+  }
 }
 
 /** Texte des morceaux qui suivent `k`, jusqu'à la fin de la ligne. */
@@ -170,9 +305,12 @@ function writeAtoms(
     if (atom.type === 'break') return '\n';
     if (atom.type === 'code') return writeCode(atom.code);
     if (atom.type === 'raw') return atom.raw; // Réécrit tel quel (S12).
+    if (atom.type === 'prefix') return atom.text;
+    if (atom.type === 'codeBlock') return writeCodeBlock(atom);
     return escapeText(atom.text, message, {
-      // Un marqueur reste interprété derrière des balises ouvrantes (A34, X7, X10).
-      atLineStart: k === 0 || atoms[k - 1].type === 'break',
+      // Un marqueur reste interprété derrière des balises ouvrantes (A34, X7, X10)
+      // et derrière un autre marqueur (`- -# `, X6).
+      atLineStart: k === 0 || atoms[k - 1].type === 'break' || atoms[k - 1].type === 'prefix',
       delimitedBefore: isDelimited(k),
       delimitedAfter: isDelimited(k + 1),
       textAfter: textAfter(atoms, k),
@@ -254,7 +392,11 @@ function writeAtomsWithMarks(atoms: readonly Atom[], message: MessageContext): s
 
 /** Document → texte Discord. Une ligne par paragraphe ; un style peut continuer sur la ligne suivante. */
 export function serialize(message: DiscordDocument): string {
-  const blocks = message.blocks.map(moveSpacesOutOfItalic);
+  const blocks = message.blocks.map((block) =>
+    block.type === 'paragraph' ? moveSpacesOutOfItalic(block) : block,
+  );
   const context = analyzeMessage({ ...message, blocks });
-  return writeAtomsWithMarks(toAtoms(blocks), context);
+  const layout = toLayout(blocks);
+  settleLineCrossings(layout);
+  return writeAtomsWithMarks(layout.atoms, context);
 }

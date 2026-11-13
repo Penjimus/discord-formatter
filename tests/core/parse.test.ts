@@ -2,9 +2,15 @@
 import { describe, expect, it } from 'vitest';
 import { ZERO_WIDTH_SPACE as ZWSP } from '../../src/core/characters';
 import {
+  bulletItem,
   code,
+  codeBlock,
   createDocument,
+  heading,
+  layoutLine,
+  numberedItem,
   paragraph,
+  quoted,
   raw,
   text,
   type DiscordDocument,
@@ -21,9 +27,11 @@ function line(...content: Parameters<typeof paragraph>): DiscordDocument {
 function visible(message: DiscordDocument): string {
   return message.blocks
     .map((block) =>
-      block.content
-        .map((node) => (node.type === 'text' ? node.text : node.type === 'code' ? node.code : node.raw))
-        .join(''),
+      block.type === 'codeBlock'
+        ? block.code
+        : block.content
+            .map((node) => (node.type === 'text' ? node.text : node.type === 'code' ? node.code : node.raw))
+            .join(''),
     )
     .join('\n');
 }
@@ -31,6 +39,7 @@ function visible(message: DiscordDocument): string {
 /** Styles du morceau qui contient ce texte. */
 function marksOf(message: DiscordDocument, fragment: string): readonly Mark[] | undefined {
   for (const block of message.blocks) {
+    if (block.type === 'codeBlock') continue;
     for (const node of block.content) {
       if (node.type === 'text' && node.text.includes(fragment)) return node.marks;
     }
@@ -223,9 +232,7 @@ describe('Espaces au bord d’un style (§1)', () => {
     expect(parse('** a**')).toEqual(line(text(' a', ['bold'])));
   });
 
-  it('A29_asterisque_espace_en_debut_de_ligne_est_une_puce', () => {
-    expect(parse('* a*')).toEqual(line(raw('* '), text('a*')));
-  });
+  // A29 : remplacé à l'étape 3 par le test de même nom dans structure.test.ts (vraie puce).
 });
 
 describe('Styles sur plusieurs lignes (§1)', () => {
@@ -292,7 +299,7 @@ describe('Échappement relu (§11)', () => {
       createDocument(
         paragraph(text('1.sans espace')),
         paragraph(text('1. pas une liste')),
-        paragraph(raw('2020. '), text('une année')),
+        numberedItem(1, 2020, text('une année')), // étape 3 : vraie liste (C13)
       ),
     );
     expect(parse('>sans espace\n\\> pas une citation')).toEqual(
@@ -348,30 +355,26 @@ describe('Adresses (§4)', () => {
 });
 
 describe('Syntaxe non reconnue conservée en brut (S12)', () => {
+  // Étape 3 : titres, puces, citations et blocs de code sont désormais lus en structure.
   it('titres, puces, citations, marqueurs enchaînés (X6)', () => {
     expect(parse('# Titre\n- puce\n> citation\n- -# Note')).toEqual(
       createDocument(
-        paragraph(raw('# '), text('Titre')),
-        paragraph(raw('- '), text('puce')),
-        paragraph(raw('> '), text('citation')),
-        paragraph(raw('- -# '), text('Note')),
+        heading(1, text('Titre')),
+        bulletItem(1, text('puce')),
+        quoted(paragraph(text('citation'))),
+        layoutLine({ list: { kind: 'bullet', level: 1 }, style: 'subtext' }, text('Note')),
       ),
     );
   });
 
   it('X7_puces_dans_un_barre', () => {
     expect(parse('~~- a\n- b~~')).toEqual(
-      createDocument(
-        paragraph(raw('- ', ['strike']), text('a', ['strike'])),
-        paragraph(raw('- ', ['strike']), text('b', ['strike'])),
-      ),
+      createDocument(bulletItem(1, text('a', ['strike'])), bulletItem(1, text('b', ['strike']))),
     );
   });
 
-  it('bloc de code conservé tel quel, rien n’y est interprété', () => {
-    expect(parse('```\n**a**\n```')).toEqual(
-      createDocument(paragraph(raw('```')), paragraph(raw('**a**')), paragraph(raw('```'))),
-    );
+  it('bloc de code : rien n’y est interprété', () => {
+    expect(parse('```\n**a**\n```')).toEqual(createDocument(codeBlock('**a**')));
   });
 
   it('mentions, émojis, horodatages conservés', () => {

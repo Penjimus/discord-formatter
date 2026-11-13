@@ -68,9 +68,10 @@ const DOCUMENTS: Record<string, DiscordDocument> = {
     paragraph(text('Note:'), text('b', ['italic'])),
   ),
   italique_de_symboles_A31: line(text('a '), text('**', ['italic']), text(' b')),
+  // Étape 3 : `# ` et `- ` sont désormais de la structure ; `>>> ` et `#### ` restent bruts.
   brut: createDocument(
-    paragraph(raw('# '), text('Titre', ['bold'])),
-    paragraph(raw('- '), text('puce '), raw('<@123>')),
+    paragraph(raw('>>> '), text('Titre', ['bold'])),
+    paragraph(raw('#### '), text('puce '), raw('<@123>')),
   ),
 };
 

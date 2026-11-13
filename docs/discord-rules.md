@@ -151,6 +151,10 @@ Le caractère invisible compte pour 1 caractère dans la limite (voir section 12
 
 Ces cas doivent figurer dans les tests automatiques de l'appli.
 
+### 2.4 Styles sur plusieurs lignes avec titres, listes, citations et blocs
+
+*Convention* (prudente, d'après les formes testées A34, X1, X2, X7, X10) : un style qui continue sur plusieurs lignes n'est gardé ouvert que s'il **commence** au tout début d'une ligne (sa balise est alors écrite **avant** le marqueur : `~~> a`, `~~- a`) ou dans une ligne sans marqueur, et s'il **finit** à la fin d'une ligne ou dans une ligne sans marqueur. Sinon, l'appli le referme en fin de ligne et le rouvre sur la ligne suivante, après le marqueur. Un style qui tient sur une seule ligne est écrit après le marqueur (`# **a**`).
+
 ---
 
 ## 3. Titres, listes et citations
@@ -169,6 +173,7 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Sous-texte à l'intérieur d'une puce (`- -# texte`) | permis, `-#` invisible (mais voir l'exception X7 dans « Listes ») | Testé (X6) |
 | Mention à l'intérieur d'un titre | permis, la taille du texte de la mention s'adapte au titre | Testé |
 | Titre à l'intérieur d'une citation | permis | Testé (D12) |
+| Un style ouvert sur une ligne continue sur une ligne de titre qui suit : `**a ↵ # b**` donne « a » en gras et « b » en titre gras | Généralisé (réponse de l'auteur, 13/11/2026) |
 | Balise ouvrante placée **avant** le marqueur : `**# x**` donne un titre en gras ; `~~- a` une puce barrée ; `~~> a` une citation barrée. Le marqueur reste donc interprété derrière des balises ouvrantes (et doit alors être échappé s'il est du texte) | Testé (A34, X7, X10) |
 
 ### Listes
@@ -176,7 +181,8 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Élément | Règle | Statut |
 |---|---|---|
 | Puce | `- Élément` (ou `* Élément`) | Documenté (`* ` : Testé, A29) |
-| Sous-niveau | 2 espaces d'indentation par niveau | Documenté |
+| Sous-niveau | chaque sous-niveau est indenté de **2 espaces de plus** que le niveau précédent, jusqu'au maximum | Généralisé (réponse de l'auteur, 13/11/2026) |
+| **Une ligne vide au milieu d'une liste casse la numérotation** : `1. a ↵ ↵ 1. b` affiche 1 puis 1 (une nouvelle liste commence) | | Généralisé (réponse de l'auteur, 13/11/2026) |
 | **Profondeur maximale : 11 niveaux** (le 12e n'est pas interprété) | | Testé |
 | Liste numérotée | `1. Élément` | Testé (G1, G2) |
 | Un sous-niveau peut avoir un type différent de son parent (puce sous un numéro, ou l'inverse) | permis | Testé |
@@ -184,6 +190,7 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Numérotation : le premier numéro donne le départ, les suivants s'incrémentent. `1. 1. 1.` s'affiche 1-2-3 ; `3. 7. 2.` s'affiche 3-4-5 | | Testé (G1, G2) |
 | Citation à l'intérieur d'une puce | permis (sur mobile, la puce n'apparaît pas devant la citation, mais le message reste lisible) | Testé (D14) |
 | Bloc de code à l'intérieur d'une puce | permis | Testé (D13) |
+| **À éclaircir** : selon l'auteur (13/11/2026), « un bloc de code ne peut pas être précédé d'une puce, une ligne de code oui ». À rapprocher de D13 (bloc indenté sous une puce, affiché correctement) | | À tester |
 | Liste à l'intérieur d'une citation | permis | Testé (D11) |
 | Mention à l'intérieur d'une puce | permis | Testé |
 | Un barré peut englober plusieurs puces (`~~- a ↵ - b~~`) : les puces restent des puces, barrées | permis | Testé (X7) |
@@ -276,7 +283,8 @@ Le nom du langage est placé juste après les trois premiers accents graves (col
 | **Trois accents graves dans un bloc cassent le bloc** (les trois derniers sont lus comme une ouverture) | Testé (F5) |
 | **Contournement : un espace de largeur nulle (`U+200B`) inséré entre le premier et le deuxième accent grave garde le bloc entier** (les trois accents graves font alors partie du contenu) | Testé (Z4) |
 | Les blocs de code ne s'imbriquent pas | Documenté |
-| Lignes vides au milieu d'un bloc | À tester |
+| Lignes vides au milieu d'un bloc : conservées, elles s'affichent comme des lignes vides du bloc sans le casser | Généralisé (réponse de l'auteur, 13/11/2026) |
+| Un style (spoiler, etc.) peut enjamber un bloc de code ; la balise peut être collée à l'ouverture (` \|\|```js `), le langage reste reconnu | Généralisé (X2 ; réponse de l'auteur, 13/11/2026) |
 
 *Convention* : l'appli met toujours **un saut de ligne** juste après les ```` ``` ```` d'ouverture (et après le langage), normalise le contenu du bloc en supprimant les lignes vides de début et de fin, et, si le contenu contient trois accents graves d'affilée, insère un espace de largeur nulle (`U+200B`) après le premier.
 
@@ -603,3 +611,6 @@ Dans un bloc de code, rien n'est échappé.
 9. **Émoticônes converties en émojis** (§9) : liste des émoticônes concernées, rôle de l'option de Discord, cas du texte collé.
 10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
 11. Anomalie X7 : pourquoi une puce `- -# ` après des puces barrées n'affiche pas le sous-texte.
+12. Bloc de code et puce : lever la contradiction entre D13 et la réponse de l'auteur du 13/11/2026 (§3, « Listes »).
+13. Sous-listes sous deux parents différents : `1. a ↵   1. x ↵ 2. b ↵   1. y` affiche-t-il y avec le numéro 1 (nouvelle sous-liste) ou 2 ?
+14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
