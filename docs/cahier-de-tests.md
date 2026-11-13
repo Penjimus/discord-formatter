@@ -38,7 +38,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
 | [G](#série-g) | Listes et citations | G1 à G4 (4) | §3 |
 | [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
-| [I](#série-i) | Mentions et émojis | I1 à I4 (4) | §1, §7, §9, §11 |
+| [I](#série-i) | Mentions et émojis | I1 à I5 (5) | §1, §7, §9, §11 |
 | [J](#série-j) | Lignes vides | J1 à J4 (4) | §13 |
 | [K](#série-k) | Longueur et comptage | K1 à K10 (10) | §9, §12 |
 | [Z](#série-z) | Caractères invisibles | Z1 à Z6 (6) | §2.3, §5, §13 |
@@ -254,6 +254,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **I2** | ```` Hors code : <#ID_SALON_REEL> ↵ Code en ligne : `<#ID_SALON_REEL>` ↵ ``` ↵ Bloc : <#ID_SALON_REEL> ↵ ``` ```` | ligne 1 : lien de salon ; ligne 2 : brut dans le code en ligne ; lignes suivantes : brut dans le bloc ? | ℹ️ L'identifiant fictif n'est pas interprété et s'affiche en texte brut. Conclusion rapportée par l'auteur : une mention n'est active qu'en dehors d'un bloc ou d'une ligne de code | §7 |
 | **I3** | `**😀** *😀* __😀__ ~~😀~~ \|\|😀\|\|` | émojis dans les styles : tous rendus normalement ? | ⚠️ Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji | §1, §9 |
 | **I4** | `\:star: ↵ :star\: ↵ \:star\:` | quelle forme empêche la conversion de `:star:` en émoji ? | ⚠️ Ligne 1 : `\` puis l'étoile ⭐ (conversion faite, antislash visible). Lignes 2 et 3 : affichées telles quelles, antislashs visibles (`:star\:`, `\:star\:`). L'antislash n'est pas une bonne manière d'échapper un code `:nom:` | §9, §11 |
+| **I5** | `test-I5.txt` : `A : :<U+200B>star: ↵ B : :star<U+200B>: ↵ C : *Membres :<U+200B>*` | l'espace invisible empêche-t-il la conversion en émoji ? « Membres : » en italique ? | ✅ A et B : « :star: » sans étoile, aucun caractère parasite visible. C : « Membres : » en italique | §9 |
 
 ## Série J
 

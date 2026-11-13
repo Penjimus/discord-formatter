@@ -509,13 +509,13 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 | Un code `:nom:` (ex. `:star:`) est converti en émoji (⭐) | Testé (X2) |
 | *Convention* (décidée par l'auteur le 13/11/2026) : un `:nom:` écrit comme texte dans l'éditeur de gauche est **échappé**, l'étoile n'est pas générée. Pas encore codé | Convention |
 | L'antislash n'échappe pas un code `:nom:` : `\:star:` affiche `\` puis ⭐ ; `:star\:` et `\:star\:` s'affichent tels quels, antislashs visibles | Testé (I4) |
-| Espace invisible `U+200B` dans le code (`:<U+200B>star:` ou `:star<U+200B>:`) : empêche-t-il la conversion, sans rien afficher ? | À tester (I5) |
+| Un espace invisible `U+200B` dans le code (`:<U+200B>star:` ou `:star<U+200B>:`) empêche la conversion ; rien de parasite n'est visible | Testé (I5) |
 | **L'émoticône `:*` est convertie en émoji 😗.** Conséquence : un italique qui se termine par « : » (`*texte :*`) est cassé, le `*` de fermeture est avalé | Testé (X4) |
 | Autres émoticônes converties (`:)`, `:(`, `:D`, `:P`, `;)`, `<3`…) : lesquelles ? | À tester |
 | Cette conversion dépend-elle d'une option de Discord (« convertir automatiquement les émoticônes », paramètres Texte et images) ? | À tester |
 | La conversion a-t-elle lieu aussi quand le texte est **collé** (et non tapé) ? | À tester |
 
-*Convention* (décidée par l'auteur le 13/11/2026) : quand l'appli écrit un `*` d'italique juste après un « : », elle insère entre les deux l'espace de largeur nulle `U+200B` (`*texte :<U+200B>*`), pour que `:*` ne soit pas converti. Forme non encore testée dans Discord. Le gras après « : » n'a pas ce problème : `**Note :**` s'affiche correctement (A35), rien n'est inséré.
+*Convention* (décidée par l'auteur le 13/11/2026) : quand l'appli écrit un `*` d'italique juste après un « : », elle insère entre les deux l'espace de largeur nulle `U+200B` (`*texte :<U+200B>*`), pour que `:*` ne soit pas converti. Testé (I5) : l'italique est bien rendu, sans caractère visible. Le gras après « : » n'a pas ce problème : `**Note :**` s'affiche correctement (A35), rien n'est inséré.
 
 ---
 
@@ -626,7 +626,7 @@ Dans un bloc de code, rien n'est échappé.
 ## 14. Points restant à tester
 
 1. **Confirmer E13** : le code `9` (barré) et les couleurs `91` et `38;5;196` sont-ils réellement appliqués sur ordinateur (couleur ou barré visible), ou simplement ignorés ?
-2. ~~Italique `_` collé à une lettre d'un seul côté ; code en ligne sur deux lignes~~ : tranchés (A30, A32, A33). Gras après « : » tranché (A35, sans problème). Reste : la forme `*texte :<U+200B>*` s'affiche-t-elle bien en italique ?
+2. ~~Italique `_` collé à une lettre d'un seul côté ; code en ligne sur deux lignes~~ : tranchés (A30, A32, A33). Gras après « : » tranché (A35, sans problème). La forme `*texte :<U+200B>*` s'affiche bien en italique (I5).
 3. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
 4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
 5. ~~Mention dans un sous-texte (`-#`) ; styles sur un horodatage~~ : tranchés (M7, H3).
@@ -640,4 +640,4 @@ Dans un bloc de code, rien n'est échappé.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).
-16. **Échapper un code `:nom:`** : l'antislash ne convient pas (I4). Test I5 préparé (`docs/tests-discord/test-I5.txt`) : espace invisible `U+200B` dans le code. Contradiction à trancher : I4 montre un `\:` visible, alors que C19 montrait `\:` affiché « : ».
+16. **Échapper un code `:nom:`** : l'antislash ne convient pas (I4) ; l'espace invisible `U+200B` convient (I5). Reste : quels noms échapper, et comment lire un `:nom:` collé (à décider). Contradiction à trancher : I4 montre un `\:` visible, alors que C19 montrait `\:` affiché « : ».
