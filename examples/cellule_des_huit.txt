@@ -1,0 +1,7 @@
+*Membres de la cellule : *
+```ansi
+[2;1;2mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[2;1;2mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3;0mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[2;1;2mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3;0mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[2;1;2mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3;0mAncre son identité civile à Vendeaume
+```

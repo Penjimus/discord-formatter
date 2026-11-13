@@ -142,13 +142,19 @@ function writeCode(content: string): string {
   return fence + content + fence;
 }
 
+/** Les caractères d'un morceau, sans balise. */
+function nodeContent(node: InlineNode): string {
+  if (node.type === 'text') return node.text;
+  return node.type === 'code' ? node.code : node.raw;
+}
+
 /** Texte des morceaux qui suivent `k`, jusqu'à la fin de la ligne. */
 function textAfter(atoms: readonly Atom[], k: number): string {
   let result = '';
   for (let i = k + 1; i < atoms.length; i++) {
     const atom = atoms[i];
     if (atom.type === 'break') break;
-    result += atom.type === 'text' ? atom.text : atom.code;
+    result += nodeContent(atom);
   }
   return result;
 }
@@ -163,8 +169,10 @@ function writeAtoms(
   return atoms.map((atom, k) => {
     if (atom.type === 'break') return '\n';
     if (atom.type === 'code') return writeCode(atom.code);
+    if (atom.type === 'raw') return atom.raw; // Réécrit tel quel (S12).
     return escapeText(atom.text, message, {
-      atLineStart: (k === 0 || atoms[k - 1].type === 'break') && !isDelimited(k),
+      // Un marqueur reste interprété derrière des balises ouvrantes (A34, X7, X10).
+      atLineStart: k === 0 || atoms[k - 1].type === 'break',
       delimitedBefore: isDelimited(k),
       delimitedAfter: isDelimited(k + 1),
       textAfter: textAfter(atoms, k),
@@ -229,8 +237,15 @@ function writeAtomsWithMarks(atoms: readonly Atom[], message: MessageContext): s
     italic.set(span, '*'); // Cas résiduel : l'espace invisible règlera la collision.
   }
 
+  /** Un `*` d'italique écrit juste après « : » formerait l'émoticône `:*` (X4, §9). */
+  const followsColon = (k: number, written: string): boolean => {
+    const first = [...boundaries[k].closes, ...boundaries[k].opens][0];
+    return first?.mark === 'italic' && delimiter(first) === '*' && written.endsWith(':');
+  };
+
   let result = '';
   for (let k = 0; k < boundaries.length; k++) {
+    if (followsColon(k, result)) result += ZERO_WIDTH_SPACE;
     result += closeText(k) + (collides(k) ? ZERO_WIDTH_SPACE : '') + openText(k);
     if (k < written.length) result += written[k];
   }

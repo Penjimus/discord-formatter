@@ -1,0 +1,4 @@
+*`Peut être que ce message est en italique ????`*
+~~`Cette partie là est barrée`~~
+`Là par contre, ~~Ce n'est absolument pas barré~~ ou en *italique*`
+||`Spoiler ! il ne faut pas lire ce code`||

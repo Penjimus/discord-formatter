@@ -45,9 +45,11 @@ export function analyzeMessage(message: DiscordDocument): MessageContext {
     for (const node of block.content) {
       if (node.type === 'code') backticks += 2;
       else {
-        tildes += countDoubled(node.text, '~');
-        pipes += countDoubled(node.text, '|');
-        backticks += node.text.split('`').length - 1;
+        // Un morceau brut est réécrit tel quel : ses symboles peuvent servir de partenaires.
+        const content = node.type === 'text' ? node.text : node.raw;
+        tildes += countDoubled(content, '~');
+        pipes += countDoubled(content, '|');
+        backticks += content.split('`').length - 1;
       }
       // Une balise écrite par l'appli compte comme deux partenaires (ouverture et fermeture).
       if (node.marks.includes('strike')) tildes += 2;

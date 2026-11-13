@@ -210,6 +210,22 @@ describe('Styles au milieu d’un mot (§1)', () => {
   });
 });
 
+describe('Émoticône :* (§9, convention de l’étape 2)', () => {
+  it('X4_italique_qui_finit_par_deux_points_recoit_l_espace_invisible', () => {
+    expect(line(text('Membres de la cellule :', ['italic']))).toBe(
+      `*Membres de la cellule :${ZWSP}*`,
+    );
+  });
+
+  it('X4_italique_qui_commence_apres_deux_points', () => {
+    expect(line(text('Note:'), text('b', ['italic']))).toBe(`Note:${ZWSP}*b*`);
+  });
+
+  it('pas d’espace invisible quand l’italique s’écrit avec le tiret bas', () => {
+    expect(line(text('a :', ['bold']), text('b', ['italic']))).toBe('**a :**_b_');
+  });
+});
+
 describe('Modèle du document : un document invalide ne se construit pas', () => {
   it('deux morceaux voisins aux mêmes styles sont fusionnés', () => {
     const p = paragraph(text('a', ['bold']), text('b', ['bold']), text(''));
@@ -224,10 +240,16 @@ describe('Modèle du document : un document invalide ne se construit pas', () =>
     expect(() => text('a\nb')).toThrow();
   });
 
-  it('un code en ligne ne prend que gras et spoiler (A14, A15 ; le reste est à tester)', () => {
-    expect(() => code('x', ['italic'])).toThrow();
-    expect(() => code('x', ['underline'])).toThrow();
-    expect(() => code('x', ['strike'])).toThrow();
+  // Remplace, avec l'accord de l'utilisateur, le test de l'étape 1 qui refusait italique,
+  // souligné et barré : le code est une entité unique (§5).
+  it('X8_tous_les_styles_de_texte_autour_d_un_code_en_ligne', () => {
+    expect(line(code('a', ['italic']))).toBe('*`a`*');
+    expect(line(code('a', ['strike']))).toBe('~~`a`~~');
+    expect(line(code('a', ['underline']))).toBe('__`a`__');
+    expect(line(code('a', ['spoiler']))).toBe('||`a`||');
+    expect(line(code('a', ['spoiler', 'strike', 'underline', 'bold', 'italic']))).toBe(
+      '||~~__***`a`***__~~||',
+    );
   });
 
   it('un code en ligne non testé dans Discord ne se construit pas', () => {

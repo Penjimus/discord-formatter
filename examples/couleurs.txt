@@ -1,0 +1,20 @@
+Une superbe liste de **couleurs** :
+
+* rouge
+* vert
+* bleu
+
+Sont mes *:star: préférées*:star: 
+
+
+|| ~~On peut aussi faire comme ça :~~
+```ansi
+[30m30 couleur[0m
+[31m31 couleur[0m
+[32m32 couleur[0m
+[33m33 couleur[0m
+[34m34 couleur[0m
+[35;4m35 couleur[0m
+[36;1;47m36 couleur[0m
+[37;3m37 couleur[0m
+```||

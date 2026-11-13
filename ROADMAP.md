@@ -17,7 +17,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 - [✓] Créer un dossier de projet et y placer : `SPEC.md`, `CLAUDE.md`, `ROADMAP.md`, `docs/discord-rules.md`, `docs/cahier-de-tests.md`.
 - [✓] Ranger dans `docs/tests-discord/` les deux fichiers de tests d'origine (`tests-discord.md`, `tests-discord-speciaux.txt`).
-- [-] Créer `examples/` et y déposer **quelques messages Discord réels** (voir étape 12 pour le format). Peut attendre l'étape 8, mais plus tôt vaut mieux.
+- [✓] Créer `examples/` et y déposer **quelques messages Discord réels** (voir étape 12 pour le format). 7 exemples déposés le 13/11/2026.
 
 ---
 
@@ -47,13 +47,14 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Tests** : séries A, B, C, Z1 à Z3 du cahier.
 **Validation** : tableau « entrée → sortie » dans le compte rendu ; l'utilisateur confirme que les sorties sont conformes à Discord.
 
-### [ ] Étape 2 : Lecture du texte en ligne et aller-retour
+### [x] Étape 2 : Lecture du texte en ligne et aller-retour
 
 **Objectif** : savoir **lire** (`parse`) du texte Discord en document.
 
 - Les mêmes styles que l'étape 1, y compris les combinaisons et les cas cassés (A1, A3, A5 doivent être lus comme Discord les lit).
 - **Syntaxe inconnue conservée en texte brut** : rien n'est perdu (S12).
 - **Aller-retour** : `parse` puis `serialize` donne un résultat équivalent (S14).
+- **Rattrapage de l'étape 1** (code = entité unique, `docs/discord-rules.md` §5) : autoriser **tous les styles de texte** (gras, italique, souligné, barré, spoiler) autour d'un code en ligne, en écriture comme en lecture. Le test de l'étape 1 qui refuse italique, souligné et barré sur un code en ligne est **remplacé** par un test qui les accepte (accord de l'utilisateur, la règle ayant changé). Cas de référence : X8.
 
 **Tests** : les tests de l'étape 1 relus dans l'autre sens, plus l'aller-retour sur tous les cas.
 **Validation** : l'utilisateur donne 5 à 10 textes à lui ; le compte rendu montre l'aller-retour.
@@ -65,8 +66,9 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 - Titres 1 à 3, sous-texte `-#`, citation `> ` sur chaque ligne (jamais `>>>`, lu en texte brut).
 - Listes à plusieurs niveaux (maximum 11), **type du premier élément imposé à tout le niveau**, numéros successifs réels, pas de titre dans une puce.
 - Blocs de code : langage libre, saut de ligne après l'ouverture, lignes vides de début et de fin supprimées, `U+200B` si trois accents graves dans le contenu, rien d'interprété à l'intérieur.
+- **Code = entité unique** (§5) : les styles de texte peuvent entourer un bloc de code entier (X2) ; la mise en page (titre, sous-texte, puce, citation) s'applique à une ligne contenant un code en ligne ; un bloc de code ne peut pas être dans un titre ni un sous-texte.
 
-**Tests** : séries D, F, G du cahier (D3, D10 à D14, F1 à F5, G1 à G4 en particulier).
+**Tests** : séries D, F, G du cahier (D3, D10 à D14, F1 à F5, G1 à G4 en particulier), et X2.
 **Validation** : tableau « entrée → sortie » ; l'utilisateur vérifie les imbrications (liste dans citation, bloc dans puce, etc.).
 
 ### [ ] Étape 4 : Couleurs ANSI
@@ -74,7 +76,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Objectif** : blocs colorés, en lecture et en écriture.
 
 - Un bloc de langage vide auquel on applique une couleur devient un bloc `ansi` ; un langage spécifié interdit la couleur.
-- Codes : styles (`1`, `4`), fond, texte, **toujours dans l'ordre styles, fond, texte** ; reset `<ESC>[0m`, jamais `<ESC>[m`.
+- Codes : styles (`1`, `3`, `4`), fond, texte, **toujours dans l'ordre styles, fond, texte** ; reset `<ESC>[0m`, jamais `<ESC>[m`.
 - Persistance d'une ligne à l'autre : un seul reset à la fin d'un passage multiligne.
 - Lecture de blocs `ansi` collés ; ANSI hors bloc `ansi` conservé en texte brut.
 - `U+001B` toujours écrit sous forme d'échappement dans le code source (voir `CLAUDE.md`).
@@ -168,7 +170,9 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 **Objectif** : vérifier l'appli sur de vrais messages.
 
-- Chaque fichier de `examples/` est traité correctement (S15) : `NOM.discord.txt` (message collé) et `NOM.attendu.md` (description de ce qu'on doit voir à gauche).
+- Chaque exemple de `examples/` est traité correctement (S15). Un exemple = deux fichiers de même nom :
+  - `NOM.txt` : le message brut, tel qu'envoyé dans Discord (UTF-8) ;
+  - `NOM.md` : ce que Discord affiche, une ligne par ligne du message, sous la forme `ligne N : description | texte de la ligne`.
 - Aller-retour sur tous les exemples (S14).
 - Correction des écarts trouvés ; toute nouvelle règle entre d'abord dans `docs/discord-rules.md`.
 - À vérifier : le bouton « Copier » conserve bien `<ESC>` et `U+200B` une fois collés dans Discord (`docs/discord-rules.md` §14, point 8).
@@ -217,6 +221,27 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 1 | Tests A17 à A26 et C18 ajoutés (plusieurs lignes, espaces au bord, styles au milieu d'un mot, paire de `~~` entre lignes) | Passés par l'utilisateur dans Discord |
 | 2026-11-13 | 1 | Les espaces au bord d'un italique (début et fin) sont sortis de l'italique à l'écriture | A18 : espace perdu avant la fermeture ; A29 : `* ` en début de ligne est une puce |
 | 2026-11-13 | 1 | **Remplace** la fermeture avant une ligne vide : un style traverse aussi les lignes vides | Testé par l'utilisateur (A27) ; tests A27 à A29 ajoutés |
+| 2026-11-13 | — | Exemples nommés `NOM.txt` (message brut) et `NOM.md` (rendu attendu, ligne par ligne) | Choix de l'utilisateur, aussi clair que le format prévu |
+| 2026-11-13 | — | Série X ajoutée au cahier (X1 à X7) : constats tirés des exemples réels | Comportements observés par l'utilisateur dans Discord |
+| 2026-11-13 | — | E7 corrigé : l'italique ANSI (code `3`) est appliqué ; il entre dans les styles ANSI de l'appli (étape 4) | Vérifié par l'utilisateur ; contradiction révélée par les exemples `couleurs` et `cellule_des_huit` |
+| 2026-11-13 | — | X8 ajouté (`classic_format_complement`) : code en ligne en italique et en barré permis | Observé par l'utilisateur dans Discord |
+| 2026-11-13 | — | Nouveau statut « Généralisé ». Code en ligne et bloc de code = entité unique : tous les styles de texte autour ; la mise en page s'applique au code en ligne, pas au bloc (§5, §10) | Décision de l'utilisateur, sans tester toute la combinatoire |
+| 2026-11-13 | — | Pas de modification de code hors étape : l'adaptation au code « entité unique » est reportée aux étapes 2 (styles autour du code en ligne, remplacement du test de refus) et 3 (blocs de code et mise en page) | Décision de l'utilisateur |
+| 2026-11-13 | 2 | Lecture « à la manière de Discord » : règles essayées dans un ordre fixe, pour `*` et `_` la plus longue l'emporte ; codée sans bibliothèque | Choix de l'utilisateur (option A) ; reproduit A1, A3, A5, A13 |
+| 2026-11-13 | 2 | « Morceau brut » : ce que le document ne sait pas encore représenter (titres, puces, citations, blocs de code, mentions, liens, adresses) ou dont la lecture est douteuse est réécrit tel quel | S12 ; choix prudent : la sortie reste identique à l'entrée |
+| 2026-11-13 | 2 | A18 : la lecture perd l'espace avant la fermeture d'un italique `*`, comme Discord ; espaces au bord d'un italique considérés équivalents à l'aller-retour | Décision de l'utilisateur |
+| 2026-11-13 | 2 | Tests A30, A31, C19 à C22 ajoutés | Passés par l'utilisateur dans Discord |
+| 2026-11-13 | 2 | Styles de texte permis autour du code en ligne ; test de refus de l'étape 1 remplacé par X8 | Prévu par la ROADMAP (accord de l'utilisateur) |
+| 2026-11-13 | 2 | Code en ligne reconnu seulement sous les formes écrites par l'appli (1 accent grave, ou 2 si le contenu en contient un), sans espace au bord ni saut de ligne ; sinon brut | Formes non testées |
+| 2026-11-13 | 2 | L'espace invisible `U+200B` seul entre deux morceaux est retiré à la lecture (l'écriture le remet si besoin) ; ailleurs il est conservé | Aller-retour stable de Z1 à Z3 |
+| 2026-11-13 | 2 | Marqueurs de début de ligne reconnus aussi juste après des balises ouvrantes (`~~- a`) | X7 |
+| 2026-11-13 | 2 | `*` d'italique juste après « : » : `U+200B` inséré entre les deux (option B) ; retiré à la lecture | Décision de l'utilisateur (X4) ; forme non testée, gras après « : » non traité |
+| 2026-11-13 | 2 | Tests A32 à A34, X9, X10 ajoutés ; code en ligne sur deux lignes gardé brut (le modèle ne le représente pas encore) | Passés par l'utilisateur dans Discord |
+| 2026-11-13 | 2 | Test de l'étape 1 « `**# x**` sans échappement » **remplacé** par A34 : un marqueur de début de ligne est échappé même derrière une balise ouvrante | A34 (titre constaté) ; accord de l'utilisateur |
+| 2026-11-13 | 2 | A35 : `**Note :**` correct, aucun caractère invisible pour le gras | Testé par l'utilisateur |
+| 2026-11-13 | 2 | Étape validée par l'utilisateur | — |
+| 2026-11-13 | 2 | Pas de textes supplémentaires : validation sur les 8 exemples de `examples/` | L'utilisateur a déjà fourni ses textes complexes |
+| 2026-11-13 | 2 | `\` suivi de tout caractère autre qu'une lettre non accentuée, un chiffre ou un espace : l'antislash disparaît | C17, C19 ; reste « Documenté » pour les autres symboles |
 
 ---
 

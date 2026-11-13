@@ -1,0 +1,7 @@
+ligne 1 : "*Membres de la cellule" est affiché, suivi d'un émoji ":kissing:" <Voir @cellule_des_huit.txt pour le message bien formé> | *Membres de la cellule :*
+ligne 2 : ouverture du bloc code ansi | ```ansi
+ligne 3 : "Volaldur Thaoreus" est en gras, "Apprenti-Justiciar" est en jaune doré | [2;1;2mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+ligne 4 : "Falcarion Thaoreus" est en gras, "Agent" est en jaune un peu plus sombre, "Ancre son identité civile à Blancherive" est en italique | [2;1;2mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3;0mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+ligne 5 : "Lorindolo D'Automnia" est en gras, "Agent" est en jaune un peu plus sombre, "Ancre son identité civile à Blancherive" est en italique  | [2;1;2mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3;0mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+ligne 6 : "Aelion Vanyarel" est en gras, "Agent" est en jaune un peu plus sombre, "Ancre son identité civile à Vendeaume" est en italique  | [2;1;2mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3;0mAncre son identité civile à Vendeaume
+ligne 7 : fin du bloc code | ```

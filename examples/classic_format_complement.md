@@ -1,0 +1,4 @@
+ligne 1 : le texte est inclu dans une ligne de code, cette ligne est elle même englobé par de l'italique, le format est appliqué | *`Peut être que ce message est en italique ????`*
+ligne 2 : le texte est inclu dans une ligne de code, cette ligne est elle même englobé par une balise tilde, le format est appliqué | ~~`Cette partie là est barrée`~~
+ligne 3 : le texte est inclu dans une ligne de code, les balises italiques et tildes sont à l'intérieur, elles sont visibles et le style n'est pas appliqué | `Là par contre, ~~Ce n'est absolument pas barré~~ ou en *italique*`
+ligne 4 : le texte est dans une ligne de code, elle est englobée par un spoiler | ||`Spoiler ! il ne faut pas lire ce code`||

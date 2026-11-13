@@ -23,14 +23,15 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | A, B, C, D, F, G, H, I, J | `tests-discord.md` (un bloc par message) |
 | E, K, Z (caractères invisibles et longueurs) | `tests-discord-speciaux.txt` (à ouvrir dans un éditeur de texte simple) |
 | M | Essais libres de l'auteur, sans fichier de départ : leurs identifiants M1 à M6 ont été créés pour ce cahier |
+| X | Messages réels du dossier `examples/` (`NOM.txt`) |
 
 ## Sommaire
 
 | Série | Sujet | Tests | Règles concernées |
 |---|---|---|---|
-| [A](#série-a) | Collisions, styles imbriqués, espaces au bord, plusieurs lignes | A1 à A29 (29) | §1, §2.3, §5 |
+| [A](#série-a) | Collisions, styles imbriqués, espaces au bord, plusieurs lignes | A1 à A35 (35) | §1, §2.3, §5 |
 | [B](#série-b) | Tiret bas collé à des lettres | B1 à B2 (2) | §1, §2.3 |
-| [C](#série-c) | Échappement | C1 à C18 (18) | §11, §4 |
+| [C](#série-c) | Échappement | C1 à C22 (22) | §11, §4 |
 | [D](#série-d) | Matrice de compatibilité | D1 à D14 (14) | §3, §5, §10 |
 | [E](#série-e) | Couleurs ANSI | E1 à E13 (13) | §6 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
@@ -41,8 +42,9 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [K](#série-k) | Longueur et comptage | K1 à K10 (10) | §9, §12 |
 | [Z](#série-z) | Caractères invisibles | Z1 à Z6 (6) | §2.3, §5, §13 |
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M6 (6) | §1, §3, §7 |
+| [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 
-**Total : 116 tests** (✅ 74 confirmés, ⚠️ 9 écarts, ℹ️ 33 constats).
+**Total : 135 tests** (✅ 77 confirmés, ⚠️ 11 écarts, ℹ️ 47 constats).
 
 ---
 
@@ -86,7 +88,16 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **A28** | `** a**` | espace juste après l'ouverture d'un gras | ℹ️ Sans effet gênant : a en gras | §1 (espaces au bord) |
 | **A29** | `* a*` | espace juste après l'ouverture d'un italique | ℹ️ Lu comme une **puce** « a* » (`* ` en début de ligne est un marqueur de liste) | §1 (espaces au bord), §3, §11 |
 
-*A9 à A29 : envoyés par l'auteur le 13/11/2026 pendant l'étape 1, un message par ligne (sauf A17 et A27, sur plusieurs lignes).*
+| **A30** | `suite_mot_ fin` | `_` d'ouverture collé à une lettre : italique ? | ℹ️ Oui : « mot » en italique, les `_` disparaissent (« suitemot fin ») | §1 (délimiteurs et mots) |
+| **A31** | `a **** b` | quatre astérisques : gras vide, italique ou littéral ? | ℹ️ Affiche `a ** b` : les deux astérisques du milieu sont en italique | §1 |
+
+| **A32** | `_mot_suite` | fermeture `_` collée à une lettre : italique ? | ℹ️ Non : affiché tel quel, sans mise en forme | §1 (délimiteurs et mots) |
+| **A33** | `` `a ↵ b` `` | code en ligne sur deux lignes : code ou texte ? | ℹ️ Code : il s'étend sur les deux lignes | §5 |
+| **A34** | `**# x**` | marqueur de titre derrière une balise ouvrante : titre ou texte ? | ⚠️ Titre (en gras) : l'étape 1 supposait du texte | §3, §11 |
+
+| **A35** | `**Note :**` | gras qui finit par « : » : cassé comme l'italique (X4) ? | ✅ Non : gras correct, pas d'émoji | §9 |
+
+*A9 à A29 : envoyés par l'auteur le 13/11/2026 pendant l'étape 1, un message par ligne (sauf A17 et A27, sur plusieurs lignes). A30 à A35 : envoyés pendant l'étape 2.*
 
 ## Série B
 
@@ -125,6 +136,12 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **C16** | `[a](https://exemple.com) ↵ \[a](https://exemple.com) ↵ <https://exemple.com>` | ligne 1 : lien ? ; ligne 2 : littéral ; ligne 3 : lien sans aperçu | ✅ Le lien est masqué dans le texte (ligne 1) | §4, §11 |
 | **C17** | `antislash : \a et \\ et \_` | à observer : l'antislash devant une lettre est-il affiché ? | ✅ L'antislash devant une lettre est affiché ; devant `\` et `_` il est masqué | §11 |
 | **C18** | `a ~~ b ↵ c ~~ d` (non échappé) | deux `~~` sur des lignes différentes forment-ils une paire ? | ℹ️ Oui : une mise en forme apparaît (ligne vide visible). L'échappement est nécessaire | §11 |
+| **C19** | `\! \: \é \( \)` | l'antislash devant d'autres symboles est-il affiché ? | ℹ️ Non : affiche « ! : é ( ) » | §11 |
+| **C20** | `a \|\|\|\| b` | quatre barres : spoiler vide ou littéral ? | ℹ️ Littéral : affiché tel quel | §11 |
+| **C21** | `https://exemple.com/_a_` | les `_` d'une adresse sont-ils interprétés ? | ℹ️ Non : `_a_` reste visible dans le lien | §4 |
+| **C22** | `**https://exemple.com**` | un gras autour d'une adresse s'applique-t-il ? | ℹ️ Oui : le lien est en gras | §4 |
+
+*C19 à C22 : envoyés par l'auteur pendant l'étape 2, un message par test.*
 
 ## Série D
 
@@ -163,7 +180,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **E4** | ```` ```ansi ↵ <ESC>[1;31mstyle puis texte<ESC>[0m ↵ <ESC>[31;1mtexte puis style<ESC>[0m ↵ <ESC>[45;37mfond puis texte<ESC>[0m ↵ <ESC>[37;45mtexte puis fond<ESC>[0m ↵ ``` ```` | ordre libre : lignes 1 et 2 identiques ? lignes 3 et 4 identiques ? | ✅ L'ordre des codes est libre : les lignes 1-2 et 3-4 sont identiques. Mobile : idem E3 | §6 |
 | **E5** | ```` ```ansi ↵ <ESC>[1;4;45;37mordre de l'appli<ESC>[0m ↵ ``` ```` | ordre retenu par l'appli : styles, fond, texte (gras, souligné, fond indigo, texte blanc) | ✅ Gras, souligné, fond indigo, texte blanc : correct. Mobile : idem E3 | §6 |
 | **E6** | ```` ```ansi ↵ <ESC>[31mligne 1 rouge sans reset ↵ ligne 2 sans aucun code ↵ <ESC>[0mligne 3 après reset ↵ ``` ```` | persistance : la couleur rouge continue-t-elle sur la ligne 2 (sans code) ? et sur la ligne 3 après reset ? | ℹ️ La couleur continue sur la ligne 2 (sans code) jusqu'au reset | §6 |
-| **E7** | ```` ```ansi ↵ <ESC>[3mtexte avec code 3<ESC>[0m ↵ ``` ```` | italique ANSI (code 3) : ignoré attendu | ✅ Aucun italique à l'affichage (code ignoré). Mobile : balises masquées | §6 |
+| **E7** | ```` ```ansi ↵ <ESC>[3mtexte avec code 3<ESC>[0m ↵ ``` ```` | italique ANSI (code 3) : ignoré attendu | ⚠️ **Corrigé par l'auteur le 13/11/2026** : l'italique est **appliqué** sur ordinateur (la première lecture « aucun italique » était erronée ; les exemples `couleurs` et `cellule_des_huit` l'ont révélé). Mobile : balises masquées | §6 |
 | **E8** | ```` ```ansi ↵ <ESC>[31m**gras** *italique* __souligné__<ESC>[0m ↵ ``` ```` | markdown dans un bloc ansi coloré : tout reste brut | ℹ️ Le texte est coloré mais les symboles markdown restent visibles (pas de formatage) | §6 |
 | **E9** | ```` ``` ↵ <ESC>[31mrouge<ESC>[0m ↵ ``` ```` | codes ANSI dans un bloc SANS langage : brut, ignorés, ou colorés ? | ✅ Codes ignorés : les séquences restent visibles dans le message | §6 |
 | **E10** | ```` ```js ↵ <ESC>[31mrouge<ESC>[0m ↵ ``` ```` | codes ANSI dans un bloc de langage js : brut, ignorés, ou colorés ? | ℹ️ Codes ignorés (séquences visibles) ; la coloration du langage js s'applique (les chiffres sont colorés) | §6 |
@@ -285,15 +302,39 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 
 ---
 
+## Série X
+
+### Constats tirés des exemples réels
+
+*Source : messages de `examples/`, envoyés par l'auteur dans Discord le 13/11/2026. Le message complet et la description ligne par ligne sont dans `examples/NOM.txt` et `examples/NOM.md`.*
+
+| Test | Message envoyé | Attendu | Observé | Règle |
+|---|---|---|---|---|
+| **X1** | `citation` : `~~ ↵ > … ↵ > … ↵ Date limite : <t:1735689600:F>~~` | à observer | ℹ️ Le barré couvre la citation (2 lignes) et l'horodatage | §3 (citations), §10 |
+| **X2** | `couleurs` : puces `* `, `*:star: préférées*:star:`, puis `\|\| ~~…~~ ↵ ```ansi … ```\|\|` | à observer | ℹ️ `* ` donne des puces ; `:star:` devient l'émoji ⭐ ; le spoiler cache tout le bloc de code ANSI qu'il entoure | §3, §9, §10 |
+| **X3** | `cellule_des_huit` : `<ESC>[2;1;2m…`, `<ESC>[38;2;255;218;6m…` | à observer | ℹ️ `2;1;2` donne du gras (le 2 est sans effet) ; les couleurs `38;2;R;G;B` sont appliquées sur ordinateur (jaunes de teintes différentes) | §6 |
+| **X4** | `cellule_des_huit_malforme` : `*Membres de la cellule :*` | à observer | ⚠️ `:*` est converti en émoji 😗 : le `*` de fermeture disparaît, l'italique n'est pas appliqué et le `*` d'ouverture reste visible | §9 |
+| **X5** | `hello_world` : `**Hello W**__**o**rl**d**__**!**` | à observer | ℹ️ Gras et souligné qui se chevauchent : tout est correct | §1 |
+| **X6** | `ODJ2` : `- -# Note : …` (dernière puce d'une liste) | à observer | ℹ️ Sous-texte appliqué dans la puce, `-#` invisible | §3 |
+| **X7** | `ODJ` : `~~- a ↵ - b~~ ↵ - -# Note : …` | à observer | ℹ️ Les deux puces sont barrées ; dans la puce suivante, `-#` reste **visible** et le sous-texte n'est pas appliqué (contrairement à X6) | §3 |
+| **X8** | `classic_format_complement` : ``*`…`*``, ``~~`…`~~``, `` `… ~~…~~ ou *…*` ``, ``\|\|`…`\|\|`` | à observer | ℹ️ Le code en ligne prend l'italique, le barré et le spoiler qui l'entourent ; les balises placées dans le code restent visibles, non appliquées | §1, §5 |
+| **X9** | `hello_world` réécrit par l'appli : `**Hello W__o__**__rl**d**__**!**` | même rendu que X5 | ✅ Correct | §1 |
+| **X10** | `citation` réécrit par l'appli : `↵ ~~> … ↵ > … ↵ Date limite : <t:1735689600:F>~~` (ligne vide en premier) | même rendu que X1 | ✅ Bien formaté ; la ligne vide du début n'est **pas affichée** | §3, §13 |
+
+---
+
 ## Les écarts : ce que les tests ont corrigé
 
 Ces tests ont contredit ou nuancé une hypothèse de départ. Ils sont la raison d'être de plusieurs conventions de l'application.
 
 | Test | Ce qu'on croyait | Ce qui a été constaté |
 |---|---|---|
+| **X4** | `:*` est du texte ordinaire | Discord convertit l'émoticône `:*` en émoji 😗, ce qui casse un italique terminé par « : » |
+| **A34** | Derrière une balise ouvrante, `# ` n'est plus en début de ligne | `**# x**` donne bien un **titre** : le marqueur doit être échappé même derrière une balise |
 | **A18** | Un espace avant la fermeture d'un style est conservé | Vrai pour gras, souligné, barré et spoiler, mais **pas pour l'italique** : `*a *b` affiche « ab » |
 | **D3** | Une liste peut mélanger puces et numéros au même niveau | Bien formaté, **mais** à un même niveau tous les éléments prennent le type du premier : une ligne numérotée après une puce s'affiche en puce, et inversement. Une sous-puce numérotée sous une puce n'est pas adaptée |
 | **D14** | Un titre est permis partout où le texte l'est | Citation dans une puce : OK (sur mobile, la puce n'apparaît pas devant la citation, message lisible). **Titre dans une puce : non rendu** |
+| **E7** | Le code ANSI `3` (italique) est ignoré | L'italique ANSI est **appliqué** sur ordinateur (première lecture du test erronée, corrigée par l'auteur) |
 | **E12** | `<ESC>[m` est équivalent à `<ESC>[0m` | `<ESC>[m` (reset vide) **ne réinitialise pas** : « normal (reset vide) » reste rouge ; les deux autres « normal » sont blancs |
 | **H2** | Un timestamp invalide est rejeté | Le timestamp en millisecondes n'est pas rejeté : il donne une date valide mais absurde (25 octobre 56971 à 2:00) |
 | **I3** | Gras, italique, etc. s'appliquent à un émoji | Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji |

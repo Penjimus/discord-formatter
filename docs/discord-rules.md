@@ -13,6 +13,7 @@ Il distingue deux sortes de contenu :
 | **Testé** | Vérifié par l'auteur dans Discord le 13/11/2026, sur ordinateur et sur mobile sauf mention contraire. Le numéro du test est indiqué entre parenthèses : le message envoyé, le résultat attendu et le résultat constaté sont dans `docs/cahier-de-tests.md` |
 | **Documenté** | Connu ou documenté, mais pas encore testé par l'auteur |
 | **À tester** | Hypothèse ou point incertain : ne pas coder tant que ce n'est pas confirmé |
+| **Généralisé** | Règle posée par l'auteur à partir de quelques tests, sans tester toute la combinatoire : elle se code comme une règle testée. Les tests qui la fondent sont indiqués entre parenthèses |
 
 ---
 
@@ -49,7 +50,8 @@ Quand un style ne couvre qu'une partie d'un autre, les délimiteurs peuvent se t
 | `*a **b***` | a italique, b italique + gras | Testé (A12) |
 | `***a** b*` | a italique + gras, b italique | Testé (A13) |
 | `` **x `code` y** `` | code en ligne à l'intérieur d'un gras : rendu correct | Testé (A14) |
-| `` \|\|`code`\|\| `` | code en ligne caché par un spoiler : rendu correct | Testé (A15) |
+| `` \|\|`code`\|\| `` | code en ligne caché par un spoiler : rendu correct | Testé (A15, X8) |
+| `` *`code`* `` / `` ~~`code`~~ `` | code en ligne en italique / barré : rendu correct | Testé (X8) |
 | ``` ``a`b`` ``` | code en ligne contenant un accent grave, délimité par deux accents graves : affiche a`b | Testé (A16) |
 
 ### Délimiteurs et mots
@@ -59,7 +61,10 @@ Quand un style ne couvre qu'une partie d'un autre, les délimiteurs peuvent se t
 | Un `_` à l'intérieur d'un mot n'ouvre pas d'italique : `mon_fichier_final` s'affiche tel quel | Testé (B1, C4) |
 | Un `*` à l'intérieur d'un mot ouvre bien un italique : `a*b*c` met le b en italique | Testé (C3) |
 | `__init__.py` : « init » est souligné | Testé (B2) |
-| Un `_` d'italique collé à une lettre d'un seul côté (ex. `_mot_suite`) | À tester |
+| Un `_` d'**ouverture** collé à une lettre ouvre bien un italique : `suite_mot_ fin` met « mot » en italique | Testé (A30) |
+| Un `_` de **fermeture** suivi d'une lettre ou d'un chiffre ne ferme pas : `mon_fichier_final` reste littéral | Testé (B1) |
+| `_mot_suite` (fermeture collée à une lettre) : reste littéral, sans mise en forme | Testé (A32) |
+| `a **** b` : un astérisque d'italique de chaque côté de `**` ; affiche `a ** b`, les `**` en italique | Testé (A31) |
 | Souligné, gras, barré et spoiler à l'intérieur d'un mot (`a__b__c`, `a**b**c`, `a~~b~~c`, `a\|\|b\|\|c`) : le b est mis en forme | Testé (A23 à A26) |
 
 ### Espaces au bord d'un style
@@ -161,8 +166,10 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Sous-texte (petit, gris) | `-# Texte` | Testé (D2) |
 | Gras, italique, souligné, barré, spoiler, horodatage et lien à l'intérieur d'un titre ou d'un sous-texte | permis | Testé (D1, D2) |
 | Titre à l'intérieur d'une puce de liste | **non rendu** | Testé (D14) |
+| Sous-texte à l'intérieur d'une puce (`- -# texte`) | permis, `-#` invisible (mais voir l'exception X7 dans « Listes ») | Testé (X6) |
 | Mention à l'intérieur d'un titre | permis, la taille du texte de la mention s'adapte au titre | Testé |
 | Titre à l'intérieur d'une citation | permis | Testé (D12) |
+| Balise ouvrante placée **avant** le marqueur : `**# x**` donne un titre en gras ; `~~- a` une puce barrée ; `~~> a` une citation barrée. Le marqueur reste donc interprété derrière des balises ouvrantes (et doit alors être échappé s'il est du texte) | Testé (A34, X7, X10) |
 
 ### Listes
 
@@ -179,6 +186,8 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Bloc de code à l'intérieur d'une puce | permis | Testé (D13) |
 | Liste à l'intérieur d'une citation | permis | Testé (D11) |
 | Mention à l'intérieur d'une puce | permis | Testé |
+| Un barré peut englober plusieurs puces (`~~- a ↵ - b~~`) : les puces restent des puces, barrées | permis | Testé (X7) |
+| **Anomalie** : juste après des puces englobées dans un barré, une puce `- -# texte` affiche `-#` tel quel (sous-texte non appliqué), alors que la même puce sans barré au-dessus fonctionne (X6). Cause inconnue | | Constaté (X7) |
 
 *Conventions* :
 - L'appli écrit les puces avec `-`.
@@ -199,6 +208,7 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Mention à l'intérieur d'une citation : permis | Testé |
 | Un message composé uniquement de `> ` est refusé (message vide) | Testé |
 | Citation imbriquée : non supportée par Discord | Documenté |
+| Un barré peut englober une citation sur plusieurs lignes, et le texte qui suit (`~~ ↵ > a ↵ > b ↵ c~~`) | Testé (X1) |
 | `>>> texte` : tout ce qui suit est cité. **Non généré par l'appli** | Documenté |
 
 *Convention* : si un message collé contient `>>>`, il est conservé en texte brut.
@@ -211,16 +221,34 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 |---|---|---|
 | `[Texte](https://exemple.com)` | Lien masqué : le texte est cliquable, l'adresse est cachée. Fonctionne dans un message d'utilisateur | Testé (C16) |
 | `<https://exemple.com>` | Lien affiché sans aperçu (embed) | Documenté |
+| `https://exemple.com/_a_` | Adresse écrite telle quelle : devient un lien, les symboles qu'elle contient ne sont **pas** interprétés | Testé (C21) |
+| `**https://exemple.com**` | Un style autour d'une adresse s'applique au lien | Testé (C22) |
+| Fin d'une adresse : elle s'arrête au premier espace ou `<`, sans le signe de ponctuation final (`.`, `,`, `:`, `;`, `"`, `'`, `)`, `]`) | Documenté |
 
 ---
 
 ## 5. Blocs de code
 
+### Le code est une entité unique
+
+Un code en ligne et un bloc de code (y compris `ansi`) forment chacun **un bloc indivisible** : rien n'est mis en forme à l'intérieur, mais on peut le mettre en forme **de l'extérieur**, en entier.
+
+| Règle | Statut |
+|---|---|
+| **Styles de texte** (gras, italique, souligné, barré, spoiler) placés autour d'un **code en ligne** : le style s'applique à tout le code | Généralisé (A14, A15, X8) |
+| **Styles de texte** placés autour d'un **bloc de code** : le style s'applique à tout le bloc | Généralisé (X2 pour le spoiler et le barré qui l'englobent) |
+| **Mise en page** (titre, sous-texte, puce, citation) appliquée à une ligne qui contient un **code en ligne** : le code en prend l'effet (taille du titre, etc.) | Généralisé |
+| **Mise en page** appliquée à un **bloc de code** : **aucun effet**, un bloc ne peut pas être dans un titre ou un sous-texte (la puce et la citation restent permises : D10, D13) | Généralisé |
+| Un style ne peut **jamais** couvrir seulement une partie du code | Testé (D6, D7, X8) |
+
+*Convention* : l'appli autorise tous les styles de texte autour d'un code en ligne ou d'un bloc de code, sans tester chaque combinaison.
+
 ### Code en ligne
 `` `texte` `` (un accent grave de chaque côté). Le markdown n'y est pas interprété. Statut : Testé (D6).
 
-- Un code en ligne peut être placé dans un gras ou dans un spoiler. Statut : Testé (A14, A15). Dans un italique, un souligné ou un barré : À tester.
+- Des balises placées **à l'intérieur** du code en ligne restent visibles et ne sont pas appliquées (`` `~~a~~ ou *b*` ``). Statut : Testé (D6, X8).
 - Un code en ligne qui contient un accent grave s'écrit entre **deux** accents graves : ``` ``a`b`` ```. Statut : Testé (A16).
+- Un code en ligne peut s'étendre sur **deux lignes** : `` `a ↵ b` `` donne un seul code sur deux lignes. Statut : Testé (A33). L'appli ne permet pas encore de le construire : à la lecture, il est conservé brut (réécrit tel quel).
 - Code en ligne commençant ou finissant par un accent grave, ou contenant deux accents graves d'affilée : À tester (l'appli ne permet pas de le construire pour l'instant).
 
 ### Bloc de code
@@ -267,7 +295,7 @@ Les couleurs ANSI ne fonctionnent que dans un bloc de code de langage `ansi`. Te
 
 | Plateforme | Constat | Statut |
 |---|---|---|
-| Ordinateur | Couleurs, fonds, gras et souligné s'affichent | Testé (E1 à E5) |
+| Ordinateur | Couleurs, fonds, gras, souligné et italique s'affichent | Testé (E1 à E5, E7) |
 | Mobile | **Rien n'est coloré ni stylé.** Les balises sont **masquées** : le texte reste propre et lisible, sans mise en forme | Testé (E1 à E5, E7, E13) |
 
 L'application ne doit donc pas considérer un rendu sans couleur sur mobile comme une erreur de format.
@@ -310,7 +338,7 @@ Exemple : `<ESC>[1;4;45;37mTexte<ESC>[0m` (gras, souligné, fond indigo, texte b
 | `0` | Réinitialise tout | Testé (E12) |
 | `1` | Gras | Testé (E3) |
 | `4` | Souligné | Testé (E3) |
-| `3` | Italique : **ignoré** | Testé (E7) |
+| `3` | Italique : **appliqué** sur ordinateur (première lecture de E7 erronée, corrigée par l'auteur ; confirmé par les exemples `couleurs` et `cellule_des_huit`) | Testé (E7) |
 | `2` | Atténué : sans effet | Testé (E13) |
 | `7` | Inversé : sans effet | Testé (E13) |
 | `9` | Barré | Apparemment appliqué sur ordinateur, **à confirmer** (E13) |
@@ -344,6 +372,10 @@ Exemple : `<ESC>[1;4;45;37mTexte<ESC>[0m` (gras, souligné, fond indigo, texte b
 Statut de ces deux tableaux : codes Testés (E1, E2). Les noms des teintes sont indicatifs.
 
 **Codes hors liste de départ, appliqués sur ordinateur d'après E13** : `91` (rouge clair, donc probablement `90` à `97`) et `38;5;196` (mode 256 couleurs). Statut : À confirmer. Non utilisés dans la première version.
+
+**Couleurs « au choix » `38;2;R;G;B`** (rouge, vert, bleu de 0 à 255, ex. `38;2;255;218;6` pour un jaune doré) : **appliquées sur ordinateur**. Statut : Testé (X3). Non proposées par l'appli dans la première version, mais **conservées telles quelles** si elles sont collées (S12).
+
+Code `2` combiné à d'autres (`2;1;2`) : sans effet, le reste s'applique (ici le gras). Statut : Testé (X3).
 
 ### Exemple
 ````ansi
@@ -441,6 +473,18 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 *Convention* : le compteur de l'appli utilise la longueur UTF-16 du texte final (même principe que Discord).
 - Gras, italique, souligné et barré n'ont aucun effet visible sur un émoji (voir section 1).
 
+### Conversions automatiques faites par Discord à l'envoi
+
+| Point | Statut |
+|---|---|
+| Un code `:nom:` (ex. `:star:`) est converti en émoji (⭐) | Testé (X2) |
+| **L'émoticône `:*` est convertie en émoji 😗.** Conséquence : un italique qui se termine par « : » (`*texte :*`) est cassé, le `*` de fermeture est avalé | Testé (X4) |
+| Autres émoticônes converties (`:)`, `:(`, `:D`, `:P`, `;)`, `<3`…) : lesquelles ? | À tester |
+| Cette conversion dépend-elle d'une option de Discord (« convertir automatiquement les émoticônes », paramètres Texte et images) ? | À tester |
+| La conversion a-t-elle lieu aussi quand le texte est **collé** (et non tapé) ? | À tester |
+
+*Convention* (décidée par l'auteur le 13/11/2026) : quand l'appli écrit un `*` d'italique juste après un « : », elle insère entre les deux l'espace de largeur nulle `U+200B` (`*texte :<U+200B>*`), pour que `:*` ne soit pas converti. Forme non encore testée dans Discord. Le gras après « : » n'a pas ce problème : `**Note :**` s'affiche correctement (A35), rien n'est inséré.
+
 ---
 
 ## 10. Matrice de compatibilité
@@ -457,7 +501,7 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Spoiler (`\|\|`) | ✓ | — | ✓ | ✓ | ✓ | ✗ |
 | Code en ligne | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Bloc de code avec langage | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
-| Bloc `ansi` | ✗ (sauf gras et souligné ANSI ; barré ANSI à confirmer) | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Bloc `ansi` | ✗ (sauf gras, souligné et italique ANSI ; barré ANSI à confirmer) | ✗ | ✗ | ✗ | ✗ | ✓ |
 
 ### Imbrications de contenants
 
@@ -470,7 +514,12 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Citation dans une puce | ✓ (mobile : puce absente devant la citation, lisible) | Testé (D14) |
 | **Titre dans une puce** | **✗** | Testé (D14) |
 | Titre, liste ou citation dans un spoiler | ? | À tester |
-| Spoiler autour d'un bloc de code | ? | À tester |
+| Spoiler autour d'un bloc de code (y compris `ansi`) : tout le bloc est caché | ✓ | Testé (X2) |
+| Sous-texte dans une puce | ✓ | Testé (X6) |
+| Barré autour d'une citation ou de puces | ✓ | Testé (X1, X7) |
+| Styles de texte autour d'un code en ligne ou d'un bloc de code (§5, « entité unique ») | ✓ | Généralisé (A14, A15, X2, X8) |
+| Code en ligne dans un titre, un sous-texte, une puce ou une citation | ✓ | Généralisé |
+| Bloc de code dans un titre ou un sous-texte | ✗ | Généralisé |
 
 ---
 
@@ -499,6 +548,9 @@ Quand un texte ordinaire contient un symbole que Discord interpréterait, l'appl
 | `<` | `a < b > c` et `<texte>` restent littéraux ; `\<@&123>` reste littéral | non, sauf motif de mention, d'émoji ou d'horodatage | Testé (C15) |
 | `[` | `[a](url)` devient un lien ; `\[a](url)` reste littéral | **oui** pour un crochet suivi d'une parenthèse (version future) | Testé (C16) |
 | `\` | `\a` s'affiche tel quel avec l'antislash ; `\\` s'affiche `\` ; `\_` s'affiche `_` | **oui** : un antislash littéral est toujours écrit `\\` | Testé (C17) |
+| `\` + autre symbole | `\! \: \é \( \)` s'affiche « ! : é ( ) » : l'antislash disparaît | (lecture) | Testé (C19) |
+| `\` + n'importe quel caractère autre qu'une lettre non accentuée, un chiffre ou un espace | l'antislash disparaît (généralisation de C17 et C19) | (lecture) | Documenté |
+| `\|\|\|\|` | `a \|\|\|\| b` reste littéral (pas de spoiler vide) | non, sauf si une paire est possible | Testé (C20) |
 
 Dans un bloc de code, rien n'est échappé.
 
@@ -531,7 +583,8 @@ Dans un bloc de code, rien n'est échappé.
 | Ligne vide visible | `_ _` (tiret bas, espace, tiret bas) sur une ligne seule | Testé (J1, J3) |
 | Message composé uniquement de `_ _` ou de `** **` | Accepté par Discord | Testé (J3, J4) |
 | **Lignes vides ordinaires** | **Conservées** : trois lignes vides consécutives apparaissent toutes. `_ _` n'est donc pas nécessaire pour sauter des lignes au milieu d'un message | Testé (J2) |
-| Lignes vides au début ou à la fin d'un message | Peut-être supprimées | À tester |
+| Ligne vide au **début** d'un message | Non affichée | Testé (X10) |
+| Lignes vides à la fin d'un message | Peut-être supprimées | À tester |
 | Caractère Braille vide `⠀` (U+2800) | Donne une ligne vide visible entre deux lignes (Z5) ; un message composé uniquement de ce caractère est accepté (Z6) | Testé |
 | Ligne horizontale | Non supportée (`---` ne fonctionne pas). On utilise des caractères Unicode : `▬▬▬▬▬▬▬▬` ou `────────` | Documenté |
 
@@ -540,10 +593,13 @@ Dans un bloc de code, rien n'est échappé.
 ## 14. Points restant à tester
 
 1. **Confirmer E13** : le code `9` (barré) et les couleurs `91` et `38;5;196` sont-ils réellement appliqués sur ordinateur (couleur ou barré visible), ou simplement ignorés ?
-2. Italique `_` collé à une lettre d'un seul côté (`_mot_suite`).
+2. ~~Italique `_` collé à une lettre d'un seul côté ; code en ligne sur deux lignes~~ : tranchés (A30, A32, A33). Gras après « : » tranché (A35, sans problème). Reste : la forme `*texte :<U+200B>*` s'affiche-t-elle bien en italique ?
 3. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
 4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
 5. Mention dans un sous-texte (`-#`) ; styles sur un horodatage.
-6. Spoiler autour d'un bloc de code ; titre, liste ou citation dans un spoiler.
+6. Titre, liste ou citation dans un spoiler.
 7. Une fois l'appli construite : le bouton « Copier » conserve-t-il le caractère `<ESC>` et les caractères invisibles `U+200B` ?
 8. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs.
+9. **Émoticônes converties en émojis** (§9) : liste des émoticônes concernées, rôle de l'option de Discord, cas du texte collé.
+10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
+11. Anomalie X7 : pourquoi une puce `- -# ` après des puces barrées n'affiche pas le sous-texte.

@@ -150,8 +150,12 @@ describe('Symboles collés à une balise', () => {
     expect(serialize(message)).toBe('x\\***y**');
   });
 
-  it('un début de ligne dans un gras n’a pas besoin d’échappement', () => {
-    const message = createDocument(paragraph(text('# x', ['bold'])));
-    expect(serialize(message)).toBe('**# x**');
+  // Remplace, avec l'accord de l'utilisateur, le test de l'étape 1 qui n'échappait pas :
+  // `**# x**` donne un titre dans Discord (A34).
+  it('A34_un_debut_de_ligne_derriere_une_balise_ouvrante_est_echappe', () => {
+    expect(serialize(createDocument(paragraph(text('# x', ['bold']))))).toBe('**\\# x**');
+    expect(serialize(createDocument(paragraph(text('- a', ['strike']))))).toBe('~~\\- a~~');
+    expect(serialize(createDocument(paragraph(text('> a', ['italic']))))).toBe('*\\> a*');
+    expect(serialize(createDocument(paragraph(text('2020. a', ['underline']))))).toBe('__2020\\. a__');
   });
 });
