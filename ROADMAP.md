@@ -15,9 +15,9 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 ## Avant l'étape 0 (à faire par l'utilisateur)
 
-- [ ] Créer un dossier de projet et y placer : `SPEC.md`, `CLAUDE.md`, `ROADMAP.md`, `docs/discord-rules.md`, `docs/cahier-de-tests.md`.
-- [ ] Ranger dans `docs/tests-discord/` les deux fichiers de tests d'origine (`tests-discord.md`, `tests-discord-speciaux.txt`).
-- [ ] Créer `examples/` et y déposer **quelques messages Discord réels** (voir étape 12 pour le format). Peut attendre l'étape 8, mais plus tôt vaut mieux.
+- [✓] Créer un dossier de projet et y placer : `SPEC.md`, `CLAUDE.md`, `ROADMAP.md`, `docs/discord-rules.md`, `docs/cahier-de-tests.md`.
+- [✓] Ranger dans `docs/tests-discord/` les deux fichiers de tests d'origine (`tests-discord.md`, `tests-discord-speciaux.txt`).
+- [-] Créer `examples/` et y déposer **quelques messages Discord réels** (voir étape 12 pour le format). Peut attendre l'étape 8, mais plus tôt vaut mieux.
 
 ---
 
