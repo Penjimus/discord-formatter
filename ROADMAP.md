@@ -85,7 +85,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Tests** : série E du cahier ; G6, G7, G9 à G11 pour le rattrapage.
 **Validation** : l'utilisateur copie la sortie d'un exemple, la colle dans Discord, vérifie les couleurs sur ordinateur (sur mobile, rien n'est coloré : c'est normal).
 
-### [ ] Étape 5 : Mentions, émojis, horodatages
+### [x] Étape 5 : Mentions, émojis, horodatages
 
 **Objectif** : les éléments dédiés, en lecture et en écriture.
 
@@ -265,6 +265,16 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 4 | Codes sans effet (`2`, `7`, `<ESC>[m`) retirés à la réécriture ; un bloc `ansi` où rien n'est coloré est réécrit sans balises | Même rendu (E12, E13, X3) |
 | 2026-11-13 | 4 | Test D13 « conservé brut » remplacé par `D13_G9_bloc_sous_une_puce_lu_comme_un_bloc` | Prévu par la ROADMAP (accord de l'utilisateur) |
 | 2026-11-13 | 4 | `3;0` (italique constaté), `0` après d'autres codes, fond `48;2`, `ANSI` en majuscules, `ansi` dans une citation, suite d'un bloc dans une puce : test E14 préparé ; non interprétés en attendant | Choix de l'utilisateur (questions 2 et 3, option a) |
+| 2026-11-13 | 5 | Styles autour d'une mention écrits tels quels (convention §1), pas de refus dans le modèle | Choix de l'utilisateur (Q1, option A) ; la ROADMAP disait « aucun style appliqué » |
+| 2026-11-13 | 5 | H3 : styles visibles sur un horodatage ; M7 : mention active dans un sous-texte et un titre. Aucune restriction de placement pour mentions et horodatages hors code | Testé par l'utilisateur |
+| 2026-11-13 | 5 | Mentions d'utilisateur et de rôle codées sur la base « Documenté », sans test supplémentaire | Décision de l'utilisateur (Q3) |
+| 2026-11-13 | 5 | Tests C15, « mentions, émojis, horodatages conservés » et aller-retour `brut` remplacés : mention et horodatage lus, l'émoji personnalisé reste brut | Accord de l'utilisateur (Q4) |
+| 2026-11-13 | 5 | Lecture : identifiant en chiffres ou modèle de la bonne sorte ; secondes sans zéro inutile ; sinon brut. Horodatage en millisecondes collé gardé tel quel (lu en secondes, comme Discord) | Formes non testées gardées brutes (S12) ; même rendu |
+| 2026-11-13 | 5 | Avertissement des modèles : recherche de `ID_UTILISATEUR`, `ID_ROLE`, `ID_SALON` dans tout le texte final, bloc de code compris | Règle §7 suivie à la lettre |
+| 2026-11-13 | 5 | Date → horodatage : arrondi vers le bas à la seconde ; dates avant 1970 refusées | Nombres négatifs non testés |
+| 2026-11-13 | 5 | Aperçu lisible de la date reporté à l'étape 10 | Hors de l'étape ; validé par l'utilisateur |
+| 2026-11-13 | 5 | Étape validée par l'utilisateur : sorties collées dans Discord (modèles bruts, gras autour d'une mention, mention sous spoiler, horodatage en gras, mention en sous-texte, 3 dates connues), toutes correctes. L'avertissement des modèles est affiché par l'appli, pas par Discord | — |
+| 2026-11-13 | 5 | `:nom:` écrit comme texte à gauche : à échapper, sans générer l'émoji. Forme d'échappement à tester (I4 proposé, §14 point 16) ; codée seulement après le test | Décision de l'utilisateur ; règle 2 (forme non testée) |
 
 ---
 

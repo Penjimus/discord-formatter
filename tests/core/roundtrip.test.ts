@@ -71,7 +71,8 @@ const DOCUMENTS: Record<string, DiscordDocument> = {
   // Étape 3 : `# ` et `- ` sont désormais de la structure ; `>>> ` et `#### ` restent bruts.
   brut: createDocument(
     paragraph(raw('>>> '), text('Titre', ['bold'])),
-    paragraph(raw('#### '), text('puce '), raw('<@123>')),
+    // Étape 5 : `<@123>` est désormais une mention ; l'émoji personnalisé reste brut.
+    paragraph(raw('#### '), text('puce '), raw('<:ok:456>')),
   ),
 };
 

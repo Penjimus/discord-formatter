@@ -36,12 +36,12 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [E](#série-e) | Couleurs ANSI | E1 à E13 (13) | §6 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
 | [G](#série-g) | Listes et citations | G1 à G4 (4) | §3 |
-| [H](#série-h) | Horodatages | H1 à H2 (2) | §8 |
+| [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
 | [I](#série-i) | Mentions et émojis | I1 à I3 (3) | §1, §7, §9 |
 | [J](#série-j) | Lignes vides | J1 à J4 (4) | §13 |
 | [K](#série-k) | Longueur et comptage | K1 à K10 (10) | §9, §12 |
 | [Z](#série-z) | Caractères invisibles | Z1 à Z6 (6) | §2.3, §5, §13 |
-| [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M6 (6) | §1, §3, §7 |
+| [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 
 **Total : 135 tests** (✅ 77 confirmés, ⚠️ 11 écarts, ℹ️ 47 constats).
@@ -239,6 +239,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 |---|---|---|---|---|
 | **H1** | `aucun : <t:1735689600> ↵ t : <t:1735689600:t> ↵ T : <t:1735689600:T> ↵ d : <t:1735689600:d> ↵ D : <t:1735689600:D> ↵ f : <t:1735689600:f> ↵ F : <t:1735689600:F> ↵ s : <t:1735689600:s> ↵ S : <t:1735689600:S> ↵ R : <t:1735689600:R>` | affichage des neuf styles + « aucun ». Note surtout s et S. | ✅ Tous les styles s'affichent ; l'absence de lettre équivaut à `f` | §8 |
 | **H2** | `<t:1735689600000:f>` | timestamp en millisecondes : date invalide attendue | ⚠️ Le timestamp en millisecondes n'est pas rejeté : il donne une date valide mais absurde (25 octobre 56971 à 2:00) | §8 |
+| **H3** | `**<t:1735689600:f>** *<t:1735689600:f>* __<t:1735689600:f>__ ~~<t:1735689600:f>~~` | styles sur un horodatage : appliqués ou sans effet ? | ℹ️ Les styles sont appliqués sur l'horodatage | §1, §8 |
 
 ## Série I
 
@@ -313,6 +314,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **M4** | *forme type, essai libre* : mention à l'intérieur d'un titre | à observer | ℹ️ Possible ; la taille du texte de la mention s'adapte au titre | §3 (titres), §7 |
 | **M5** | *forme type, essai libre* : mention à l'intérieur d'une citation | à observer | ℹ️ Possible | §3 (citations), §7 |
 | **M6** | *forme type, essai libre* : mention à l'intérieur d'une liste | à observer | ℹ️ Possible | §3 (listes), §7 |
+| **M7** | *forme type, essai libre* : `-# <#ID>` (mention de salon dans un sous-texte), et mention dans un titre | à observer : mention active ou non ? | ℹ️ La mention fonctionne dans un sous-texte (et dans un titre) | §3 (titres), §7 |
 
 ---
 

@@ -16,9 +16,13 @@ import {
   createDocument,
   layoutLine,
   MAX_LIST_LEVEL,
+  mention,
+  type MentionKind,
   paragraph,
   raw,
   text,
+  timestamp,
+  type TimestampStyle,
   type Block,
   type CodeBlock,
   type DiscordDocument,
@@ -27,11 +31,14 @@ import {
   type Mark,
 } from './document';
 
+type PieceKind = 'text' | 'code' | 'raw' | 'marker' | 'element';
+
 /** Résultat brut de la lecture, avant le découpage en lignes. */
 type Piece =
   | {
       /** `marker` : marqueur de début de ligne (`> `, `- `, `1. `, `# `…). */
-      readonly kind: 'text' | 'code' | 'raw' | 'marker';
+      /** `element` : mention ou horodatage, sous sa forme écrite. */
+      readonly kind: PieceKind;
       readonly value: string;
       readonly marks: readonly Mark[];
     }
@@ -70,7 +77,12 @@ const CODE_BLOCK = /^```[\s\S]*?```/;
 /** Espace invisible placé par l'appli entre le premier et le deuxième de trois accents graves (Z4). */
 const BLOCK_ZERO_WIDTH = new RegExp(`\`${ZERO_WIDTH_SPACE}(?=\`\`)`);
 const INLINE_CODE = /^(`+)([\s\S]*?[^`])\1(?!`)/;
-/** Mentions, émojis personnalisés, horodatages, commandes, liens sans aperçu (étape 5, §4). */
+/** Mention, sous les formes écrites par l'appli : identifiant en chiffres, ou modèle (§7). */
+const MENTION = /^<(@&|@|#)([0-9]+|[A-Z_]+)>/;
+const MENTION_KINDS: Readonly<Record<string, MentionKind>> = { '@': 'user', '@&': 'role', '#': 'channel' };
+/** Horodatage : secondes sans zéro inutile, style facultatif (§8). */
+const TIMESTAMP = /^<t:(0|[1-9][0-9]*)(?::([tTdDfFsSR]))?>/;
+/** Autres formes entre chevrons (émojis personnalisés, commandes, liens sans aperçu…) : brutes (§4, §7). */
 const ANGLE = /^<(?:@!?|@&|#|:|a:|t:|\/|id:|https?:\/\/)[^<>\n]*>/;
 /** Lien masqué (C16). */
 const MASKED_LINK = /^\[[^\]\n]*\]\([^)\s]+\)/;
@@ -212,6 +224,21 @@ function matchCodeBlock(rest: string, prefix: string, marks: readonly Mark[]): P
   }
 }
 
+/** Mention ou horodatage écrit sous cette forme, ou `null` (forme que le document refuse). */
+function readElement(value: string, marks: readonly Mark[]): InlineNode | null {
+  try {
+    const mentionMatch = MENTION.exec(value);
+    if (mentionMatch?.[0] === value) return mention(MENTION_KINDS[mentionMatch[1]], mentionMatch[2], marks);
+    const timestampMatch = TIMESTAMP.exec(value);
+    if (timestampMatch?.[0] === value) {
+      return timestamp(Number(timestampMatch[1]), (timestampMatch[2] ?? null) as TimestampStyle | null, marks);
+    }
+  } catch {
+    // Modèle d'une autre sorte (`<@ID_ROLE>`), nombre trop grand : forme non reconnue.
+  }
+  return null;
+}
+
 /**
  * Lit un morceau de texte. `linePrefix` : `null` si le morceau ne commence pas une ligne, sinon les
  * marqueurs déjà lus sur cette ligne (un style ouvert en début de ligne laisse son contenu en
@@ -219,7 +246,7 @@ function matchCodeBlock(rest: string, prefix: string, marks: readonly Mark[]): P
  */
 function parseRange(source: string, marks: readonly Mark[], linePrefix: string | null): Piece[] {
   const pieces: Piece[] = [];
-  const push = (kind: 'text' | 'code' | 'raw' | 'marker', value: string) =>
+  const push = (kind: PieceKind, value: string) =>
     pieces.push({ kind, value, marks });
   let prefix = linePrefix;
   let i = 0;
@@ -250,6 +277,13 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
     if (escape) {
       push('text', escape[1]);
       i += escape[0].length;
+      continue;
+    }
+
+    const element = MENTION.exec(rest) ?? TIMESTAMP.exec(rest);
+    if (element && readElement(element[0], marks)) {
+      push('element', element[0]);
+      i += element[0].length;
       continue;
     }
 
@@ -297,8 +331,9 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
   return pieces;
 }
 
-function toNode(kind: 'text' | 'code' | 'raw' | 'marker', value: string, marks: readonly Mark[]): InlineNode {
+function toNode(kind: PieceKind, value: string, marks: readonly Mark[]): InlineNode {
   if (kind === 'code') return code(value, marks);
+  if (kind === 'element') return readElement(value, marks)!;
   return kind === 'text' ? text(value, marks) : raw(value, marks);
 }
 

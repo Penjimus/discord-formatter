@@ -93,7 +93,7 @@ Pour annuler un formatage et afficher les symboles bruts, placer un antislash de
 ### Émojis, mentions et styles
 - Gras, italique, souligné et barré **n'ont aucun effet visible** sur un émoji. Seul le spoiler le cache. Statut : Testé (I3).
 - Même constat pour une **mention** (utilisateur, rôle, salon) : gras, italique et autres styles n'ont aucun effet. Le spoiler la cache tout en la laissant active (la personne est bien mentionnée). Statut : Testé.
-- Styles sur un horodatage : À tester.
+- Styles sur un horodatage : **appliqués** (gras, italique, souligné, barré visibles sur la date). Statut : Testé (H3).
 
 *Convention* (décidée par l'auteur le 13/11/2026) : l'appli **ne filtre pas** les balises autour des émojis ou des mentions. Si l'utilisateur a mis un émoji en gras, la balise est écrite telle quelle. Raisons : `**toto 😀 tata**` est plus court que `**toto** 😀 **tata**`, les titres (`#`, `##`, `-#`) ont un effet sur les émojis, et le cas est trop rare pour justifier une règle de plus.
 
@@ -431,7 +431,12 @@ Pour obtenir un identifiant dans Discord : Paramètres utilisateur > Avancés > 
 | `<#ID>` appliqué à une **catégorie** : **ne fonctionne pas** (non utilisé) | Testé |
 | Mention dans un titre, une puce, une citation ou un spoiler : elle fonctionne. Dans un spoiler, elle reste active (la personne est mentionnée) alors que le texte est caché | Testé |
 | Gras, italique et autres styles appliqués à une mention : aucun effet | Testé |
-| Mention dans un sous-texte (`-#`) | À tester |
+| Mention dans un sous-texte (`-#`) : elle fonctionne | Testé (M7) |
+
+*Convention de l'appli* (étape 5) :
+- **Écriture** : `<@ID>`, `<@&ID>`, `<#ID>`, où `ID` est un nombre (chiffres seulement) ou le modèle `ID_UTILISATEUR`, `ID_ROLE`, `ID_SALON`. Les styles autour d'une mention sont écrits tels quels (convention de la section 1).
+- **Lecture** : seules ces formes sont lues comme des mentions. Toute autre forme (`<@!123>`, `<#ID_SALON_REEL>`, `<@ abc>`…) reste en texte brut, réécrite telle quelle (S12).
+- La syntaxe des mentions d'utilisateur et de rôle reste « Documenté » : codée sans test supplémentaire, à la demande de l'auteur.
 
 ### Syntaxes Discord hors périmètre de l'appli
 Si elles sont collées dans un message, elles sont conservées en texte brut.
@@ -472,6 +477,12 @@ Les lettres sont sensibles à la casse (`t` et `T` sont différents).
 | Un timestamp en **millisecondes** n'est pas rejeté : il est lu comme des secondes et affiche une date absurde (ex. « 25 octobre 56971 »). **L'appli doit toujours écrire des secondes** | Testé (H2) |
 | Un horodatage dans un bloc ou une ligne de code reste en texte brut | Testé (D6, D7, D8) |
 | Un horodatage dans un titre, un sous-texte, une liste, une citation ou un spoiler est interprété | Testé (D1 à D5) |
+| Gras, italique, souligné et barré appliqués à un horodatage : visibles | Testé (H3) |
+
+*Convention de l'appli* (étape 5) :
+- **Écriture** : `<t:SECONDES>` (sans style) ou `<t:SECONDES:STYLE>`, avec un nombre entier de secondes, positif ou nul. Une date choisie est convertie en secondes en arrondissant vers le bas.
+- **Lecture** : seules ces formes sont lues comme des horodatages (nombre sans zéro inutile devant, lettre parmi les 9 styles). Les autres (`<t:123:x>`, nombre négatif, `<t:0123>`…) restent en texte brut (S12).
+- Un horodatage en millisecondes collé dans le message est lu comme le lit Discord, en secondes (date absurde, H2) : l'appli ne le corrige pas, pour ne pas changer le rendu.
 
 ---
 
@@ -496,6 +507,7 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 | Point | Statut |
 |---|---|
 | Un code `:nom:` (ex. `:star:`) est converti en émoji (⭐) | Testé (X2) |
+| *Convention* (décidée par l'auteur le 13/11/2026) : un `:nom:` écrit comme texte dans l'éditeur de gauche est **échappé**, l'étoile n'est pas générée. Forme d'échappement à tester (§14, point 16) : pas encore codé | À tester |
 | **L'émoticône `:*` est convertie en émoji 😗.** Conséquence : un italique qui se termine par « : » (`*texte :*`) est cassé, le `*` de fermeture est avalé | Testé (X4) |
 | Autres émoticônes converties (`:)`, `:(`, `:D`, `:P`, `;)`, `<3`…) : lesquelles ? | À tester |
 | Cette conversion dépend-elle d'une option de Discord (« convertir automatiquement les émoticônes », paramètres Texte et images) ? | À tester |
@@ -507,13 +519,13 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 
 ## 10. Matrice de compatibilité
 
-Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** (D1 à D9, I2, mentions, E1 à E13). Les styles sur une mention n'ont aucun effet visible (section 1). Le sous-texte n'a pas été testé avec une mention.
+Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** (D1 à D9, I2, mentions, M7, E1 à E13). Les styles sur une mention n'ont aucun effet visible (section 1) ; sur un horodatage, ils sont visibles (H3).
 
 | Contenant | Gras, italique, souligné, barré | Spoiler | Horodatage | Lien | Mention | Couleur ANSI |
 |---|---|---|---|---|---|---|
 | Texte normal | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Titre (`#`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
-| Sous-texte (`-#`) | ✓ | ✓ | ✓ | ✓ | ? | ✗ |
+| Sous-texte (`-#`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Liste | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Citation (`>`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Spoiler (`\|\|`) | ✓ | — | ✓ | ✓ | ✓ | ✗ |
@@ -615,7 +627,7 @@ Dans un bloc de code, rien n'est échappé.
 2. ~~Italique `_` collé à une lettre d'un seul côté ; code en ligne sur deux lignes~~ : tranchés (A30, A32, A33). Gras après « : » tranché (A35, sans problème). Reste : la forme `*texte :<U+200B>*` s'affiche-t-elle bien en italique ?
 3. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
 4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
-5. Mention dans un sous-texte (`-#`) ; styles sur un horodatage.
+5. ~~Mention dans un sous-texte (`-#`) ; styles sur un horodatage~~ : tranchés (M7, H3).
 6. Titre, liste ou citation dans un spoiler.
 7. Une fois l'appli construite : le bouton « Copier » conserve-t-il le caractère `<ESC>` et les caractères invisibles `U+200B` ?
 8. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs.
@@ -626,3 +638,4 @@ Dans un bloc de code, rien n'est échappé.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).
+16. **Échapper un code `:nom:`** (convention §9, décidée le 13/11/2026) : quelle forme empêche la conversion en émoji ? Message de test proposé (I4) : `\:star: ↵ :star\: ↵ \:star\:`. Rappel : `\:` s'affiche « : » (C19), mais l'effet sur la conversion n'est pas testé.

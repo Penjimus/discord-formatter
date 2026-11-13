@@ -16,6 +16,7 @@ import {
   type Mark,
   type Paragraph,
 } from './document';
+import { mentionSyntax, timestampSyntax } from './elements';
 import { analyzeMessage, escapeText, type MessageContext } from './escape';
 
 /**
@@ -300,6 +301,10 @@ function nodeContent(node: Exclude<Atom, LineBreak>): string {
       return node.code;
     case 'raw':
       return node.raw;
+    case 'mention':
+      return mentionSyntax(node);
+    case 'timestamp':
+      return timestampSyntax(node);
     case 'prefix':
       return node.text;
   }
@@ -327,6 +332,8 @@ function writeAtoms(
     if (atom.type === 'break') return '\n';
     if (atom.type === 'code') return writeCode(atom.code);
     if (atom.type === 'raw') return atom.raw; // Réécrit tel quel (S12).
+    if (atom.type === 'mention') return mentionSyntax(atom); // Rien n'est échappé dedans.
+    if (atom.type === 'timestamp') return timestampSyntax(atom);
     if (atom.type === 'prefix') return atom.text;
     if (atom.type === 'codeBlock') return writeCodeBlock(atom);
     return escapeText(atom.text, message, {

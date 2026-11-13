@@ -30,7 +30,37 @@ export interface RawNode {
   readonly marks: readonly Mark[];
 }
 
-export type InlineNode = TextNode | CodeNode | RawNode;
+/** Sorte de mention (§7). */
+export type MentionKind = 'user' | 'role' | 'channel';
+
+/** Modèles insérés par les boutons, à compléter dans Discord (§7). */
+export const MENTION_TEMPLATES: Readonly<Record<MentionKind, string>> = {
+  user: 'ID_UTILISATEUR',
+  role: 'ID_ROLE',
+  channel: 'ID_SALON',
+};
+
+/** Mention d'utilisateur, de rôle ou de salon. `id` : un nombre, ou le modèle de sa sorte. */
+export interface MentionNode {
+  readonly type: 'mention';
+  readonly kind: MentionKind;
+  readonly id: string;
+  readonly marks: readonly Mark[];
+}
+
+/** Les 9 styles d'horodatage, sensibles à la casse (H1). */
+export const TIMESTAMP_STYLES = ['t', 'T', 'd', 'D', 'f', 'F', 's', 'S', 'R'] as const;
+export type TimestampStyle = (typeof TIMESTAMP_STYLES)[number];
+
+/** Horodatage (§8) : toujours en secondes. `style` à `null` : aucune lettre (équivaut à `f`, H1). */
+export interface TimestampNode {
+  readonly type: 'timestamp';
+  readonly seconds: number;
+  readonly style: TimestampStyle | null;
+  readonly marks: readonly Mark[];
+}
+
+export type InlineNode = TextNode | CodeNode | RawNode | MentionNode | TimestampNode;
 
 /** Mise en forme d'une ligne : normale, titre 1 à 3, ou sous-texte (§3). */
 export type LineStyle = 'normal' | 'heading1' | 'heading2' | 'heading3' | 'subtext';
@@ -142,6 +172,33 @@ export function raw(content: string, marks: readonly Mark[] = []): RawNode {
     throw new Error('Un morceau brut ne peut être ni vide ni sur plusieurs lignes.');
   }
   return { type: 'raw', raw: content, marks: normalizeMarks(marks) };
+}
+
+/**
+ * Mention (§7). Sans identifiant, c'est le modèle à compléter (`<@ID_UTILISATEUR>`…).
+ * Les styles sont permis : sans effet visible, sauf le spoiler (M2, M3, convention §1).
+ */
+export function mention(kind: MentionKind, id: string = MENTION_TEMPLATES[kind], marks: readonly Mark[] = []): MentionNode {
+  if (!/^[0-9]+$/.test(id) && id !== MENTION_TEMPLATES[kind]) {
+    throw new Error(`Identifiant de mention impossible : des chiffres, ou ${MENTION_TEMPLATES[kind]}.`);
+  }
+  return { type: 'mention', kind, id, marks: normalizeMarks(marks) };
+}
+
+/** La mention est-elle un modèle encore à compléter ? */
+export function isTemplate(node: MentionNode): boolean {
+  return node.id === MENTION_TEMPLATES[node.kind];
+}
+
+/** Horodatage (§8) : nombre entier de secondes, positif ou nul ; styles visibles (H3). */
+export function timestamp(seconds: number, style: TimestampStyle | null = null, marks: readonly Mark[] = []): TimestampNode {
+  if (!Number.isSafeInteger(seconds) || seconds < 0) {
+    throw new Error('Horodatage impossible : un nombre entier de secondes, positif ou nul.');
+  }
+  if (style !== null && !TIMESTAMP_STYLES.includes(style)) {
+    throw new Error(`Style d'horodatage inconnu : ${TIMESTAMP_STYLES.join(', ')}, ou aucun.`);
+  }
+  return { type: 'timestamp', seconds, style, marks: normalizeMarks(marks) };
 }
 
 function sameMarks(a: readonly Mark[], b: readonly Mark[]): boolean {

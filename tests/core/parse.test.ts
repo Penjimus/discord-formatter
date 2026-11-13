@@ -8,14 +8,17 @@ import {
   createDocument,
   heading,
   layoutLine,
+  mention,
   numberedItem,
   paragraph,
   quoted,
   raw,
   text,
+  timestamp,
   type DiscordDocument,
   type Mark,
 } from '../../src/core/document';
+import { mentionSyntax, timestampSyntax } from '../../src/core/elements';
 import { parse } from '../../src/core/parse';
 
 /** Raccourci : document d'une seule ligne. */
@@ -30,7 +33,11 @@ function visible(message: DiscordDocument): string {
       block.type === 'codeBlock'
         ? block.code
         : block.content
-            .map((node) => (node.type === 'text' ? node.text : node.type === 'code' ? node.code : node.raw))
+            .map((node) => {
+              if (node.type === 'mention') return mentionSyntax(node);
+              if (node.type === 'timestamp') return timestampSyntax(node);
+              return node.type === 'text' ? node.text : node.type === 'code' ? node.code : node.raw;
+            })
             .join(''),
     )
     .join('\n');
@@ -307,12 +314,13 @@ describe('Échappement relu (§11)', () => {
     );
   });
 
+  // Étape 5 : la mention de rôle est désormais lue comme une mention (accord de l'utilisateur).
   it('C15_chevrons_et_mention', () => {
     expect(parse('a < b > c\n<texte>\n<@&123>\n\\<@&123>')).toEqual(
       createDocument(
         paragraph(text('a < b > c')),
         paragraph(text('<texte>')),
-        paragraph(raw('<@&123>')),
+        paragraph(mention('role', '123')),
         paragraph(text('<@&123>')),
       ),
     );
@@ -377,9 +385,10 @@ describe('Syntaxe non reconnue conservée en brut (S12)', () => {
     expect(parse('```\n**a**\n```')).toEqual(createDocument(codeBlock('**a**')));
   });
 
+  // Étape 5 : mention et horodatage lus ; l'émoji personnalisé reste brut (accord de l'utilisateur).
   it('mentions, émojis, horodatages conservés', () => {
     expect(parse('<@123> <:ok:456> <t:1735689600:F> :star:')).toEqual(
-      line(raw('<@123>'), text(' '), raw('<:ok:456>'), text(' '), raw('<t:1735689600:F>'), text(' :star:')),
+      line(mention('user', '123'), text(' '), raw('<:ok:456>'), text(' '), timestamp(1735689600, 'F'), text(' :star:')),
     );
   });
 

@@ -47,7 +47,9 @@ export function analyzeMessage(message: DiscordDocument): MessageContext {
     const nodes = block.type === 'codeBlock' ? [block] : block.content;
     for (const node of nodes) {
       if (node.type === 'code') backticks += 2;
-      else {
+      else if (node.type === 'mention' || node.type === 'timestamp') {
+        // Aucun symbole de style dans une mention ou un horodatage : seules ses balises comptent.
+      } else {
         // Un morceau brut est réécrit tel quel : ses symboles peuvent servir de partenaires.
         const content =
           node.type === 'text' ? node.text : node.type === 'raw' ? node.raw : `\`\`\`${node.code}\`\`\``;
