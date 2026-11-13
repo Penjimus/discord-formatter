@@ -257,6 +257,26 @@ describe('Blocs de code (D7 à D10, F1 à F5, Z4)', () => {
     expectSameText('- puce\n  ```\n  bloc dans une puce\n  ```\n- puce suivante');
   });
 
+  it('G6_G7_pas_de_bloc_dans_une_puce_texte_conserve', () => {
+    const g6 = '- puce\n  ```js\n  ligne 1\n\n  ligne 3\n  ```\n- puce suivante';
+    const g7 = '- ```js\nligne 1\n```\n- puce suivante';
+    for (const message of [g6, g7]) {
+      expect(parse(message).blocks.some((block) => block.type === 'codeBlock')).toBe(false);
+      expectSameText(message);
+    }
+  });
+
+  it('G8_bloc_non_indente_apres_une_puce_hors_de_la_liste', () => {
+    const message = doc(
+      bulletItem(1, text('puce')),
+      codeBlock('ligne 1', { language: 'js' }),
+      bulletItem(1, text('puce suivante')),
+    );
+    const written = '- puce\n```js\nligne 1\n```\n- puce suivante';
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
   it('un bloc de code vide ne se construit pas', () => {
     expect(() => codeBlock('')).toThrow();
   });

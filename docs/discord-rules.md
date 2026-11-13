@@ -190,8 +190,8 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | **À un même niveau, tous les éléments prennent le type du premier** (puce ou numéro). Une ligne `1. ` placée après une puce du même niveau s'affiche comme puce, et inversement | | Testé (D3) |
 | Numérotation : le premier numéro donne le départ, les suivants s'incrémentent. `1. 1. 1.` s'affiche 1-2-3 ; `3. 7. 2.` s'affiche 3-4-5 | | Testé (G1, G2) |
 | Citation à l'intérieur d'une puce | permis (sur mobile, la puce n'apparaît pas devant la citation, mais le message reste lisible) | Testé (D14) |
-| Bloc de code à l'intérieur d'une puce | permis | Testé (D13) |
-| **À éclaircir** : selon l'auteur (13/11/2026), « un bloc de code ne peut pas être précédé d'une puce, une ligne de code oui ». À rapprocher de D13 (bloc indenté sous une puce, affiché correctement) | | À tester |
+| Bloc de code à l'intérieur d'une puce : sans langage ni ligne vide, indenté de 2 espaces, affiché entre deux puces (D13) ; **avec un langage et une ligne vide, indenté de 2 espaces : pas de bloc** (G6) ; **ouvert sur la ligne de la puce (`- ```js`) : pas de bloc** (G7). Résultats contradictoires : repasser D13 à l'identique pour trancher. **L'appli ne met pas de bloc de code dans une puce** | | À tester (D13, G6, G7) |
+| Bloc de code non indenté juste après une puce : vrai bloc, coloration appliquée, affiché **hors de la liste** (non aligné avec les puces) ; la puce suivante reste une puce | | Testé (G8) |
 | Liste à l'intérieur d'une citation | permis | Testé (D11) |
 | Mention à l'intérieur d'une puce | permis | Testé |
 | Un barré peut englober plusieurs puces (`~~- a ↵ - b~~`) : les puces restent des puces, barrées | permis | Testé (X7) |
@@ -246,7 +246,7 @@ Un code en ligne et un bloc de code (y compris `ansi`) forment chacun **un bloc 
 | **Styles de texte** (gras, italique, souligné, barré, spoiler) placés autour d'un **code en ligne** : le style s'applique à tout le code | Généralisé (A14, A15, X8) |
 | **Styles de texte** placés autour d'un **bloc de code** : le style s'applique à tout le bloc | Généralisé (X2 pour le spoiler et le barré qui l'englobent) |
 | **Mise en page** (titre, sous-texte, puce, citation) appliquée à une ligne qui contient un **code en ligne** : le code en prend l'effet (taille du titre, etc.) | Généralisé |
-| **Mise en page** appliquée à un **bloc de code** : **aucun effet**, un bloc ne peut pas être dans un titre ou un sous-texte (la puce et la citation restent permises : D10, D13) | Généralisé |
+| **Mise en page** appliquée à un **bloc de code** : **aucun effet**, un bloc ne peut pas être dans un titre ou un sous-texte (la citation reste permise : D10 ; pour la puce, voir §3 « Listes » : D13, G6 à G8) | Généralisé |
 | Un style ne peut **jamais** couvrir seulement une partie du code | Testé (D6, D7, X8) |
 
 *Convention* : l'appli autorise tous les styles de texte autour d'un code en ligne ou d'un bloc de code, sans tester chaque combinaison.
@@ -519,7 +519,8 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Bloc de code dans une citation | ✓ | Testé (D10) |
 | Liste dans une citation | ✓ | Testé (D11) |
 | Titre dans une citation | ✓ | Testé (D12) |
-| Bloc de code dans une puce | ✓ | Testé (D13) |
+| Bloc de code dans une puce | ? (contradictoire ; non permis par l'appli) | À tester (D13, G6, G7) |
+| Bloc de code juste après une puce, non indenté | ✓ hors de la liste | Testé (G8) |
 | Citation dans une puce | ✓ (mobile : puce absente devant la citation, lisible) | Testé (D14) |
 | **Titre dans une puce** | **✗** | Testé (D14) |
 | Titre, liste ou citation dans un spoiler | ? | À tester |
@@ -612,6 +613,6 @@ Dans un bloc de code, rien n'est échappé.
 9. **Émoticônes converties en émojis** (§9) : liste des émoticônes concernées, rôle de l'option de Discord, cas du texte collé.
 10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
 11. Anomalie X7 : pourquoi une puce `- -# ` après des puces barrées n'affiche pas le sous-texte.
-12. Bloc de code et puce : lever la contradiction entre D13 et la réponse de l'auteur du 13/11/2026 (§3, « Listes »).
+12. Bloc de code dans une puce : repasser D13 **à l'identique** (sans langage, sans ligne vide) pour savoir si G6 échoue à cause du langage, de la ligne vide, ou si D13 avait été mal lu (§3, « Listes »).
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).

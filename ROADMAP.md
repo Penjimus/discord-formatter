@@ -251,6 +251,8 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 3 | Les puces lues avec `* ` sont réécrites avec `- ` ; les numéros réécrits successifs (`3. 7. 2.` → `3. 4. 5.`) | Conventions §3 ; même rendu |
 | 2026-11-13 | 3 | Étape validée par l'utilisateur : sorties collées dans Discord (numéros 3-4-5, puce imposée par le premier élément, liste qui repart à 1 après une ligne vide, liste à 2 niveaux en citation, bloc sans lignes vides, bloc `js` sous spoiler, gras continué sur un titre), toutes correctes | — |
 | 2026-11-13 | 3 | Restent ouverts : bloc de code dans une puce (contradiction avec D13), numérotation des sous-listes sous deux parents (`docs/discord-rules.md` §14, points 12 à 14) | À trancher par l'utilisateur |
+| 2026-11-13 | 3 | G5 : chaque sous-liste repart de son propre numéro (déjà le comportement de l'appli) | Testé par l'utilisateur |
+| 2026-11-13 | 3 | G6 à G8 : pas de bloc de code dans une puce (avec langage et ligne vide, ou ouvert sur la ligne de la puce) ; bloc non indenté après une puce = bloc hors de la liste. D13 gardé, marqué contradictoire, à repasser à l'identique. Code inchangé (déjà refusé) | Testé par l'utilisateur |
 
 ---
 

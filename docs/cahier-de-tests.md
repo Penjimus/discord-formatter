@@ -215,6 +215,9 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **G3** | `> a ↵ > ↵ > b` | ligne « > » seule : la citation continue-t-elle ? | ℹ️ La citation ne continue pas : le caractère `>` seul est visible | §3 (citations) |
 | **G4** | `> a ↵ b` | texte juste après une citation d'une ligne : sort-il de la citation ? | ℹ️ Le texte « b » est en dehors de la citation | §3 (citations) |
 | **G5** | `1. a ↵   1. x ↵ 2. b ↵   1. y` | sous-listes sous deux parents : y numéroté 1 ou 2 ? | ℹ️ y s'affiche avec le numéro 1 : chaque sous-liste repart de son propre numéro (testé le 13/11/2026) | §3 (listes) |
+| **G6** | ```` - puce ↵   ```js ↵   ligne 1 ↵  ↵   ligne 3 ↵   ``` ↵ - puce suivante ```` | bloc avec langage et ligne vide, indenté sous une puce | ⚠️ Pas de bloc de code : le texte reste dans la puce (« puce```js »…), la ligne vide apparaît ; « puce suivante » reste une puce. Contredit D13 (sans langage ni ligne vide) | §3 (listes), §5 |
+| **G7** | ```` - ```js ↵ ligne 1 ↵ ``` ↵ - puce suivante ```` | bloc ouvert sur la ligne de la puce | ⚠️ Pas de bloc ; les puces restent des puces | §3 (listes), §5 |
+| **G8** | ```` - puce ↵ ```js ↵ ligne 1 ↵ ``` ↵ - puce suivante ```` | bloc non indenté juste après une puce | ℹ️ Vrai bloc, coloration correcte, mais affiché hors de la liste (non aligné avec les puces) | §3 (listes), §5 |
 
 ## Série H
 
