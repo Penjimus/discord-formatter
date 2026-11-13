@@ -219,6 +219,8 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **G7** | ```` - ```js ↵ ligne 1 ↵ ``` ↵ - puce suivante ```` | bloc ouvert sur la ligne de la puce | ⚠️ Pas de bloc ; les puces restent des puces | §3 (listes), §5 |
 | **G8** | ```` - puce ↵ ```js ↵ ligne 1 ↵ ``` ↵ - puce suivante ```` | bloc non indenté juste après une puce | ℹ️ Vrai bloc, coloration correcte, mais affiché hors de la liste (non aligné avec les puces) | §3 (listes), §5 |
 | **G9** | D13 repassé à l'identique (13/11/2026) | lever la contradiction D13 / G6 | ✅ Bloc affiché sous la puce, au-dessus de « puce suivante » : D13 confirmé. G6 échoue donc à cause du langage, de la ligne vide, ou des deux | §3 (listes), §5 |
+| **G10** | ```` - puce ↵   ```js ↵   ligne 1 ↵   ``` ↵ - puce suivante ```` | bloc avec langage, sans ligne vide, sous une puce | ✅ Bloc affiché sous la puce : le langage n'a aucun effet sur le placement | §3 (listes), §5 |
+| **G11** | ```` - puce ↵   ``` ↵   ligne 1 ↵  ↵   ligne 3 ↵   ``` ↵ - puce suivante ```` | bloc sans langage, avec ligne vide, sous une puce | ⚠️ Pas de bloc : **la ligne vide casse le bloc dans la liste** | §3 (listes), §5 |
 
 ## Série H
 

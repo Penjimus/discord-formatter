@@ -80,8 +80,9 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 - Persistance d'une ligne à l'autre : un seul reset à la fin d'un passage multiligne.
 - Lecture de blocs `ansi` collés ; ANSI hors bloc `ansi` conservé en texte brut.
 - `U+001B` toujours écrit sous forme d'échappement dans le code source (voir `CLAUDE.md`).
+- **Rattrapage de l'étape 3** (bloc de code dans une puce, `docs/discord-rules.md` §3 « Listes ») : autoriser un bloc de code (avec ou sans langage, `ansi` compris) **dans une puce de niveau 1**, en écriture comme en lecture. Il est écrit sur les lignes qui suivent la puce, chaque ligne étant indentée de 2 espaces. Le modèle **refuse une ligne vide** dans ce bloc (G6, G11) ; la lecture d'un tel bloc reste brute. Le bloc ouvert sur la ligne même de la puce reste brut (G7). Les autres placements (puce de niveau 2+, élément numéroté, liste citée) restent refusés jusqu'à test. Le test `D13_bloc_sous_une_puce_conserve_brut_en_attendant_la_regle` est **remplacé** par un test qui lit un vrai bloc (accord de l'utilisateur, la règle ayant changé). Cas de référence : D13, G9 à G11.
 
-**Tests** : série E du cahier.
+**Tests** : série E du cahier ; G6, G7, G9 à G11 pour le rattrapage.
 **Validation** : l'utilisateur copie la sortie d'un exemple, la colle dans Discord, vérifie les couleurs sur ordinateur (sur mobile, rien n'est coloré : c'est normal).
 
 ### [ ] Étape 5 : Mentions, émojis, horodatages
@@ -104,6 +105,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 - `validate` : un document invalide est détecté ; la construction d'un document invalide est impossible.
 - Fonction de contexte : à partir de la position (texte normal, titre, puce, citation, bloc de code, bloc `ansi`, spoiler…), liste des options actives et grisées.
 - Les cases « ? » de la matrice sont traitées **prudemment** (grisées) jusqu'à test réel, et notées dans le compte rendu.
+- Bloc de code dans une puce : permis seulement sous une puce de niveau 1 ; dans ce bloc, la **ligne vide est impossible** (G11), ce qui servira à l'interface (étape 9) pour l'empêcher.
 
 **Tests** : une ligne de test par case testée de la matrice ; imbrications de contenants (§10).
 **Validation** : l'utilisateur relit le tableau « contexte → options actives » généré, case par case.
@@ -138,6 +140,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Objectif** : l'éditeur de gauche devient un vrai traitement de texte pour Discord.
 
 - Barre d'outils : styles, titres, sous-texte, citation, listes à plusieurs niveaux, bloc de code avec champ « langage ».
+- Bloc de code inséré dans une puce de niveau 1 : la touche Entrée sur une ligne vide ne doit pas créer de ligne vide dans ce bloc (elle casserait le bloc dans Discord, G11). Comportement exact à proposer à l'utilisateur à cette étape.
 - **Grisage contextuel** selon l'étape 6 (S6, S7).
 - Couleurs ANSI : couleur du texte, couleur de fond, styles autorisés ; le bloc devient `ansi` si le langage est vide (S4, S11).
 - L'éditeur de gauche affiche les couleurs ANSI comme Discord sur ordinateur (palette à relever, voir `docs/discord-rules.md` §14).
@@ -253,6 +256,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 3 | Restent ouverts : bloc de code dans une puce (contradiction avec D13), numérotation des sous-listes sous deux parents (`docs/discord-rules.md` §14, points 12 à 14) | À trancher par l'utilisateur |
 | 2026-11-13 | 3 | G5 : chaque sous-liste repart de son propre numéro (déjà le comportement de l'appli) | Testé par l'utilisateur |
 | 2026-11-13 | 3 | G6 à G8 : pas de bloc de code dans une puce (avec langage et ligne vide, ou ouvert sur la ligne de la puce) ; bloc non indenté après une puce = bloc hors de la liste. D13 gardé, marqué contradictoire, à repasser à l'identique. Code inchangé (déjà refusé) | Testé par l'utilisateur |
+| 2026-11-13 | 3 | G9 à G11 : D13 confirmé ; c'est la ligne vide qui casse un bloc dans une puce, le langage est sans effet. Bloc dans une puce de niveau 1 autorisé, sans ligne vide : prévu en rattrapage à l'étape 4, avec suites aux étapes 6 et 9 | Décision de l'utilisateur ; niveaux 2+, éléments numérotés et listes citées non testés |
 
 ---
 
