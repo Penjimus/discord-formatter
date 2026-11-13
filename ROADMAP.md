@@ -23,7 +23,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 ## Partie 1 : le cœur du formatage (sans interface)
 
-### [ ] Étape 0 : Choix techniques et squelette
+### [x] Étape 0 : Choix techniques et squelette
 
 **Objectif** : choisir les technologies, créer le projet, vérifier que tout tourne.
 
@@ -203,6 +203,10 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 | Date | Étape | Décision | Pourquoi |
 |---|---|---|---|
+| 2026-11-13 | 0 | Stack : TypeScript + React + Vite, TipTap à gauche, CodeMirror 6 à droite, Vitest (option A) | Choix de l'utilisateur ; la plus documentée, TipTap encode les règles d'imbrication |
+| 2026-11-13 | 0 | TipTap et CodeMirror installés seulement à l'étape 8 | Pas de dépendance inutile pendant les étapes du cœur (1 à 7) |
+| 2026-11-13 | 0 | « Lint » = contrôle des types TypeScript (`tsc`), pas d'ESLint pour l'instant | Moins de dépendances ; ESLint pourra être ajouté si besoin |
+| 2026-11-13 | 0 | Fichier de tests renommé `docs/tests-discord/tests-discord.md` | Nom attendu par la ROADMAP et par le fichier lui-même |
 
 ---
 

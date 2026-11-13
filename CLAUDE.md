@@ -74,7 +74,7 @@ L'appli manipule des caractères **invisibles** : `U+001B` (ESC, pour l'ANSI) et
 
 ## Technologies
 
-**Pas encore choisies.** Contraintes (détail dans `SPEC.md`, section 7) :
+**Choisies à l'étape 0 (option A).** Contraintes (détail dans `SPEC.md`, section 7) :
 
 - application qui tourne **dans le navigateur uniquement** : pas de serveur, pas de compte, pas de base de données ;
 - technologies **courantes et bien documentées**, pas de choix exotiques ;
@@ -84,19 +84,25 @@ L'appli manipule des caractères **invisibles** : `U+001B` (ESC, pour l'ANSI) et
 
 **Procédure** : propose 2 ou 3 options à l'utilisateur (voir « Qui est l'utilisateur »), attends sa décision, puis **inscris ici** le choix et ses raisons, pour qu'il ne soit pas remis en cause d'une session à l'autre.
 
-> Choix retenu : *(à compléter)*
-> Raisons : *(à compléter)*
-> Éditeur visuel (gauche) : *(à compléter)*
-> Éditeur de texte (droite) : *(à compléter)*
-> Outil de tests : *(à compléter)*
+> Choix retenu : **TypeScript + React + Vite** (option A, choisie par l'utilisateur le 2026-11-13).
+> Raisons : la combinaison la plus répandue et la plus documentée ; TipTap (ProseMirror) sait interdire les imbrications invalides, ce qui correspond à « un document invalide ne doit pas pouvoir se construire » ; site statique publiable gratuitement (GitHub Pages).
+> Éditeur visuel (gauche) : **TipTap** (sur ProseMirror), installé à l'étape 8. Il reste une **vue** du document central de `src/core`, jamais la source de vérité.
+> Éditeur de texte (droite) : **CodeMirror 6**, installé à l'étape 8.
+> Outil de tests : **Vitest**, environnement Node pour le cœur.
+
+### Plan des fichiers
+- `src/core/` : cœur du formatage, fonctions pures, **aucun import de React ni du navigateur**.
+- `src/core/characters.ts` : constantes des caractères invisibles (`ESC`, `ZERO_WIDTH_SPACE`).
+- `src/ui/` : interface React.
+- `tests/core/` : tests automatiques du cœur (`*.test.ts`), nommés d'après les ID du cahier.
+- `docs/tests-discord/` : messages de test d'origine à coller dans Discord.
 
 ## Commandes
 
-*(à compléter après l'étape 0)*
-
-- Lancer l'appli en local : `…`
-- Lancer les tests : `…`
-- Vérification du code (lint) : `…`
+- Lancer l'appli en local : `npm run dev` (ouvre le navigateur sur http://localhost:5173)
+- Lancer les tests : `npm test`
+- Vérification du code (lint) : `npm run lint` (contrôle des types TypeScript)
+- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`)
 
 ## Tests
 
