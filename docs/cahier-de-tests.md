@@ -214,6 +214,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **G2** | `3. a ↵ 7. b ↵ 2. c` | numérotation avec numéros désordonnés : affichés tels quels ou recalculés ? | ℹ️ Affiché 3, 4, 5 (le premier numéro donne le départ) | §3 (listes) |
 | **G3** | `> a ↵ > ↵ > b` | ligne « > » seule : la citation continue-t-elle ? | ℹ️ La citation ne continue pas : le caractère `>` seul est visible | §3 (citations) |
 | **G4** | `> a ↵ b` | texte juste après une citation d'une ligne : sort-il de la citation ? | ℹ️ Le texte « b » est en dehors de la citation | §3 (citations) |
+| **G5** | `1. a ↵   1. x ↵ 2. b ↵   1. y` | sous-listes sous deux parents : y numéroté 1 ou 2 ? | ℹ️ y s'affiche avec le numéro 1 : chaque sous-liste repart de son propre numéro (testé le 13/11/2026) | §3 (listes) |
 
 ## Série H
 

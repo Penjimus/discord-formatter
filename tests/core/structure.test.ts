@@ -96,6 +96,15 @@ describe('Listes (D3, G1, G2, X6)', () => {
     expect(parse('- a\n  1. b\n  2. c')).toEqual(message);
   });
 
+  it('G5_une_sous_liste_recommence_sous_chaque_parent', () => {
+    const message = doc(
+      numberedItem(1, 1, text('a')), numberedItem(2, 1, text('x')),
+      numberedItem(1, null, text('b')), numberedItem(2, 1, text('y')),
+    );
+    expect(serialize(message)).toBe('1. a\n  1. x\n2. b\n  1. y');
+    expect(parse('1. a\n  1. x\n2. b\n  1. y')).toEqual(message);
+  });
+
   it('ligne vide au milieu d’une liste : la numérotation repart', () => {
     const message = doc(numberedItem(1, 1, text('a')), paragraph(), numberedItem(1, 1, text('b')));
     expect(serialize(message)).toBe('1. a\n\n1. b');

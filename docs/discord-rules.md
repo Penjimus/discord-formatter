@@ -186,6 +186,7 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | **Profondeur maximale : 11 niveaux** (le 12e n'est pas interprété) | | Testé |
 | Liste numérotée | `1. Élément` | Testé (G1, G2) |
 | Un sous-niveau peut avoir un type différent de son parent (puce sous un numéro, ou l'inverse) | permis | Testé |
+| **Une sous-liste recommence sous chaque nouveau parent** : `1. a ↵   1. x ↵ 2. b ↵   1. y` affiche y avec le numéro 1 | | Testé (G5) |
 | **À un même niveau, tous les éléments prennent le type du premier** (puce ou numéro). Une ligne `1. ` placée après une puce du même niveau s'affiche comme puce, et inversement | | Testé (D3) |
 | Numérotation : le premier numéro donne le départ, les suivants s'incrémentent. `1. 1. 1.` s'affiche 1-2-3 ; `3. 7. 2.` s'affiche 3-4-5 | | Testé (G1, G2) |
 | Citation à l'intérieur d'une puce | permis (sur mobile, la puce n'apparaît pas devant la citation, mais le message reste lisible) | Testé (D14) |
@@ -612,5 +613,5 @@ Dans un bloc de code, rien n'est échappé.
 10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
 11. Anomalie X7 : pourquoi une puce `- -# ` après des puces barrées n'affiche pas le sous-texte.
 12. Bloc de code et puce : lever la contradiction entre D13 et la réponse de l'auteur du 13/11/2026 (§3, « Listes »).
-13. Sous-listes sous deux parents différents : `1. a ↵   1. x ↵ 2. b ↵   1. y` affiche-t-il y avec le numéro 1 (nouvelle sous-liste) ou 2 ?
+13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
