@@ -7,7 +7,10 @@ import { history, redo, undo } from '@tiptap/pm/history';
 import { Plugin } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import type { Node as PmNode } from '@tiptap/pm/model';
-import { analyzeLists } from '../core/document';
+import { analyzeLists, type TimestampStyle } from '../core/document';
+import { timestampPreview } from '../core/timestampPreview';
+import { loadedEmojiIndex } from './emojiLibrary';
+import { MentionSuggest } from './mentionSuggest';
 import { cssColor } from './ansiPalette';
 import { changeListLevel, codeBlockBackspace, codeBlockEnter, toggleAnsiFlag } from './editorCommands';
 import {
@@ -56,8 +59,15 @@ const LineNode = Node.create({
   },
 });
 
+/** Ce qu'affiche une pastille : son texte, sa bulle d'aide, et une classe en plus. */
+interface ChipView {
+  label: string;
+  title?: string;
+  extraClass?: string;
+}
+
 /** Pastille non modifiable à gauche : elle se supprime, son contenu se change à droite. */
-function chip(name: string, label: (attrs: Record<string, unknown>) => string, attributes: string[]) {
+function chip(name: string, view: (attrs: Record<string, unknown>) => ChipView, attributes: string[]) {
   return Node.create({
     name,
     group: 'inline',
@@ -67,20 +77,34 @@ function chip(name: string, label: (attrs: Record<string, unknown>) => string, a
       return Object.fromEntries(attributes.map((key) => [key, { default: null, rendered: false }]));
     },
     renderHTML({ node }) {
-      return ['span', { class: `chip chip-${name}`, contenteditable: 'false' }, label(node.attrs)];
+      const { label, title, extraClass } = view(node.attrs);
+      const classes = `chip chip-${name}${extraClass ? ` ${extraClass}` : ''}`;
+      return ['span', { class: classes, contenteditable: 'false', ...(title ? { title } : {}) }, label];
     },
   });
 }
 
-const RawNode = chip('raw', (attrs) => String(attrs.raw), ['raw']);
-const MentionNode = chip('mention', (attrs) => {
-  const prefix = attrs.kind === 'user' ? '<@' : attrs.kind === 'role' ? '<@&' : '<#';
-  return `${prefix}${String(attrs.id)}>`;
-}, ['kind', 'id']);
-const TimestampNode = chip('timestamp', (attrs) => {
+/** Syntaxe Discord d'un horodatage, montrée en bulle d'aide. */
+function timestampText(attrs: Record<string, unknown>): string {
   const style = attrs.style ? `:${String(attrs.style)}` : '';
   return `<t:${String(attrs.seconds)}${style}>`;
-}, ['seconds', 'style']);
+}
+
+// Un code `:nom:` collé (gardé brut par le cœur, §9) s'affiche en émoji si son nom est connu.
+const RawNode = chip('raw', (attrs) => {
+  const content = String(attrs.raw);
+  const emoji = loadedEmojiIndex()?.emojiForCode(content) ?? null;
+  return emoji ? { label: emoji, title: content, extraClass: 'chip-emoji' } : { label: content };
+}, ['raw']);
+const MentionNode = chip('mention', (attrs) => {
+  const prefix = attrs.kind === 'user' ? '<@' : attrs.kind === 'role' ? '<@&' : '<#';
+  return { label: `${prefix}${String(attrs.id)}>` };
+}, ['kind', 'id']);
+// Aperçu lisible de la date dans le style choisi (S8c) ; un clic rouvre le calendrier.
+const TimestampNode = chip('timestamp', (attrs) => ({
+  label: timestampPreview(Number(attrs.seconds), (attrs.style ?? null) as TimestampStyle | null),
+  title: `${timestampText(attrs)} : cliquer pour modifier`,
+}), ['seconds', 'style']);
 
 /**
  * Bloc de code, modifiable à gauche : son texte est le contenu du bloc ; seules les mises en forme
@@ -296,4 +320,5 @@ export const EDITOR_EXTENSIONS = [
   ...marks,
   CodeBlockShortcuts,
   LineBehaviour,
+  MentionSuggest,
 ];

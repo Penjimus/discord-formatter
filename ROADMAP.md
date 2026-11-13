@@ -148,7 +148,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Scénarios** : S3, S4, S5, S6, S7, S11.
 **Validation** : l'utilisateur rejoue les scénarios un par un.
 
-### [ ] Étape 10 : Mentions, émojis, horodatages dans l'interface
+### [x] Étape 10 : Mentions, émojis, horodatages dans l'interface
 
 **Objectif** : les boutons dédiés.
 
@@ -230,6 +230,12 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | Entrée sur une ligne vide à la fin d'un bloc | Sort du bloc (la ligne vide est retirée) ; sous une puce, crée la puce suivante de même niveau | Étape 9 |
 | Entrée sur une ligne vide au milieu d'un bloc sous une puce ou cité | Rien (une ligne vide casserait le bloc, G11) | Étape 9 |
 | Entrée ou Retour arrière dans un bloc vide | Le bloc redevient une ligne | Étape 9 |
+| Entrée dans la recherche du sélecteur d'émojis | Insère le premier émoji trouvé | Étape 10 |
+| Échap | Ferme le sélecteur d'émojis ou la fenêtre d'horodatage | Étape 10 |
+| Clic sur un horodatage | Rouvre la fenêtre d'horodatage pour le modifier | Étape 10 |
+| @ ou # | Ouvre les propositions de mention (« @ » : Utilisateur, Rôle ; « # » : Salon) ; les lettres tapées ensuite filtrent | Étape 10 |
+| Flèches haut / bas, Entrée ou Tab dans les propositions | Choisir une proposition et insérer le modèle, suivi d'un espace | Étape 10 |
+| Espace ou Échap dans les propositions | Les ferme sans ajouter d'espace ; l'écriture reprend | Étape 10 |
 
 ### Panneau de droite (texte Discord)
 
@@ -361,6 +367,19 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 9 | Tests changés : `91` retiré des couleurs refusées ; `91`, `38;5;196`, `1;95`, `48;5;1` retirés des codes qui gardent le bloc brut (remplacés par `98`, `108`, `38;5;256`, `38;5`, `48;5;01`) | Conséquence de la règle changée par l'utilisateur |
 | 2026-11-14 | 9 | Teintes des codes clairs et des 256 couleurs : valeurs habituelles des terminaux (À tester, §6) | Décidé par Claude ; écart de teinte accepté par l'utilisateur |
 | 2026-11-14 | 9 | Étape validée par l'utilisateur (scénarios S3 à S7 et S11 rejoués, codes ANSI étendus) | — |
+| 2026-11-14 | 10 | Noms `:nom:` : liste GitHub d'emojibase (pas de liste « Discord » dans emojibase) ; `:flag_fr:` et quelques autres noms Discord restent en texte à gauche | Choix de l'utilisateur (Q1, option A, solution de repli) |
+| 2026-11-14 | 10 | Recherche du sélecteur en français (noms et mots-clés emojibase) et avec les codes anglais | Choix de l'utilisateur (Q2, option A) |
+| 2026-11-14 | 10 | Date et heure : calendrier intégré au navigateur, aucune dépendance de plus | Choix de l'utilisateur (Q3, option A) |
+| 2026-11-14 | 10 | Un clic sur un horodatage à gauche rouvre la fenêtre pour le modifier ; SPEC.md (S8c, §4) mis à jour | Choix de l'utilisateur (Q4, option B) |
+| 2026-11-14 | 10 | Dépendance : `emojibase-data` (données seules) ; liste chargée à la première ouverture du sélecteur ou au premier `:nom:` collé, dans des fichiers à part | Décidé à l'étape 5 ; chargement à la demande décidé par Claude |
+| 2026-11-14 | 10 | Sélecteur : pas de choix de teinte de peau, aucun filtre sur les émojis récents, catégorie « composants » masquée ; il se ferme après un choix ; classement : nom exact, code exact, mot-clé exact, début de nom, le reste | Décidé par Claude |
+| 2026-11-14 | 10 | Horodatage : style « Par défaut (comme f) », sans lettre, proposé d'abord ; date proposée = maintenant, à la minute ; heure avec secondes ; aperçu dans le fuseau de l'ordinateur ; seuils de « R » choisis par l'appli (À tester) | Décidé par Claude |
+| 2026-11-14 | 10 | Mentions : boutons « @ Utilisateur », « @ Rôle », « # Salon » ; pastille gardée sous la forme Discord ; avertissement sous le panneau de droite, avec la façon d'obtenir l'identifiant (§7) | Décidé par Claude |
+| 2026-11-14 | 10 | Propositions de mention en tapant « @ » ou « # » à gauche ; Espace les ferme sans ajouter d'espace ; SPEC.md (S8, §4) mis à jour | Demande de l'utilisateur |
+| 2026-11-14 | 10 | Propositions : filtrées par les lettres tapées après « @ » (sans accents : « ro » trouve « Rôle ») ; fermées par Échap, un caractère autre qu'une lettre ou un déplacement du curseur ; pas d'ouverture là où les mentions sont grisées (code) ; aucune dépendance ajoutée | Décidé par Claude |
+| 2026-11-14 | 10 | Un espace est ajouté après un modèle choisi dans les propositions (pas après les boutons de la barre) | Demande de l'utilisateur ; « pas après les boutons » décidé par Claude |
+| 2026-11-14 | 10 | Étape validée par l'utilisateur (mentions et propositions @ #, sélecteur d'émojis, `:nom:` affichés, horodatage avec calendrier et modification par clic) | — |
+| 2026-11-14 | 10 | Configuration « app-verif » ajoutée à `.claude/launch.json` (port de secours pour les vérifications de Claude) | Le port 5173 était pris par une autre session |
 
 ---
 

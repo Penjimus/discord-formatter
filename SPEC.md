@@ -44,9 +44,9 @@ La **syntaxe exacte, les combinaisons autorisées et les incompatibilités** de 
 **Couleurs ANSI** : couleur du texte, couleur de fond, et styles autorisés dans ce mode. L'appli doit produire un texte qui se colle correctement dans Discord (voir la note sur le caractère invisible dans `docs/discord-rules.md`).
 
 **Éléments Discord dédiés** : des **boutons dédiés** pour insérer des mentions, des émojis et des horodatages.
-- **Mentions d'utilisateur, de rôle et de salon** : le bouton insère un **modèle** (sans identifiant réel). L'utilisateur le complète directement dans Discord. Quand un tel modèle est présent dans le message, l'interface affiche un **avertissement discret** rappelant qu'il faut le compléter sur Discord.
+- **Mentions d'utilisateur, de rôle et de salon** : le bouton insère un **modèle** (sans identifiant réel). L'utilisateur le complète directement dans Discord. Le modèle peut aussi s'insérer en tapant « @ » ou « # » dans l'éditeur visuel, puis en choisissant parmi les propositions. Quand un tel modèle est présent dans le message, l'interface affiche un **avertissement discret** rappelant qu'il faut le compléter sur Discord.
 - **Émojis** : émojis **standards uniquement** (pas d'émojis personnalisés de serveur), choisis via un sélecteur.
-- **Horodatages** : l'utilisateur choisit la date et l'heure **via un calendrier**, puis le **style d'affichage** parmi ceux proposés par Discord (voir `docs/discord-rules.md`). L'appli insère l'horodatage correspondant.
+- **Horodatages** : l'utilisateur choisit la date et l'heure **via un calendrier**, puis le **style d'affichage** parmi ceux proposés par Discord (voir `docs/discord-rules.md`). L'appli insère l'horodatage correspondant. Un horodatage déjà inséré peut être modifié en le cliquant dans l'éditeur visuel.
 
 **Compatibilité** : la barre d'outils **grise** les options impossibles dans le contexte courant (selon `docs/discord-rules.md`). L'utilisateur ne peut jamais construire un message que Discord rendrait de travers.
 
@@ -68,9 +68,9 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S5** — Je crée une liste à puces à plusieurs niveaux → à droite : l'indentation correcte.
 - **S6** — Le curseur est dans un bloc de code classique → les options incompatibles sont grisées.
 - **S7** — Le curseur est dans un bloc ANSI → seules les options ANSI sont actives.
-- **S8** — J'insère une mention d'utilisateur, de rôle ou de salon avec le bouton dédié → à droite : le modèle correspondant, et un avertissement discret indique qu'il faut le compléter sur Discord. L'avertissement disparaît quand il n'y a plus de modèle à compléter.
+- **S8** — J'insère une mention d'utilisateur, de rôle ou de salon avec le bouton dédié → à droite : le modèle correspondant, et un avertissement discret indique qu'il faut le compléter sur Discord. L'avertissement disparaît quand il n'y a plus de modèle à compléter. Dans l'éditeur visuel, taper « @ » propose « Utilisateur » ou « Rôle », et taper « # » propose « Salon » ; choisir une proposition insère le modèle. La touche Espace ferme les propositions sans ajouter d'espace, et l'écriture reprend normalement.
 - **S8b** — J'insère un émoji standard avec le sélecteur → il apparaît dans le message, à gauche comme à droite.
-- **S8c** — J'insère un horodatage : je choisis une date et une heure dans le calendrier, puis un style → à droite : l'horodatage Discord correspondant ; à gauche, un aperçu lisible de la date dans le style choisi.
+- **S8c** — J'insère un horodatage : je choisis une date et une heure dans le calendrier, puis un style → à droite : l'horodatage Discord correspondant ; à gauche, un aperçu lisible de la date dans le style choisi. Un clic sur l'horodatage, à gauche, rouvre le calendrier pour changer sa date, son heure ou son style.
 - **S9** — Je tape du texte → le compteur et la barre de progression se mettent à jour selon la limite choisie.
 - **S9b** — Je bascule la limite de 2000 à 4000 (et inversement) → la barre de progression se recalcule, le texte n'est pas modifié.
 - **S9c** — Je dépasse la limite → je peux continuer à écrire librement ; la barre signale le dépassement, rien n'est coupé.

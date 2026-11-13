@@ -19,6 +19,8 @@ interface Props {
   /** Appelé seulement quand l'utilisateur modifie lui-même le texte de droite. */
   onUserChange(text: string): void;
   handleRef: React.MutableRefObject<DiscordTextHandle | null>;
+  /** Message affiché sous le texte (avertissement des modèles à compléter). */
+  notice?: React.ReactNode;
 }
 
 /** Méthode de secours quand le navigateur refuse l'accès direct au presse-papiers. */
@@ -38,7 +40,7 @@ function copyWithSelection(text: string): boolean {
   }
 }
 
-export function DiscordTextPanel({ initialText, onUserChange, handleRef }: Props) {
+export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onUserChange);
@@ -103,6 +105,7 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef }: Props
         <button type="button" className="copy-button" onClick={copy}>{copyLabel}</button>
       </header>
       <div className="panel-body discord-text" ref={hostRef} />
+      {notice}
     </section>
   );
 }

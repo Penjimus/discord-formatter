@@ -2,7 +2,7 @@
 // Les options impossibles à l'endroit du curseur sont grisées (toolbarState, étape 6 ; S6, S7).
 import { useEditorState, type Editor } from '@tiptap/react';
 import { toolbarState, type OptionState, type ToolbarOption } from '../core/compatibility';
-import type { LineStyle, ListKind } from '../core/document';
+import type { LineStyle, ListKind, MentionKind } from '../core/document';
 import {
   BACKGROUND_COLORS,
   BRIGHT_BACKGROUND_COLORS,
@@ -17,6 +17,7 @@ import {
   changeListLevel,
   currentAnsiColor,
   insertCodeBlock,
+  insertMention,
   setAnsiColor,
   setCodeLanguage,
   toggleAnsiFlag,
@@ -25,6 +26,14 @@ import {
   toggleQuote,
 } from './editorCommands';
 import { ANSI_FLAG_MARKS, CODE_MARK, type AnsiFlag } from './editorConvert';
+import { EmojiPicker } from './EmojiPicker';
+
+/** Boutons de mention (§7) : chacun insère son modèle, à compléter dans Discord (S8). */
+const MENTIONS: { kind: MentionKind; label: string; title: string }[] = [
+  { kind: 'user', label: '@ Utilisateur', title: 'Mention d\'utilisateur (insère <@ID_UTILISATEUR>)' },
+  { kind: 'role', label: '@ Rôle', title: 'Mention de rôle (insère <@&ID_ROLE>)' },
+  { kind: 'channel', label: '# Salon', title: 'Lien vers un salon (insère <#ID_SALON>)' },
+];
 
 /** Langages proposés dans le champ (docs/discord-rules.md §5) ; on peut en taper un autre. */
 const LANGUAGES = ['ansi', 'js', 'py', 'html', 'css', 'json', 'c', 'cpp', 'cs', 'php', 'sql', 'bash', 'yaml', 'xml', 'md'];
@@ -201,7 +210,13 @@ function ColorRow({ editor, target, label, palette, current, state }: ColorRowPr
   );
 }
 
-export function Toolbar({ editor }: { editor: Editor }) {
+interface ToolbarProps {
+  editor: Editor;
+  /** Ouvre la fenêtre d'horodatage pour en insérer un nouveau. */
+  onInsertTimestamp(): void;
+}
+
+export function Toolbar({ editor, onInsertTimestamp }: ToolbarProps) {
   const view = useEditorState({ editor, selector: ({ editor: current }) => readToolbar(current) });
   const option = (name: ToolbarOption) => view.options?.[name];
   const languageState = option('codeLanguage');
@@ -231,6 +246,16 @@ export function Toolbar({ editor }: { editor: Editor }) {
           onClick={() => changeListLevel(editor, -1)} />
         <ToolButton label="Niveau +" title="Niveau + (Tab)" state={option('indent')}
           onClick={() => changeListLevel(editor, 1)} />
+      </div>
+
+      <div className="toolbar-group" role="group" aria-label="Éléments Discord">
+        {MENTIONS.map(({ kind, label, title }) => (
+          <ToolButton key={kind} label={label} title={title} state={option('mention')}
+            onClick={() => insertMention(editor, kind)} />
+        ))}
+        <EmojiPicker editor={editor} state={option('emoji')} />
+        <ToolButton label="🕒 Horodatage" title="Insérer un horodatage (date et heure)" state={option('timestamp')}
+          onClick={onInsertTimestamp} />
       </div>
 
       <div className="toolbar-group" role="group" aria-label="Bloc de code">

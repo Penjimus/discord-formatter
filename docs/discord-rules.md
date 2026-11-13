@@ -487,6 +487,8 @@ Les lettres sont sensibles à la casse (`t` et `T` sont différents).
 - **Lecture** : seules ces formes sont lues comme des horodatages (nombre sans zéro inutile devant, lettre parmi les 9 styles). Les autres (`<t:123:x>`, nombre négatif, `<t:0123>`…) restent en texte brut (S12).
 - Un horodatage en millisecondes collé dans le message est lu comme le lit Discord, en secondes (date absurde, H2) : l'appli ne le corrige pas, pour ne pas changer le rendu.
 
+*Convention de l'appli* (étape 10) : à gauche, l'horodatage est montré comme dans la colonne « Exemple » ci-dessus, dans le fuseau horaire de l'ordinateur. Pour `R`, les seuils de passage d'une unité à l'autre (secondes, minutes, heures, jours, mois, ans) sont ceux de l'appli : ceux de Discord sont À tester, l'aperçu peut donc différer légèrement.
+
 ---
 
 ## 9. Émojis
@@ -522,7 +524,8 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 - **Forme visée** : deux-points, puis lettres, chiffres, `_`, `+` ou `-`, puis deux-points, **sauf les nombres seuls** (« 12:30:45 » n'est pas un code, décision de l'auteur). Exceptions connues : `:100:` et `:1234:` sont des émojis, ils comptent.
 - **Écriture** : un `:nom:` écrit comme texte dans l'éditeur de gauche est échappé par un antislash devant le **dernier** deux-points (`:star\:`, I4). Aucun caractère invisible. Rien n'est échappé juste après `<`, `<a` ou `<t` (`\<:nom:123>`) : le chevron échappé rend déjà la forme littérale (C15).
 - **Lecture** : un `:nom:` collé (et `\:nom:`, qui donne aussi l'émoji, I4) est conservé brut et réécrit tel quel : l'émoji reste dans Discord. `:star\:` et `:<U+200B>star:` (forme I5) sont relus comme le texte « :star: ».
-- L'affichage de l'émoji dans l'éditeur de gauche et le sélecteur utiliseront la bibliothèque **emojibase** (décision de l'auteur, option légère), installée à l'étape 10.
+- L'affichage de l'émoji dans l'éditeur de gauche et le sélecteur utilisent la bibliothèque **emojibase** (décision de l'auteur, option légère), installée à l'étape 10.
+- *Convention de l'appli* (étape 10) : emojibase n'a pas de liste de noms « Discord » ; l'appli reconnaît les noms de sa liste **GitHub**, la plus proche (choix de l'auteur). Quelques noms Discord n'y figurent pas (`:flag_fr:` s'y écrit `:fr:`) : à gauche, ils restent affichés en texte, et le texte de droite n'est pas modifié. Correspondance exacte des noms entre Discord et GitHub : À tester.
 
 *Convention* (décidée par l'auteur le 13/11/2026) : quand l'appli écrit un `*` d'italique juste après un « : », elle insère entre les deux l'espace de largeur nulle `U+200B` (`*texte :<U+200B>*`), pour que `:*` ne soit pas converti. Testé (I5) : l'italique est bien rendu, sans caractère visible. Le gras après « : » n'a pas ce problème : `**Note :**` s'affiche correctement (A35), rien n'est inséré.
 

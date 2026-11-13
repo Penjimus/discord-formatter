@@ -4,7 +4,15 @@ import type { Editor } from '@tiptap/core';
 import type { Node as PmNode } from '@tiptap/pm/model';
 import { TextSelection, type EditorState, type Transaction } from '@tiptap/pm/state';
 import { subListIndices, subtreeIndices } from '../core/compatibility';
-import { MAX_LIST_LEVEL, type DiscordDocument, type LineStyle, type ListKind } from '../core/document';
+import {
+  MAX_LIST_LEVEL,
+  MENTION_TEMPLATES,
+  type DiscordDocument,
+  type LineStyle,
+  type ListKind,
+  type MentionKind,
+  type TimestampStyle,
+} from '../core/document';
 import {
   ANSI_BACKGROUND_MARK,
   ANSI_COLOR_MARK,
@@ -269,4 +277,50 @@ export function codeBlockBackspace(editor: Editor): boolean {
   tr.setSelection(TextSelection.create(tr.doc, block.position + 1));
   view.dispatch(tr);
   return true;
+}
+
+/** Insère une pastille (mention, horodatage) au curseur, avec les styles en cours. */
+function insertChip(
+  editor: Editor,
+  type: 'mention' | 'timestamp',
+  attrs: Record<string, unknown>,
+  range: { from: number; to: number } | null = null,
+  spaceAfter = false,
+): void {
+  const { state, view } = editor;
+  const marks = state.storedMarks ?? state.selection.$from.marks();
+  const node = state.schema.nodes[type].create(attrs, null, marks);
+  const tr = range ? state.tr.replaceWith(range.from, range.to, node) : state.tr.replaceSelectionWith(node, false);
+  // Après une autocomplétion, un espace suit le modèle (demande de l'utilisateur) ; le curseur se place après.
+  if (spaceAfter) tr.insertText(' ', tr.selection.from);
+  view.dispatch(tr.scrollIntoView());
+  view.focus();
+}
+
+/**
+ * Insère le modèle de mention (§7), à compléter dans Discord (S8) : au curseur, ou à la place
+ * du texte tapé (« @rô ») quand il vient des propositions, suivi alors d'un espace.
+ */
+export function insertMention(editor: Editor, kind: MentionKind, range: { from: number; to: number } | null = null): void {
+  insertChip(editor, 'mention', { kind, id: MENTION_TEMPLATES[kind] }, range, range !== null);
+}
+
+/** Insère un émoji standard (caractère Unicode, §9) au curseur (S8b). */
+export function insertEmoji(editor: Editor, unicode: string): void {
+  const { state, view } = editor;
+  view.dispatch(state.tr.insertText(unicode).scrollIntoView());
+  view.focus();
+}
+
+/** Insère un horodatage au curseur, ou remplace celui qui est à `position` (S8c). */
+export function placeTimestamp(editor: Editor, seconds: number, style: TimestampStyle | null, position: number | null): void {
+  const { state, view } = editor;
+  if (position === null) {
+    insertChip(editor, 'timestamp', { seconds, style });
+    return;
+  }
+  const node = state.doc.nodeAt(position);
+  if (node?.type.name !== 'timestamp') return;
+  view.dispatch(state.tr.setNodeMarkup(position, undefined, { seconds, style }));
+  view.focus();
 }
