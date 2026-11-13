@@ -1,0 +1,95 @@
+/* Apparence de l'application : deux panneaux côte à côte. */
+:root {
+  --bg: #f2f3f5;
+  --panel: #ffffff;
+  --border: #d4d7dc;
+  --text: #2e3338;
+  --muted: #5c6370;
+  --accent: #5865f2;
+  --accent-soft: #e3e6fd;
+  --code-bg: #f0f1f3;
+  --quote-bar: #c4c9d0;
+  --spoiler: #c9ccd1;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; background: var(--bg); }
+
+.app { display: flex; flex-direction: column; height: 100vh; padding: 16px; gap: 12px; }
+.app-header h1 { margin: 0; font-size: 1.4rem; }
+.app-header p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+.panels { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.panel {
+  display: flex; flex-direction: column; min-height: 0;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+}
+.panel-header h2 { margin: 0; font-size: 1rem; }
+.panel-body { flex: 1; min-height: 0; overflow: auto; }
+
+/* Boutons */
+button {
+  font: inherit; font-size: 0.85rem; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 6px; background: var(--panel); padding: 4px 10px; color: var(--text);
+}
+button:hover { background: var(--bg); }
+.style-buttons { display: flex; flex-wrap: wrap; gap: 4px; }
+.style-button.is-active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.style-bold { font-weight: 700; }
+.style-italic { font-style: italic; }
+.style-underline { text-decoration: underline; }
+.style-strike { text-decoration: line-through; }
+.style-code { font-family: Consolas, 'Courier New', monospace; }
+.copy-button { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.copy-button:hover { background: #4752c4; }
+
+/* Panneau gauche : éditeur visuel */
+.visual-editor .ProseMirror { min-height: 100%; padding: 12px 16px; outline: none; line-height: 1.45; white-space: pre-wrap; }
+.visual-editor p.line { margin: 0; min-height: 1.45em; position: relative; }
+.line-heading1 { font-size: 1.5rem; font-weight: 700; }
+.line-heading2 { font-size: 1.25rem; font-weight: 700; }
+.line-heading3 { font-size: 1.05rem; font-weight: 700; }
+.line-subtext { font-size: 0.78rem; color: var(--muted); }
+.line-quote { border-left: 4px solid var(--quote-bar); padding-left: 10px; }
+.line-list { padding-left: calc(var(--list-level) * 1.5em); }
+.line-list::before {
+  content: attr(data-marker); position: absolute;
+  left: calc(var(--list-level) * 1.5em - 1.4em); width: 1.2em; text-align: right; color: var(--muted);
+}
+.line-quote.line-list::before { left: calc(var(--list-level) * 1.5em - 1.4em + 14px); }
+.line-quote.line-list { padding-left: calc(var(--list-level) * 1.5em + 14px); }
+.visual-editor code {
+  font-family: Consolas, 'Courier New', monospace; font-size: 0.9em;
+  background: var(--code-bg); border-radius: 3px; padding: 0 3px;
+}
+.visual-editor .spoiler { background: var(--spoiler); border-radius: 3px; }
+
+.chip {
+  display: inline-block; border-radius: 4px; padding: 0 4px; margin: 0 1px; font-size: 0.9em;
+  font-family: Consolas, 'Courier New', monospace; user-select: all;
+}
+.chip-raw { background: #eceef1; color: var(--muted); }
+.chip-mention { background: var(--accent-soft); color: var(--accent); }
+.chip-timestamp { background: #e6f4ea; color: #24733a; }
+.ProseMirror-selectednode.chip,
+.ProseMirror-selectednode.code-block { outline: 2px solid var(--accent); }
+
+.code-block { margin: 4px 0; background: var(--code-bg); border-radius: 6px; padding: 6px 10px; }
+.code-block.line-quote { border-left: 4px solid var(--quote-bar); }
+.code-block-in-bullet { margin-left: 1.5em; }
+.code-block-language { font-size: 0.7rem; color: var(--muted); text-transform: lowercase; }
+.code-block pre { margin: 0; font-family: Consolas, 'Courier New', monospace; font-size: 0.9rem; white-space: pre-wrap; }
+
+/* Panneau droit : texte brut */
+.discord-text .cm-editor { height: 100%; }
+.discord-text .cm-editor.cm-focused { outline: none; }
+.discord-text .cm-scroller { font-family: Consolas, 'Courier New', monospace; font-size: 0.9rem; line-height: 1.45; }
+.discord-text .cm-content { padding: 12px 4px; }

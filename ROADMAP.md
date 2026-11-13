@@ -124,7 +124,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 ## Partie 2 : l'interface
 
-### [ ] Étape 8 : Deux panneaux et synchronisation
+### [x] Étape 8 : Deux panneaux et synchronisation
 
 **Objectif** : la première version utilisable : écrire à gauche, voir à droite, et inversement.
 
@@ -202,6 +202,36 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 - **Découpage en plusieurs messages** : coupe cohérente, balises refermées puis rouvertes à chaque frontière, balises ajoutées comprises dans la limite.
 - **Liens masqués** `[texte](url)`.
 - Aperçu façon Discord, sauvegarde de brouillons, version mobile.
+
+---
+
+## Raccourcis clavier
+
+*(Liste tenue à jour à chaque étape qui ajoute ou change un raccourci. Elle servira au guide d'utilisation de l'étape 13.)*
+
+### Éditeur de gauche
+
+| Raccourci | Effet | Depuis |
+|---|---|---|
+| Ctrl+B | Gras | Étape 8 |
+| Ctrl+I | Italique | Étape 8 |
+| Ctrl+U | Souligné | Étape 8 |
+| Ctrl+Maj+S | Barré | Étape 8 |
+| Ctrl+E | Code en ligne | Étape 8 |
+| *(aucun)* | Spoiler : bouton seulement | Étape 8 |
+| Entrée | Nouvelle ligne avec la même mise en page (citation, liste, titre) | Étape 8 |
+| Entrée sur une ligne vide mise en page | Retire une couche de mise en page (liste, puis titre ou sous-texte, puis citation), sans créer de ligne | Étape 8 |
+| Ctrl+Z | Annuler | Étape 8 |
+| Ctrl+Y ou Ctrl+Maj+Z | Rétablir | Étape 8 |
+
+### Panneau de droite (texte Discord)
+
+| Raccourci | Effet | Depuis |
+|---|---|---|
+| Ctrl+Z | Annuler | Étape 8 |
+| Ctrl+Y ou Ctrl+Maj+Z | Rétablir | Étape 8 |
+
+Sur Mac, Ctrl est remplacé par Cmd.
 
 ---
 
@@ -304,6 +334,14 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 7 | Compteur : longueur UTF-16 du texte final tel quel (balises, `U+200B`, codes ANSI compris) ; dépassement si longueur > limite ; restants négatifs en dépassement ; le texte n'est jamais modifié | §9, §12, K1 à K10 |
 | 2026-11-13 | 7 | Espaces et sauts de ligne en début ou fin de message comptés tels quels (§14 point 17) | Non testé ; choix accepté par l'utilisateur |
 | 2026-11-13 | 7 | Étape validée par l'utilisateur (tableau « texte → longueur » relu : lettres, accent, émojis simples, drapeau, teinte, famille, balises, code ANSI, `U+200B`) | — |
+| 2026-11-13 | 8 | Gauche : tout le document est affiché ; texte des lignes modifiable ; blocs de code, mentions, horodatages et syntaxe inconnue en pastilles non modifiables (supprimables), modifiables à droite | Choix de l'utilisateur (Q1, option A) |
+| 2026-11-13 | 8 | Entrée : la nouvelle ligne garde la mise en page (citation, liste, titre) ; Entrée sur une ligne vide mise en page retire une couche (liste, puis titre/sous-texte, puis citation) sans créer de ligne | Demande de l'utilisateur ; ordre des couches choisi par Claude |
+| 2026-11-13 | 8 | 6 boutons de style (gras, italique, souligné, barré, spoiler, code) sans grisage, raccourcis Ctrl+B, I, U, Maj+S, E | Choix de l'utilisateur (Q2, option A) ; Maj+S et E ajoutés par Claude |
+| 2026-11-13 | 8 | Synchronisation : chaque panneau ne réagit qu'aux frappes de l'utilisateur ; la droite n'est pas réécrite quand on y écrit ; une modification à gauche réécrit la droite à la manière de l'appli (seule la partie changée est remplacée) | S13, sans boucle |
+| 2026-11-13 | 8 | Ligne mise en page laissée vide à gauche : écrite comme une ligne vide ; listes réparées (niveau sauté, type du premier, numéro de départ) ; titre dans une puce retiré ; code en ligne impossible redevient du texte | Forme valide la plus proche (le modèle refuse les autres) |
+| 2026-11-13 | 8 | Pastilles affichées avec la syntaxe Discord (`<@ID_UTILISATEUR>`, `<t:…>`) ; aperçu lisible à l'étape 10, couleurs ANSI à gauche à l'étape 9 | Hors de l'étape |
+| 2026-11-13 | 8 | Dépendances : `@tiptap/core`, `@tiptap/react`, `@tiptap/pm`, `@codemirror/state`, `@codemirror/view`, `@codemirror/commands` ; schéma de l'éditeur écrit par l'appli (pas de « starter kit ») | Moins de dépendances, schéma calqué sur le document |
+| 2026-11-13 | 8 | Étape validée par l'utilisateur (écriture à gauche, saisie et collage à droite, copie vers Discord) ; section « Raccourcis clavier » ajoutée à cette roadmap, à tenir à jour | Demande de l'utilisateur |
 
 ---
 
