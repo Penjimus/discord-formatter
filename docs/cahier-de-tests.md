@@ -28,9 +28,9 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 
 | Série | Sujet | Tests | Règles concernées |
 |---|---|---|---|
-| [A](#série-a) | Collisions de délimiteurs | A1 à A8 (8) | §2.3 |
+| [A](#série-a) | Collisions, styles imbriqués, espaces au bord, plusieurs lignes | A1 à A29 (29) | §1, §2.3, §5 |
 | [B](#série-b) | Tiret bas collé à des lettres | B1 à B2 (2) | §1, §2.3 |
-| [C](#série-c) | Échappement | C1 à C17 (17) | §11, §4 |
+| [C](#série-c) | Échappement | C1 à C18 (18) | §11, §4 |
 | [D](#série-d) | Matrice de compatibilité | D1 à D14 (14) | §3, §5, §10 |
 | [E](#série-e) | Couleurs ANSI | E1 à E13 (13) | §6 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
@@ -42,7 +42,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [Z](#série-z) | Caractères invisibles | Z1 à Z6 (6) | §2.3, §5, §13 |
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M6 (6) | §1, §3, §7 |
 
-**Total : 94 tests** (✅ 58 confirmés, ⚠️ 8 écarts, ℹ️ 28 constats).
+**Total : 116 tests** (✅ 74 confirmés, ⚠️ 9 écarts, ℹ️ 33 constats).
 
 ---
 
@@ -62,6 +62,31 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **A6** | `__1__*2*` | 1 souligné, 2 italique | ✅ Correct : 1 souligné, 2 italique | §2.3 |
 | **A7** | `**1** *2*` | témoin : 1 gras, 2 italique (avec espace) | ✅ Correct | §2.3 |
 | **A8** | `a) ***texte*** ↵ b) __***texte***__ ↵ c) \|\|~~__***texte***__~~\|\|` | chaque ligne rend tous les styles cumulés (a : gras+italique, b : +souligné, c : +barré+spoiler) | ✅ Les trois lignes rendent tous les styles cumulés correctement | §1 (combinaisons) |
+| **A9** | `**a *b***` | a gras, b gras + italique | ✅ Correct | §1 (styles imbriqués) |
+| **A10** | `***a* b**` | a gras + italique, b gras | ✅ Correct | §1 (styles imbriqués) |
+| **A11** | `**a _b_**` | a gras, b gras + italique | ✅ Correct | §1 (styles imbriqués) |
+| **A12** | `*a **b***` | a italique, b italique + gras | ✅ Correct | §1 (styles imbriqués) |
+| **A13** | `***a** b*` | a italique + gras, b italique | ✅ Correct | §1 (styles imbriqués) |
+| **A14** | `` **x `code` y** `` | code en ligne dans un gras | ✅ Correct | §1, §5 |
+| **A15** | `` \|\|`code`\|\| `` | code en ligne dans un spoiler | ✅ Correct | §1, §5 |
+| **A16** | ``` ``a`b`` ``` | code en ligne contenant un accent grave : affiche a`b | ✅ Correct | §5 |
+
+| **A17** | `**a ↵ b**` | le gras couvre-t-il les deux lignes ? | ℹ️ Oui : a et b en gras | §1 (plusieurs lignes) |
+| **A18** | `*a *b` | espace avant la fermeture d'un italique | ⚠️ Italique appliqué, mais l'espace est perdu : « ab » | §1 (espaces au bord) |
+| **A19** | `**a **b` | espace avant la fermeture d'un gras | ✅ Gras appliqué, espace conservé | §1 (espaces au bord) |
+| **A20** | `__a __b` | idem, souligné | ✅ Souligné appliqué, espace conservé | §1 (espaces au bord) |
+| **A21** | `~~a ~~b` | idem, barré | ✅ Barré appliqué, espace conservé | §1 (espaces au bord) |
+| **A22** | `\|\|a \|\|b` | idem, spoiler | ✅ Spoiler appliqué, espace conservé | §1 (espaces au bord) |
+| **A23** | `a__b__c` | souligné au milieu d'un mot | ✅ b souligné | §1 (délimiteurs et mots) |
+| **A24** | `a**b**c` | gras au milieu d'un mot | ✅ b en gras | §1 (délimiteurs et mots) |
+| **A25** | `a~~b~~c` | barré au milieu d'un mot | ✅ b barré | §1 (délimiteurs et mots) |
+| **A26** | `a\|\|b\|\|c` | spoiler au milieu d'un mot | ✅ b caché | §1 (délimiteurs et mots) |
+
+| **A27** | `**a ↵ ↵ b**` | le gras traverse-t-il une ligne vide ? | ℹ️ Oui : a et b en gras | §1 (plusieurs lignes) |
+| **A28** | `** a**` | espace juste après l'ouverture d'un gras | ℹ️ Sans effet gênant : a en gras | §1 (espaces au bord) |
+| **A29** | `* a*` | espace juste après l'ouverture d'un italique | ℹ️ Lu comme une **puce** « a* » (`* ` en début de ligne est un marqueur de liste) | §1 (espaces au bord), §3, §11 |
+
+*A9 à A29 : envoyés par l'auteur le 13/11/2026 pendant l'étape 1, un message par ligne (sauf A17 et A27, sur plusieurs lignes).*
 
 ## Série B
 
@@ -99,6 +124,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **C15** | `a < b > c ↵ <texte> ↵ <@&123> ↵ \<@&123>` | ligne 1 et 2 : texte ; ligne 3 : mention de rôle « fantôme » ; ligne 4 : doit rester littérale | ✅ Conforme : les lignes 1 et 2 restent du texte, la ligne 4 reste littérale | §11 |
 | **C16** | `[a](https://exemple.com) ↵ \[a](https://exemple.com) ↵ <https://exemple.com>` | ligne 1 : lien ? ; ligne 2 : littéral ; ligne 3 : lien sans aperçu | ✅ Le lien est masqué dans le texte (ligne 1) | §4, §11 |
 | **C17** | `antislash : \a et \\ et \_` | à observer : l'antislash devant une lettre est-il affiché ? | ✅ L'antislash devant une lettre est affiché ; devant `\` et `_` il est masqué | §11 |
+| **C18** | `a ~~ b ↵ c ~~ d` (non échappé) | deux `~~` sur des lignes différentes forment-ils une paire ? | ℹ️ Oui : une mise en forme apparaît (ligne vide visible). L'échappement est nécessaire | §11 |
 
 ## Série D
 
@@ -265,6 +291,7 @@ Ces tests ont contredit ou nuancé une hypothèse de départ. Ils sont la raison
 
 | Test | Ce qu'on croyait | Ce qui a été constaté |
 |---|---|---|
+| **A18** | Un espace avant la fermeture d'un style est conservé | Vrai pour gras, souligné, barré et spoiler, mais **pas pour l'italique** : `*a *b` affiche « ab » |
 | **D3** | Une liste peut mélanger puces et numéros au même niveau | Bien formaté, **mais** à un même niveau tous les éléments prennent le type du premier : une ligne numérotée après une puce s'affiche en puce, et inversement. Une sous-puce numérotée sous une puce n'est pas adaptée |
 | **D14** | Un titre est permis partout où le texte l'est | Citation dans une puce : OK (sur mobile, la puce n'apparaît pas devant la citation, message lisible). **Titre dans une puce : non rendu** |
 | **E12** | `<ESC>[m` est équivalent à `<ESC>[0m` | `<ESC>[m` (reset vide) **ne réinitialise pas** : « normal (reset vide) » reste rouge ; les deux autres « normal » sont blancs |

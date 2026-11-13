@@ -4,4 +4,4 @@
 export const ESC = '\u001b';
 
 /** Espace de largeur nulle (U+200B), utilisé contre les collisions de balises. */
-export const ZERO_WIDTH_SPACE = '​';
+export const ZERO_WIDTH_SPACE = '\u200b';

@@ -34,7 +34,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 **Validation** : l'utilisateur lance la commande de tests et la commande de l'appli (une page vide s'ouvre).
 
-### [ ] Étape 1 : Modèle de document et texte en ligne (écriture)
+### [x] Étape 1 : Modèle de document et texte en ligne (écriture)
 
 **Objectif** : définir le document central et savoir **écrire** (`serialize`) le texte avec styles.
 
@@ -207,6 +207,16 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 0 | TipTap et CodeMirror installés seulement à l'étape 8 | Pas de dépendance inutile pendant les étapes du cœur (1 à 7) |
 | 2026-11-13 | 0 | « Lint » = contrôle des types TypeScript (`tsc`), pas d'ESLint pour l'instant | Moins de dépendances ; ESLint pourra être ajouté si besoin |
 | 2026-11-13 | 0 | Fichier de tests renommé `docs/tests-discord/tests-discord.md` | Nom attendu par la ROADMAP et par le fichier lui-même |
+| 2026-11-13 | 1 | Pas de filtrage des balises autour des émojis ou des mentions | Décision de l'utilisateur : plus court quand l'émoji est au milieu d'un texte stylé, effet des titres sur les émojis, cas rare |
+| 2026-11-13 | 1 | Tests A9 à A16 ajoutés (styles imbriqués, code en ligne dans gras/spoiler, code contenant un accent grave) | Passés par l'utilisateur dans Discord, tous corrects |
+| 2026-11-13 | 1 | Une ligne = un paragraphe ; les styles sont refermés à chaque fin de ligne | Styles sur plusieurs lignes non testés |
+| 2026-11-13 | 1 | Le style qui dure le plus longtemps est placé à l'extérieur ; à durée égale, ordre fixe §2.1 | Évite de couper un style en deux ; formes testées en A9 à A13 |
+| 2026-11-13 | 1 | Code en ligne : seuls gras et spoiler permis ; pas de code vide, multiligne, ni avec accent grave en bord ou doublé | Seuls cas testés (A14 à A16) |
+| 2026-11-13 | 1 | Début de ligne précédé d'espaces (`  - x`) : échappé aussi ; `<http` échappé | Prudence (sous-listes et liens non testés dans ce cas) |
+| 2026-11-13 | 1 | **Remplace** la fermeture à chaque ligne : un style continue sur la ligne suivante sans être refermé ; il est refermé avant une ligne vide | Testé par l'utilisateur (A17) ; économise des caractères. Ligne vide non testée |
+| 2026-11-13 | 1 | Tests A17 à A26 et C18 ajoutés (plusieurs lignes, espaces au bord, styles au milieu d'un mot, paire de `~~` entre lignes) | Passés par l'utilisateur dans Discord |
+| 2026-11-13 | 1 | Les espaces au bord d'un italique (début et fin) sont sortis de l'italique à l'écriture | A18 : espace perdu avant la fermeture ; A29 : `* ` en début de ligne est une puce |
+| 2026-11-13 | 1 | **Remplace** la fermeture avant une ligne vide : un style traverse aussi les lignes vides | Testé par l'utilisateur (A27) ; tests A27 à A29 ajoutés |
 
 ---
 

@@ -37,6 +37,21 @@ Il distingue deux sortes de contenu :
 | Barré + souligné + gras + italique | `~~__***texte***__~~` | Documenté |
 | Spoiler + barré + souligné + gras + italique | `\|\|~~__***texte***__~~\|\|` | Testé (A8) |
 
+### Styles imbriqués (un style à l'intérieur d'un autre)
+
+Quand un style ne couvre qu'une partie d'un autre, les délimiteurs peuvent se toucher (`***`) **du même côté** (tous en ouverture ou tous en fermeture) : c'est correct. Seule la rencontre d'une **fermeture et d'une ouverture** pose problème (section 2.3).
+
+| Écriture | Résultat | Statut |
+|---|---|---|
+| `**a *b***` | a gras, b gras + italique | Testé (A9) |
+| `***a* b**` | a gras + italique, b gras | Testé (A10) |
+| `**a _b_**` | a gras, b gras + italique | Testé (A11) |
+| `*a **b***` | a italique, b italique + gras | Testé (A12) |
+| `***a** b*` | a italique + gras, b italique | Testé (A13) |
+| `` **x `code` y** `` | code en ligne à l'intérieur d'un gras : rendu correct | Testé (A14) |
+| `` \|\|`code`\|\| `` | code en ligne caché par un spoiler : rendu correct | Testé (A15) |
+| ``` ``a`b`` ``` | code en ligne contenant un accent grave, délimité par deux accents graves : affiche a`b | Testé (A16) |
+
 ### Délimiteurs et mots
 
 | Règle | Statut |
@@ -45,7 +60,28 @@ Il distingue deux sortes de contenu :
 | Un `*` à l'intérieur d'un mot ouvre bien un italique : `a*b*c` met le b en italique | Testé (C3) |
 | `__init__.py` : « init » est souligné | Testé (B2) |
 | Un `_` d'italique collé à une lettre d'un seul côté (ex. `_mot_suite`) | À tester |
-| `__` souligné à l'intérieur d'un mot (ex. `a__b__c`) | À tester |
+| Souligné, gras, barré et spoiler à l'intérieur d'un mot (`a__b__c`, `a**b**c`, `a~~b~~c`, `a\|\|b\|\|c`) : le b est mis en forme | Testé (A23 à A26) |
+
+### Espaces au bord d'un style
+
+| Règle | Statut |
+|---|---|
+| Un espace juste avant la fermeture d'un gras, souligné, barré ou spoiler est **conservé** (`**a **b` affiche « a b », a en gras) | Testé (A19 à A22) |
+| Un espace juste avant la fermeture d'un **italique** est **perdu** : `*a *b` affiche « ab » (a en italique) | Testé (A18) |
+| Un espace juste après l'ouverture d'un style ne gêne pas : `** a**` met a en gras | Testé (A28) |
+| En début de ligne, `* ` est une **puce** : `* a*` s'affiche comme la puce « a* », pas comme un italique | Testé (A29) |
+
+*Convention* : l'appli sort de l'italique les espaces placés à ses bords (`*a* b` au lieu de `*a *b`). Un espace en italique est invisible : le rendu est identique, l'espace n'est plus perdu (A18) et `* ` ne peut pas être pris pour une puce (A29).
+
+### Styles sur plusieurs lignes
+
+| Règle | Statut |
+|---|---|
+| Un style peut couvrir plusieurs lignes : `**a ↵ b**` met a et b en gras | Testé (A17) |
+| Deux symboles situés sur des lignes différentes forment une paire : `~~` non échappé sur deux lignes fait apparaître un barré (ligne vide visible) | Testé (C18) |
+| Un style traverse aussi une **ligne vide** : `**a ↵ ↵ b**` met a et b en gras | Testé (A27) |
+
+*Convention* : un style qui continue d'une ligne à la suivante, même après des lignes vides, n'est pas refermé en fin de ligne (économie de caractères).
 
 Pour annuler un formatage et afficher les symboles bruts, placer un antislash devant le caractère (ex. `\*pas en italique\*`).
 
@@ -54,7 +90,7 @@ Pour annuler un formatage et afficher les symboles bruts, placer un antislash de
 - Même constat pour une **mention** (utilisateur, rôle, salon) : gras, italique et autres styles n'ont aucun effet. Le spoiler la cache tout en la laissant active (la personne est bien mentionnée). Statut : Testé.
 - Styles sur un horodatage : À tester.
 
-*Convention* (à valider) : l'appli n'écrit pas de balises gras, italique, souligné ou barré autour d'un texte composé uniquement d'émojis ou de mentions. Cela économise des caractères et évite des collisions de délimiteurs. Le spoiler est conservé.
+*Convention* (décidée par l'auteur le 13/11/2026) : l'appli **ne filtre pas** les balises autour des émojis ou des mentions. Si l'utilisateur a mis un émoji en gras, la balise est écrite telle quelle. Raisons : `**toto 😀 tata**` est plus court que `**toto** 😀 **tata**`, les titres (`#`, `##`, `-#`) ont un effet sur les émojis, et le cas est trop rare pour justifier une règle de plus.
 
 ---
 
@@ -132,7 +168,7 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 
 | Élément | Règle | Statut |
 |---|---|---|
-| Puce | `- Élément` (ou `* Élément`) | Documenté |
+| Puce | `- Élément` (ou `* Élément`) | Documenté (`* ` : Testé, A29) |
 | Sous-niveau | 2 espaces d'indentation par niveau | Documenté |
 | **Profondeur maximale : 11 niveaux** (le 12e n'est pas interprété) | | Testé |
 | Liste numérotée | `1. Élément` | Testé (G1, G2) |
@@ -182,6 +218,10 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 
 ### Code en ligne
 `` `texte` `` (un accent grave de chaque côté). Le markdown n'y est pas interprété. Statut : Testé (D6).
+
+- Un code en ligne peut être placé dans un gras ou dans un spoiler. Statut : Testé (A14, A15). Dans un italique, un souligné ou un barré : À tester.
+- Un code en ligne qui contient un accent grave s'écrit entre **deux** accents graves : ``` ``a`b`` ```. Statut : Testé (A16).
+- Code en ligne commençant ou finissant par un accent grave, ou contenant deux accents graves d'affilée : À tester (l'appli ne permet pas de le construire pour l'instant).
 
 ### Bloc de code
 ````text
@@ -464,10 +504,10 @@ Dans un bloc de code, rien n'est échappé.
 
 | Point | Statut |
 |---|---|
-| Un symbole peut-il former une paire avec un autre situé sur une autre ligne du même message ? | À tester |
-| Un astérisque en début de ligne, suivi d'un espace, est-il une puce ? | Documenté (à confirmer) |
+| Un symbole peut former une paire avec un autre situé sur une autre ligne du même message | **Oui** : Testé (A17, C18) |
+| Un astérisque en début de ligne, suivi d'un espace, est une puce : il est donc échappé | Testé (A29) |
 
-*Convention* (à implémenter avec prudence) : tant que le point sur les paires entre lignes n'est pas testé, l'appli échappe tout symbole qui pourrait former une paire, quitte à échapper un peu trop.
+*Convention* : puisque les paires se forment entre lignes, l'appli échappe tout symbole qui pourrait former une paire **n'importe où dans le message**, quitte à échapper un peu trop.
 
 ---
 
@@ -500,11 +540,10 @@ Dans un bloc de code, rien n'est échappé.
 ## 14. Points restant à tester
 
 1. **Confirmer E13** : le code `9` (barré) et les couleurs `91` et `38;5;196` sont-ils réellement appliqués sur ordinateur (couleur ou barré visible), ou simplement ignorés ?
-2. Italique `_` collé à une lettre d'un seul côté ; souligné `__` à l'intérieur d'un mot.
-3. Symboles pouvant former une paire entre deux lignes différentes.
-4. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
-5. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
-6. Mention dans un sous-texte (`-#`) ; styles sur un horodatage.
-7. Spoiler autour d'un bloc de code ; titre, liste ou citation dans un spoiler.
-8. Une fois l'appli construite : le bouton « Copier » conserve-t-il le caractère `<ESC>` et les caractères invisibles `U+200B` ?
-9. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs.
+2. Italique `_` collé à une lettre d'un seul côté (`_mot_suite`).
+3. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
+4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
+5. Mention dans un sous-texte (`-#`) ; styles sur un horodatage.
+6. Spoiler autour d'un bloc de code ; titre, liste ou citation dans un spoiler.
+7. Une fois l'appli construite : le bouton « Copier » conserve-t-il le caractère `<ESC>` et les caractères invisibles `U+200B` ?
+8. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs.
