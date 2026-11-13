@@ -25,7 +25,7 @@ Si deux fichiers se contredisent : `docs/discord-rules.md` l'emporte pour le for
 ## Règles de conduite (non négociables)
 
 1. **N'ajoute aucune fonctionnalité qui n'est pas dans `SPEC.md`.** Ce qui est en « Hors périmètre » ne se code pas, mais ne doit pas être rendu impossible.
-2. **N'invente jamais une règle Discord.** Une règle absente de `docs/discord-rules.md`, ou marquée « À tester » ou « Documenté », n'est pas une règle sûre : tu **demandes** à l'utilisateur, ou tu lui proposes un message de test à passer dans Discord. Une règle « Documenté » peut être codée en la signalant comme non vérifiée.
+2. **N'invente jamais une règle Discord.** Une règle absente de `docs/discord-rules.md`, ou marquée « À tester », n'est pas une règle sûre : tu **demandes** à l'utilisateur, ou tu lui proposes un message de test à passer dans Discord. Une règle « Documenté » est **considérée comme vérifiée** (décision de l'utilisateur) : elle se code comme une règle testée, sans la signaler ni proposer de test.
 3. **Règle découverte ou corrigée = d'abord dans `docs/discord-rules.md`, ensuite dans le code.**
 4. **Ne modifie jamais un test existant pour le faire passer.** Si un test te semble faux, explique pourquoi à l'utilisateur et attends sa décision.
 5. **Une étape à la fois.** Une étape n'est terminée que si : les tests passent (y compris ceux des étapes précédentes), tu as dit à l'utilisateur **précisément quoi essayer dans l'appli** pour le constater, et il a validé.

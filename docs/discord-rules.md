@@ -11,7 +11,7 @@ Il distingue deux sortes de contenu :
 | Statut | Signification |
 |---|---|
 | **Testé** | Vérifié par l'auteur dans Discord le 13/11/2026, sur ordinateur et sur mobile sauf mention contraire. Le numéro du test est indiqué entre parenthèses : le message envoyé, le résultat attendu et le résultat constaté sont dans `docs/cahier-de-tests.md` |
-| **Documenté** | Connu ou documenté, mais pas encore testé par l'auteur |
+| **Documenté** | Connu ou documenté, sans test par l'auteur. **Considéré comme vérifié** : se code comme une règle testée, sans message de test à prévoir (décision de l'auteur, 13/11/2026) |
 | **À tester** | Hypothèse ou point incertain : ne pas coder tant que ce n'est pas confirmé |
 | **Généralisé** | Règle posée par l'auteur à partir de quelques tests, sans tester toute la combinatoire : elle se code comme une règle testée. Les tests qui la fondent sont indiqués entre parenthèses |
 
@@ -649,3 +649,4 @@ Dans un bloc de code, rien n'est échappé.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).
 16. ~~Échapper un code `:nom:`~~ : tranché (I4, I5, convention §9). `:star\:` et `\:star\:` affichent « :star: » (I4 relu). Plus de contradiction avec C19 ; `\:` suivi d'autre chose qu'un code `:nom:` reste lu comme en C19.
+17. Espaces et sauts de ligne au début ou à la fin d'un message : Discord les retire-t-il avant de compter ? En attendant, le compteur de l'appli les compte tels quels (§12).

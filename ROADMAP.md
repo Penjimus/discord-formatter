@@ -110,7 +110,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Tests** : une ligne de test par case testée de la matrice ; imbrications de contenants (§10).
 **Validation** : l'utilisateur relit le tableau « contexte → options actives » généré, case par case.
 
-### [ ] Étape 7 : Compteur de caractères
+### [x] Étape 7 : Compteur de caractères
 
 **Objectif** : la longueur « à la Discord » et la limite.
 
@@ -300,6 +300,10 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 6 | Tests changés : `9` retiré des codes non testés (E13), bloc sous une sous-puce retiré des placements refusés | Conséquence des deux décisions de l'utilisateur |
 | 2026-11-13 | 6 | Sommaire du cahier recompté : 156 tests (86 confirmés, 16 écarts, 54 constats) ; séries E et G mises à jour | Demande de l'utilisateur |
 | 2026-11-13 | 6 | Étape validée par l'utilisateur (tableau « contexte → options » relu) | — |
+| 2026-11-13 | — | Statut « Documenté » considéré comme vérifié : codé comme une règle testée, sans message de test (légende de `docs/discord-rules.md`, règle 2 de `CLAUDE.md`) | Décision de l'utilisateur |
+| 2026-11-13 | 7 | Compteur : longueur UTF-16 du texte final tel quel (balises, `U+200B`, codes ANSI compris) ; dépassement si longueur > limite ; restants négatifs en dépassement ; le texte n'est jamais modifié | §9, §12, K1 à K10 |
+| 2026-11-13 | 7 | Espaces et sauts de ligne en début ou fin de message comptés tels quels (§14 point 17) | Non testé ; choix accepté par l'utilisateur |
+| 2026-11-13 | 7 | Étape validée par l'utilisateur (tableau « texte → longueur » relu : lettres, accent, émojis simples, drapeau, teinte, famille, balises, code ANSI, `U+200B`) | — |
 
 ---
 
