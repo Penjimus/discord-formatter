@@ -98,7 +98,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Tests** : séries H, I, M du cahier.
 **Validation** : tableau « entrée → sortie » ; conversion date → timestamp vérifiée avec 2 ou 3 dates connues.
 
-### [ ] Étape 6 : Compatibilité (grisage des options)
+### [x] Étape 6 : Compatibilité (grisage des options)
 
 **Objectif** : une fonction qui répond à « ce format est-il permis ici ? », d'après la matrice de `docs/discord-rules.md` §10.
 
@@ -287,6 +287,19 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 5 (rattrapage) | Tests I5 du rattrapage remplacés par les tests I4 de l'antislash | Règle changée par l'utilisateur |
 | 2026-11-13 | 5 (rattrapage) | Bibliothèque **emojibase** (option A, légère) ; sélecteur d'émojis construit par l'appli, prévu à l'étape 10 | Choix de l'utilisateur |
 | 2026-11-13 | 5 (rattrapage) | Rattrapage validé par l'utilisateur : `Mes :star\: à 12:30:45, :+1\: et :100\:` collé dans Discord, aucun émoji ni antislash visible. Étape 5 conclue | — |
+| 2026-11-13 | 6 | D15 : spoiler ouvert avant un titre et refermé après une citation : permis (case « ? » levée) ; émoji standard dans du code : permis (Q2, option A). L'appli écrivait et relisait déjà cette forme | Testé par l'utilisateur |
+| 2026-11-13 | 6 | Une option est jugée en essayant la modification sur le document, puis `validate` ; `validate` reconstruit chaque élément avec les constructeurs : chaque règle n'est écrite qu'une fois | Pas de seconde copie de la matrice à tenir à jour |
+| 2026-11-13 | 6 | Changer le type d'un élément de liste change toute sa sous-liste (D3) ; niveau + / − emmène les sous-éléments ; retirer une puce ou une citation ne touche que la ligne (grisé si des sous-éléments resteraient sans parent) | Décidé par Claude ; les gestes exacts de l'éditeur seront fixés à l'étape 9 |
+| 2026-11-13 | 6 | Dans un code en ligne, les styles restent actifs (ils entourent tout le code, X8) ; mention, horodatage et bloc de code grisés | Matrice §10 et « entité unique » §5 |
+| 2026-11-13 | 6 | Dans un bloc de code, restent actifs : citation, émoji, ligne vide, langage (bloc non coloré), options ANSI (sans langage ou `ansi`) ; barré ANSI toujours grisé (E13 à confirmer) | S6, S7 lus comme « seules les mises en forme ANSI » |
+| 2026-11-13 | 6 | Ligne vide grisée dans une citation (G3), un bloc cité (non testé) et un bloc sous une puce (G11) | Règles existantes |
+| 2026-11-13 | 6 | Sur une ligne vide, les mises en page (titre, puce, citation) sont jugées avec un contenu provisoire | Le modèle refuse un titre vide, mais l'utilisateur doit pouvoir choisir le titre avant d'écrire |
+| 2026-11-13 | 6 | Les liens n'apparaissent pas dans la barre d'outils | Hors périmètre (SPEC §9) |
+| 2026-11-13 | 6 | E15 : E13 confirmé par l'utilisateur (`9` barre, `91` et `38;5;196` colorent). **Remplace** « barré ANSI toujours grisé » : le barré ANSI (code `9`) est lu, écrit après les autres styles (`1;3;4;9`) et proposé dans les blocs `ansi`. `91` et `38;5;196` restent non utilisés (bloc collé gardé tel quel) | Testé par l'utilisateur ; §6 |
+| 2026-11-13 | 6 | Bloc de code sous une sous-puce : permis, indenté comme le texte de la puce (2 × niveau espaces) ; autre indentation lue brute. Sous un élément numéroté ou dans une liste citée : toujours grisé | Décision de l'utilisateur (« si ça fonctionne avec une puce, ça fonctionnera avec une sous-puce ») ; indentation choisie par Claude d'après « 2 espaces par sous-niveau » |
+| 2026-11-13 | 6 | Tests changés : `9` retiré des codes non testés (E13), bloc sous une sous-puce retiré des placements refusés | Conséquence des deux décisions de l'utilisateur |
+| 2026-11-13 | 6 | Sommaire du cahier recompté : 156 tests (86 confirmés, 16 écarts, 54 constats) ; séries E et G mises à jour | Demande de l'utilisateur |
+| 2026-11-13 | 6 | Étape validée par l'utilisateur (tableau « contexte → options » relu) | — |
 
 ---
 

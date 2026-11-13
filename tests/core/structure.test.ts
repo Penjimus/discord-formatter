@@ -323,6 +323,26 @@ describe('Blocs de code (D7 à D10, F1 à F5, Z4)', () => {
     expect(serialize(expected)).toBe('- puce\n  ```\n  bloc\n  ```\n- numéro');
   });
 
+  it('bloc_sous_une_sous_puce_indente_comme_son_texte', () => {
+    // Généralisé (décision de l'auteur) : niveau N, 2 × N espaces.
+    const message = doc(
+      bulletItem(1, text('a')),
+      bulletItem(2, text('b')),
+      codeBlock('x\n  y', { inBullet: true, language: 'js' }),
+      bulletItem(3, text('c')),
+      bulletItem(2, text('d')),
+      bulletItem(3, text('e')),
+      ansiBlock([ansiText('rouge', { color: 31 })], { inBullet: true }),
+      bulletItem(1, text('f')),
+    );
+    const written = [
+      '- a', '  - b', '    ```js', '    x', '      y', '    ```', '    - c', '  - d', '    - e',
+      '      ```ansi', `      ${ESC}[31mrouge${ESC}[0m`, '      ```', '- f',
+    ].join('\n');
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
   it('E14g_texte_apres_un_bloc_sous_une_puce_hors_de_la_liste', () => {
     const message = doc(bulletItem(1, text('puce')), codeBlock('bloc', { inBullet: true }), paragraph(text('texte')));
     const written = '- puce\n  ```\n  bloc\n  ```\ntexte';
@@ -342,7 +362,6 @@ describe('Blocs de code (D7 à D10, F1 à F5, Z4)', () => {
     expect(() => doc(block)).toThrow();
     expect(() => doc(paragraph(text('a')), block)).toThrow();
     expect(() => doc(numberedItem(1, 1, text('a')), block)).toThrow();
-    expect(() => doc(bulletItem(1, text('a')), bulletItem(2, text('b')), block)).toThrow();
     expect(() => doc(quoted(bulletItem(1, text('a'))), block)).toThrow();
     // La liste continue après le bloc : un élément numéroté y est impossible (E14f, D3).
     expect(() => doc(bulletItem(1, text('a')), block, numberedItem(1, 1, text('b')))).toThrow();
@@ -357,6 +376,8 @@ describe('Blocs de code (D7 à D10, F1 à F5, Z4)', () => {
     for (const message of [
       '1. a\n  ```\n  x\n  ```',
       '- a\n  - b\n  ```\n  x\n  ```',
+      '- a\n    ```\n    x\n    ```',
+      '- a\n  - b\n      ```\n      x\n      ```',
       '- a\n   ```\n   x\n   ```',
       '- a\n  ```\n x\n  ```',
       'texte\n  ```\n  x\n  ```',

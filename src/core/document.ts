@@ -107,6 +107,8 @@ export interface AnsiStyle {
   readonly bold: boolean;
   readonly italic: boolean;
   readonly underline: boolean;
+  /** Barré, code `9` (E13, E15). */
+  readonly strike: boolean;
   /** Code 40 à 47, ou fond au choix `48;2;R;G;B` (E14a), ou `null`. */
   readonly background: AnsiColor | null;
   readonly color: AnsiColor | null;
@@ -122,7 +124,10 @@ export interface AnsiSegment {
 export interface CodeBlock {
   readonly type: 'codeBlock';
   readonly quote: boolean;
-  /** Bloc placé sous une puce de niveau 1, chaque ligne indentée de 2 espaces (D13, G9, G10). */
+  /**
+   * Bloc placé sous la puce qui le précède, chaque ligne indentée comme le texte de la puce :
+   * 2 espaces au niveau 1 (D13, G9, G10), 2 × N au niveau N (généralisé, §10).
+   */
   readonly inBullet: boolean;
   /** Champ libre, vide par défaut (§5). */
   readonly language: string;
@@ -314,7 +319,7 @@ export function codeBlock(content: string, options: CodeBlockOptions = {}): Code
   return { type: 'codeBlock', quote, inBullet, language, code: lines.join('\n'), segments: null, marks };
 }
 
-const ANSI_STYLE_CODES = { bold: 1, italic: 3, underline: 4 } as const;
+const ANSI_STYLE_CODES = { bold: 1, italic: 3, underline: 4, strike: 9 } as const;
 
 function isRgb(color: AnsiColor): color is Rgb {
   return typeof color === 'object';
@@ -345,6 +350,7 @@ export function ansiStyle(options: Partial<AnsiStyle> = {}): AnsiStyle {
     bold: options.bold ?? false,
     italic: options.italic ?? false,
     underline: options.underline ?? false,
+    strike: options.strike ?? false,
     background: checkColor(options.background ?? null, 40, 'Fond'),
     color: checkColor(options.color ?? null, 30, 'Couleur de texte'),
   };
@@ -352,7 +358,7 @@ export function ansiStyle(options: Partial<AnsiStyle> = {}): AnsiStyle {
 
 /** Le morceau est-il sans aucune mise en forme ? */
 export function isPlainAnsiStyle(style: AnsiStyle): boolean {
-  return !style.bold && !style.italic && !style.underline && style.background === null && style.color === null;
+  return !style.bold && !style.italic && !style.underline && !style.strike && style.background === null && style.color === null;
 }
 
 export function sameAnsiStyle(a: AnsiStyle, b: AnsiStyle): boolean {
@@ -362,7 +368,7 @@ export function sameAnsiStyle(a: AnsiStyle, b: AnsiStyle): boolean {
 /** Codes d'une mise en forme, dans l'ordre de l'appli : styles, fond, texte (§6). */
 export function ansiCodes(style: AnsiStyle): string[] {
   const codes: string[] = [];
-  for (const key of ['bold', 'italic', 'underline'] as const) {
+  for (const key of ['bold', 'italic', 'underline', 'strike'] as const) {
     if (style[key]) codes.push(String(ANSI_STYLE_CODES[key]));
   }
   const write = (color: AnsiColor, rgbPrefix: string) =>
@@ -487,17 +493,24 @@ export function createDocument(...blocks: Block[]): DiscordDocument {
   return { blocks: checked };
 }
 
+/** Niveau de l'élément de liste juste avant le bloc `index`, ou `null`. */
+export function listLevelBefore(blocks: readonly Block[], index: number): number | null {
+  const previous = blocks[index - 1];
+  return previous?.type === 'paragraph' && previous.list ? previous.list.level : null;
+}
+
 /**
  * Raison pour laquelle le bloc `index` (placé dans une puce) est mal placé, ou `null`.
- * Testé : juste après une puce de niveau 1 hors citation (D13, G9, G10). Ce qui suit est libre :
- * la liste continue (E14e, E14f) ou s'arrête (E14g). Deux blocs de suite : non testé.
+ * Testé : juste après une puce de niveau 1 hors citation (D13, G9, G10) ; sous-puces : généralisé.
+ * Ce qui suit est libre : la liste continue (E14e, E14f) ou s'arrête (E14g).
+ * Non testé : deux blocs de suite, sous un élément numéroté, dans une liste citée.
  */
 export function blockInBulletProblem(blocks: readonly Block[], index: number): string | null {
   const previous = blocks[index - 1];
   const position = analyzeLists(blocks)[index - 1];
-  const afterBullet = previous?.type === 'paragraph' && !previous.quote && previous.list?.level === 1
+  const afterBullet = previous?.type === 'paragraph' && !previous.quote && previous.list !== null
     && position !== null && position !== undefined && position !== 'too-deep' && position.kind === 'bullet';
-  return afterBullet ? null : 'Un bloc placé dans une puce suit une puce de niveau 1 (D13).';
+  return afterBullet ? null : 'Un bloc placé dans une puce suit une puce, pas un élément numéroté (D13).';
 }
 
 function checkBlocksInBullets(blocks: readonly Block[]): void {
@@ -527,10 +540,10 @@ export interface ListPosition {
 export function analyzeLists(blocks: readonly Block[]): (ListPosition | 'too-deep' | null)[] {
   let stack: { kind: ListKind; next: number }[] = [];
   let quote = false;
-  return blocks.map((block) => {
+  return blocks.map((block, i) => {
     if (block.type === 'codeBlock' && block.inBullet) {
-      // Le bloc appartient à la puce de niveau 1 qui précède : ses sous-listes sont closes.
-      stack.length = Math.min(stack.length, 1);
+      // Le bloc appartient à la puce qui précède : les sous-listes plus profondes sont closes.
+      stack.length = Math.min(stack.length, listLevelBefore(blocks, i) ?? 1);
       return null;
     }
     if (block.type !== 'paragraph' || !block.list) {

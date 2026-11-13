@@ -33,10 +33,10 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [A](#série-a) | Collisions, styles imbriqués, espaces au bord, plusieurs lignes | A1 à A35 (35) | §1, §2.3, §5 |
 | [B](#série-b) | Tiret bas collé à des lettres | B1 à B2 (2) | §1, §2.3 |
 | [C](#série-c) | Échappement | C1 à C22 (22) | §11, §4 |
-| [D](#série-d) | Matrice de compatibilité | D1 à D14 (14) | §3, §5, §10 |
-| [E](#série-e) | Couleurs ANSI | E1 à E13 (13) | §6 |
+| [D](#série-d) | Matrice de compatibilité | D1 à D15 (15) | §3, §5, §10 |
+| [E](#série-e) | Couleurs ANSI | E1 à E15, dont E14a à E14g (21) | §3, §6, §10 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
-| [G](#série-g) | Listes et citations | G1 à G4 (4) | §3 |
+| [G](#série-g) | Listes et citations | G1 à G11 (11) | §3, §5 |
 | [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
 | [I](#série-i) | Mentions et émojis | I1 à I5 (5) | §1, §7, §9, §11 |
 | [J](#série-j) | Lignes vides | J1 à J4 (4) | §13 |
@@ -45,7 +45,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 
-**Total : 135 tests** (✅ 77 confirmés, ⚠️ 11 écarts, ℹ️ 47 constats).
+**Total : 156 tests** (✅ 86 confirmés, ⚠️ 16 écarts, ℹ️ 54 constats).
 
 ---
 
@@ -166,6 +166,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **D12** | `> # titre dans une citation ↵ > texte` | titre dans une citation | ✅ Titre correctement formaté dans la citation | §3 (citations), §10 |
 | **D13** | ```` - puce ↵   ``` ↵   bloc dans une puce ↵   ``` ↵ - puce suivante ```` | bloc de code dans une puce | ✅ Bloc de code correctement affiché entre deux puces | §3 (listes), §10 |
 | **D14** | `- # titre dans une puce ↵ - > citation dans une puce` | titre dans une puce ; citation dans une puce | ⚠️ Citation dans une puce : OK (sur mobile, la puce n'apparaît pas devant la citation, message lisible). **Titre dans une puce : non rendu** | §3 (listes), §10 |
+| **D15** | ```` ||# titre ↵ - puce ↵ > citation|| ↵ `⭐` et :star: ↵ ``` ↵ ⭐ dans un bloc ↵ ``` ```` | spoiler ouvert avant un titre et refermé après une citation ; émoji dans du code | ✅ Titre, puce et citation bien formés, tous cachés sous un seul spoiler ; l'émoji ⭐ s'affiche dans le code en ligne et dans le bloc (testé le 13/11/2026) | §3, §5, §10 |
 
 ## Série E
 
@@ -195,6 +196,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **E14e** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵   - sous-puce ```` | sous-puce après un bloc dans une puce | ✅ Sous-puce affichée | §3 (listes) |
 | **E14f** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵ 1. numéro ```` | élément numéroté après un bloc dans une puce | ℹ️ « 1. » s'affiche en puce : la liste continue après le bloc | §3 (listes) |
 | **E14g** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵ texte ```` | texte après un bloc dans une puce | ✅ Texte hors de la liste | §3 (listes) |
+| **E15** | E13 relu par l'auteur (13/11/2026) | confirmer l'effet de `91`, `38;5;196` et `9` | ✅ Confirmé, aucun problème : `91` et `38;5;196` colorent, `9` barre le texte (ordinateur) | §6 |
 
 ## Série F
 

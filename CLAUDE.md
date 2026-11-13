@@ -63,7 +63,7 @@ Ces règles sont détaillées dans `docs/discord-rules.md` ; les erreurs ci-dess
 - **Ordre des balises** (convention de sortie) : Spoiler > Barré > Souligné > Gras > Italique, du plus extérieur au plus intérieur.
 - **Compteur de caractères** : longueur en **unités UTF-16** (équivalent de `string.length` en JavaScript), pas en caractères visibles. Une limite 2000/4000, choisie par l'utilisateur, **sans jamais bloquer l'écriture**.
 - **Horodatages** : toujours en **secondes**, jamais en millisecondes.
-- **ANSI** : seulement dans un bloc de langage `ansi` ; reset toujours `<ESC>[0m` (jamais `<ESC>[m`) ; ordre des codes : styles, fond, texte ; styles ANSI permis : gras `1`, souligné `4`, italique `3`.
+- **ANSI** : seulement dans un bloc de langage `ansi` ; reset toujours `<ESC>[0m` (jamais `<ESC>[m`) ; ordre des codes : styles, fond, texte ; styles ANSI permis : gras `1`, souligné `4`, italique `3`, barré `9`.
 - **Blocs de code** : rien n'y est interprété ; lignes vides de début et de fin supprimées ; trois accents graves dans le contenu → insérer `U+200B` après le premier.
 - **Listes** : à un même niveau, tout prend le type du premier élément ; maximum 11 niveaux ; pas de titre dans une puce.
 - **Citations** : uniquement `> ` sur chaque ligne ; jamais de `>>>` généré.

@@ -280,6 +280,7 @@ Le nom du langage est placé juste après les trois premiers accents graves (col
 | Règle | Statut |
 |---|---|
 | Dans un bloc de code ou du code en ligne, **rien n'est interprété** : ni gras, italique, souligné, barré, spoiler, lien, ni horodatage, ni mention | Testé (D6, D7, D8, I2) |
+| Un émoji standard (caractère Unicode) placé dans du code en ligne ou un bloc de code s'affiche normalement | Testé (D15) |
 | Un bloc `ansi` sans code ANSI s'affiche comme un bloc normal | Testé (D9) |
 | Les **couleurs ANSI n'existent que dans un bloc `ansi`** | Documenté |
 | Un langage inconnu est ignoré : le bloc s'affiche normalement | Testé (F1) |
@@ -355,7 +356,7 @@ Exemple : `<ESC>[1;4;45;37mTexte<ESC>[0m` (gras, souligné, fond indigo, texte b
 | `3` | Italique : **appliqué** sur ordinateur (première lecture de E7 erronée, corrigée par l'auteur ; confirmé par les exemples `couleurs` et `cellule_des_huit`) | Testé (E7) |
 | `2` | Atténué : sans effet | Testé (E13) |
 | `7` | Inversé : sans effet | Testé (E13) |
-| `9` | Barré | Apparemment appliqué sur ordinateur, **à confirmer** (E13) |
+| `9` | Barré : appliqué sur ordinateur | Testé (E13, E15) |
 
 **Couleurs de texte**
 
@@ -385,7 +386,7 @@ Exemple : `<ESC>[1;4;45;37mTexte<ESC>[0m` (gras, souligné, fond indigo, texte b
 
 Statut de ces deux tableaux : codes Testés (E1, E2). Les noms des teintes sont indicatifs.
 
-**Codes hors liste de départ, appliqués sur ordinateur d'après E13** : `91` (rouge clair, donc probablement `90` à `97`) et `38;5;196` (mode 256 couleurs). Statut : À confirmer. Non utilisés dans la première version.
+**Codes hors liste de départ, appliqués sur ordinateur d'après E13** : `91` (rouge clair, donc probablement `90` à `97`) et `38;5;196` (mode 256 couleurs). Statut : Testé (E13, E15). Non utilisés dans la première version : un bloc collé qui les contient reste tel quel (S12).
 
 **Couleurs « au choix » `38;2;R;G;B`** (rouge, vert, bleu de 0 à 255, ex. `38;2;255;218;6` pour un jaune doré) : **appliquées sur ordinateur**. Statut : Testé (X3). **Utilisables par l'appli comme couleur de texte** (décision de l'auteur, 13/11/2026) : lues, affichées et écrites ; le choix d'une couleur au choix dans l'interface est prévu à l'étape 9. Écrites à la place du code de texte, donc en dernier : `<ESC>[1;45;38;2;255;218;6m`. **Fond au choix `48;2;R;G;B`** : appliqué sur ordinateur (Testé, E14a) ; utilisable aussi, écrit à la place du code de fond : `<ESC>[1;48;2;120;40;160;37m`.
 
@@ -527,7 +528,7 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 
 ## 10. Matrice de compatibilité
 
-Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** (D1 à D9, I2, mentions, M7, E1 à E13). Les styles sur une mention n'ont aucun effet visible (section 1) ; sur un horodatage, ils sont visibles (H3).
+Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** (D1 à D9, D15, I2, mentions, M7, E1 à E13). Les styles sur une mention n'ont aucun effet visible (section 1) ; sur un horodatage, ils sont visibles (H3).
 
 | Contenant | Gras, italique, souligné, barré | Spoiler | Horodatage | Lien | Mention | Couleur ANSI |
 |---|---|---|---|---|---|---|
@@ -539,7 +540,7 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Spoiler (`\|\|`) | ✓ | — | ✓ | ✓ | ✓ | ✗ |
 | Code en ligne | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Bloc de code avec langage | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
-| Bloc `ansi` | ✗ (sauf gras, souligné et italique ANSI ; barré ANSI à confirmer) | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Bloc `ansi` | ✗ (sauf gras, souligné, italique et barré ANSI, E15) | ✗ | ✗ | ✗ | ✗ | ✓ |
 
 ### Imbrications de contenants
 
@@ -549,10 +550,11 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Liste dans une citation | ✓ | Testé (D11) |
 | Titre dans une citation | ✓ | Testé (D12) |
 | Bloc de code dans une puce de niveau 1 (indenté de 2 espaces, sans ligne vide ; langage permis) | ✓ (pris en charge à l'étape 4, rattrapage) | Testé (D13, G9, G10) ; avec ligne vide : ✗ (G6, G11) |
+| Bloc de code sous une sous-puce (niveau N : indenté de 2 × N espaces, comme le texte de la puce ; sans ligne vide) | ✓ | Généralisé (D13, G9, G10 ; décision de l'auteur, 13/11/2026 : « si ça fonctionne avec une puce, ça fonctionnera avec une sous-puce ») |
 | Bloc de code juste après une puce, non indenté | ✓ hors de la liste | Testé (G8) |
 | Citation dans une puce | ✓ (mobile : puce absente devant la citation, lisible) | Testé (D14) |
 | **Titre dans une puce** | **✗** | Testé (D14) |
-| Titre, liste ou citation dans un spoiler | ? | À tester |
+| Titre, liste ou citation dans un spoiler, balise ouverte avant le marqueur (`\|\|# titre ↵ - puce ↵ > citation\|\|`) : tout est formé et caché sous un seul spoiler | ✓ | Testé (D15) |
 | Spoiler autour d'un bloc de code (y compris `ansi`) : tout le bloc est caché | ✓ | Testé (X2) |
 | Sous-texte dans une puce | ✓ | Testé (X6) |
 | Barré autour d'une citation ou de puces | ✓ | Testé (X1, X7) |
@@ -631,18 +633,18 @@ Dans un bloc de code, rien n'est échappé.
 
 ## 14. Points restant à tester
 
-1. **Confirmer E13** : le code `9` (barré) et les couleurs `91` et `38;5;196` sont-ils réellement appliqués sur ordinateur (couleur ou barré visible), ou simplement ignorés ?
+1. ~~Confirmer E13~~ : tranché (E15), `9`, `91` et `38;5;196` sont appliqués.
 2. ~~Italique `_` collé à une lettre d'un seul côté ; code en ligne sur deux lignes~~ : tranchés (A30, A32, A33). Gras après « : » tranché (A35, sans problème). La forme `*texte :<U+200B>*` s'affiche bien en italique (I5).
 3. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
 4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
 5. ~~Mention dans un sous-texte (`-#`) ; styles sur un horodatage~~ : tranchés (M7, H3).
-6. Titre, liste ou citation dans un spoiler.
+6. ~~Titre, liste ou citation dans un spoiler~~ : tranché (D15), permis.
 7. Une fois l'appli construite : le bouton « Copier » conserve-t-il le caractère `<ESC>` et les caractères invisibles `U+200B` ?
 8. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs.
 9. **Émoticônes converties en émojis** (§9) : liste des émoticônes concernées, rôle de l'option de Discord, cas du texte collé.
 10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
 11. Anomalie X7 : pourquoi une puce `- -# ` après des puces barrées n'affiche pas le sous-texte.
-12. ~~Bloc de code dans une puce~~ : tranché (G9 à G11), c'est la ligne vide qui casse le bloc. Reste : bloc sous une puce de niveau 2+, sous un élément numéroté, dans une liste citée.
+12. ~~Bloc de code dans une puce~~ : tranché (G9 à G11), c'est la ligne vide qui casse le bloc. Sous-puces : généralisé (décision de l'auteur). Reste : bloc sous un élément numéroté, dans une liste citée.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).

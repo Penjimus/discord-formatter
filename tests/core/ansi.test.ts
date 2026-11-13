@@ -78,6 +78,21 @@ describe('Écriture des couleurs (E1 à E8)', () => {
     );
   });
 
+  it('E13_E15_barre_ansi_code_9_ecrit_apres_les_autres_styles', () => {
+    expectWrittenAndRead(
+      [ansiBlock([
+        ansiText('barré', { strike: true }), ansiText('\n'),
+        ansiText('tout', { bold: true, italic: true, underline: true, strike: true, background: 45, color: 31 }),
+      ])],
+      ansi(`${sgr('9')}barré${RESET}`, `${sgr('1;3;4;9;45;31')}tout${RESET}`),
+    );
+  });
+
+  it('E15_barre_ansi_lu_dans_n_importe_quel_ordre', () => {
+    const block = readBlock(ansi(`${sgr('31;9')}a${RESET}`));
+    expect(block).toEqual(ansiBlock([ansiText('a', { color: 31, strike: true })]));
+  });
+
   it('E5_ordre_styles_fond_texte', () => {
     const block = ansiBlock([
       ansiText("ordre de l'appli", { bold: true, underline: true, background: 45, color: 37 }),
@@ -233,8 +248,9 @@ describe('Lecture des blocs ansi collés (E3, E4, E6, E9 à E13, X3, S11, S12)',
   });
 
   it('E13_codes_non_testes_bloc_entier_conserve_tel_quel', () => {
-    // `48;2;R;G;B` retiré de cette liste : testé depuis (E14a).
-    for (const codes of ['91', '38;5;196', '9', '1;95', '48;5;1', '01', '1;;4']) {
+    // `48;2;R;G;B` retiré de cette liste : testé depuis (E14a). `9` retiré : barré confirmé (E15).
+    // `91` et `38;5;196` sont appliqués par Discord (E15) mais non utilisés par l'appli (§6).
+    for (const codes of ['91', '38;5;196', '1;95', '48;5;1', '01', '1;;4']) {
       const message = ansi(`${sgr('31')}a${RESET}`, `${sgr(codes)}code ${codes}${RESET}`);
       const block = readBlock(message);
       expect(block.segments).toBeNull();

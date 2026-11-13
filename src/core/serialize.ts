@@ -3,6 +3,7 @@ import { ESC, ZERO_WIDTH_SPACE } from './characters';
 import {
   analyzeLists,
   ansiCodes,
+  listLevelBefore,
   isPlainAnsiStyle,
   type AnsiSegment,
   MARK_ORDER,
@@ -38,7 +39,10 @@ interface Prefix {
   readonly marks: readonly Mark[];
 }
 
-type Atom = InlineNode | CodeBlock | LineBreak | Prefix;
+/** Bloc de code avec l'indentation de ses lignes (bloc placé sous une puce). */
+type PlacedCodeBlock = CodeBlock & { readonly indent?: string };
+
+type Atom = InlineNode | PlacedCodeBlock | LineBreak | Prefix;
 
 /** Les morceaux du message, et pour chacun le numéro de sa ligne (-1 pour un saut de ligne). */
 interface Layout {
@@ -112,9 +116,9 @@ const STYLE_PREFIX: Record<Paragraph['style'], string> = {
 };
 
 /** Marqueur de début de ligne : citation, puis liste (2 espaces par niveau), puis titre (§3). */
-function linePrefix(block: Block, position: ListPosition | 'too-deep' | null): string {
+function linePrefix(block: Block, position: ListPosition | 'too-deep' | null, indent: string): string {
   const quote = block.quote ? '> ' : '';
-  if (block.type === 'codeBlock') return block.inBullet ? '  ' : quote;
+  if (block.type === 'codeBlock') return block.inBullet ? indent : quote;
   let list = '';
   if (block.list && position && position !== 'too-deep') {
     const marker = position.kind === 'ordered' ? `${position.number}. ` : '- ';
@@ -124,8 +128,15 @@ function linePrefix(block: Block, position: ListPosition | 'too-deep' | null): s
 }
 
 /** Morceaux de contenu d'un bloc : le texte d'une ligne, ou le bloc de code entier. */
-function blockContent(block: Block): readonly Atom[] {
-  return block.type === 'codeBlock' ? [block] : block.content;
+function blockContent(block: Block, indent: string): readonly Atom[] {
+  return block.type === 'codeBlock' ? [{ ...block, indent }] : block.content;
+}
+
+/** Indentation d'un bloc placé sous une puce : celle du texte de la puce, 2 espaces par niveau (§10). */
+function bulletIndent(blocks: readonly Block[], index: number): string {
+  const block = blocks[index];
+  if (block.type !== 'codeBlock' || !block.inBullet) return '';
+  return '  '.repeat(listLevelBefore(blocks, index) ?? 1);
 }
 
 /** Met tout le message à plat : marqueur et morceaux de chaque ligne, séparés par des sauts de ligne. */
@@ -134,7 +145,8 @@ function toLayout(blocks: readonly Block[]): Layout {
   const lineOf: number[] = [];
   const prefixed: boolean[] = [];
   const positions = analyzeLists(blocks);
-  const contents = blocks.map(blockContent);
+  const indents = blocks.map((_, i) => bulletIndent(blocks, i));
+  const contents = blocks.map((block, i) => blockContent(block, indents[i]));
   blocks.forEach((block, i) => {
     if (i > 0) {
       // Les lignes vides sont traversées (A27) : on compare les lignes non vides de part et d'autre.
@@ -144,7 +156,7 @@ function toLayout(blocks: readonly Block[]): Layout {
       atoms.push({ type: 'break', marks });
       lineOf.push(-1);
     }
-    const prefix = linePrefix(block, positions[i]);
+    const prefix = linePrefix(block, positions[i], indents[i]);
     prefixed.push(prefix !== '');
     if (prefix) {
       atoms.push({ type: 'prefix', text: prefix, marks: [] });
@@ -266,12 +278,12 @@ function writeCode(content: string): string {
  * Écrit un bloc de code : saut de ligne après l'ouverture, `U+200B` après le premier de trois
  * accents graves (Z4), `> ` devant chaque ligne s'il est cité (D10). Rien n'est échappé.
  */
-function writeCodeBlock(block: CodeBlock): string {
+function writeCodeBlock(block: PlacedCodeBlock): string {
   const content = block.segments ? writeAnsi(block.segments) : block.code;
   const body = content.replace(/`(?=``)/g, `\`${ZERO_WIDTH_SPACE}`);
   const lines = ['```' + block.language, ...body.split('\n'), '```'];
-  // Citation : `> ` devant chaque ligne (D10) ; puce : 2 espaces (D13, G9, G10).
-  return lines.join(block.quote ? '\n> ' : block.inBullet ? '\n  ' : '\n');
+  // Citation : `> ` devant chaque ligne (D10) ; puce : l'indentation du texte de la puce (D13, §10).
+  return lines.join(block.quote ? '\n> ' : `\n${block.indent ?? ''}`);
 }
 
 /**

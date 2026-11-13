@@ -8,6 +8,7 @@ import {
   ansiBlock,
   ansiStyle,
   blockInBulletProblem,
+  listLevelBefore,
   code,
   codeBlock,
   type AnsiSegment,
@@ -49,6 +50,8 @@ type Piece =
       /** Texte d'origine, réécrit tel quel si le bloc s'avère mal placé. */
       readonly value: string;
       readonly marks: readonly Mark[];
+      /** Bloc placé sous une puce : nombre d'espaces devant chaque ligne. */
+      readonly indent: number;
     };
 
 /** Un style trouvé à une position : son contenu (à relire) et la longueur totale lue. */
@@ -69,8 +72,17 @@ const ESCAPE = /^\\([^0-9A-Za-z\s])/u;
 const PLAIN_BLOCK = /^```([^\s`]*)\n((?:(?!```)[\s\S])*?)\n```(?=\n|$)/;
 /** Le même dans une citation : `> ` devant chaque ligne (D10). */
 const QUOTED_BLOCK = /^```([^\s`]*)\n((?:> (?:(?!```)[^\n])*\n)*?)> ```(?=\n|$)/;
-/** Le même sous une puce : 2 espaces devant chaque ligne (D13, G9, G10). */
-const BULLET_BLOCK = /^  ```([^\s`]*)\n((?:  (?:(?!```)[^\n])*\n)*?)  ```(?=\n|$)/;
+/** Début d'un bloc sous une puce : un nombre pair d'espaces (2 par niveau) puis l'ouverture. */
+const BULLET_BLOCK_START = /^((?: {2})+)```/;
+
+/**
+ * Le même sous une puce : `indent` espaces devant chaque ligne, 2 au niveau 1 (D13, G9, G10),
+ * 2 × N au niveau N (généralisé, §10).
+ */
+function bulletBlockPattern(indent: number): RegExp {
+  const spaces = ' '.repeat(indent);
+  return new RegExp(`^${spaces}\`\`\`([^\\s\`]*)\\n((?:${spaces}(?:(?!\`\`\`)[^\\n])*\\n)*?)${spaces}\`\`\`(?=\\n|$)`);
+}
 /** Balise ANSI : `<ESC>[`, codes séparés par `;`, puis `m` (§6). */
 const ANSI_TAG = new RegExp(`${ESC}\\[([0-9;]*)m`, 'g');
 /** Autres formes de bloc (F3, F5, bloc mal indenté sous une puce) : conservées brutes. */
@@ -158,6 +170,7 @@ function applyAnsiCodes(style: AnsiStyle, codes: string): AnsiStyle | null {
     else if (value === 1) next.bold = true;
     else if (value === 3) next.italic = true;
     else if (value === 4) next.underline = true;
+    else if (value === 9) next.strike = true; // Barré (E13, E15).
     else if (value >= 30 && value <= 37) next.color = value;
     else if (value >= 40 && value <= 47) next.background = value;
     else if ((value === 38 || value === 48) && parts[i + 1] === '2' && i + 4 < parts.length) {
@@ -209,17 +222,20 @@ function readCodeBlock(content: string, options: CodeBlockOptions): CodeBlock {
 function matchCodeBlock(rest: string, prefix: string, marks: readonly Mark[]): Piece | null {
   const quote = prefix === '> ';
   if (prefix !== '' && !quote) return null; // Bloc sur la ligne d'une puce ou d'un titre (G7).
-  // Bloc sous une puce, indenté de 2 espaces (D13) : sa place est vérifiée avec les lignes voisines.
-  const inBullet = !quote && rest.startsWith('  ```') && marks.length === 0;
-  const match = (quote ? QUOTED_BLOCK : inBullet ? BULLET_BLOCK : PLAIN_BLOCK).exec(rest);
+  // Bloc sous une puce, indenté (D13, §10) : sa place et son indentation sont vérifiées avec les
+  // lignes voisines.
+  const indent = quote || marks.length > 0 ? 0 : BULLET_BLOCK_START.exec(rest)?.[1].length ?? 0;
+  const inBullet = indent > 0;
+  const match = (quote ? QUOTED_BLOCK : inBullet ? bulletBlockPattern(indent) : PLAIN_BLOCK).exec(rest);
   if (!match) return null;
-  let content = quote || inBullet
-    ? match[2].split('\n').slice(0, -1).map((line) => line.slice(2)).join('\n')
+  const strip = quote ? 2 : indent;
+  let content = strip > 0
+    ? match[2].split('\n').slice(0, -1).map((line) => line.slice(strip)).join('\n')
     : match[2];
   while (BLOCK_ZERO_WIDTH.test(content)) content = content.replace(BLOCK_ZERO_WIDTH, '`');
   try {
     const block = readCodeBlock(content, { language: match[1], marks, quote, inBullet });
-    return { kind: 'codeBlock', block, value: match[0], marks };
+    return { kind: 'codeBlock', block, value: match[0], marks, indent };
   } catch {
     return null; // Bloc vide, ou ligne vide dans un bloc cité ou dans une puce : conservé brut.
   }
@@ -373,6 +389,8 @@ interface RawLine {
   block?: CodeBlock;
   /** Texte d'origine du bloc, réécrit tel quel s'il s'avère mal placé. */
   blockSource?: string;
+  /** Bloc placé sous une puce : nombre d'espaces devant ses lignes. */
+  blockIndent?: number;
   /** Les marqueurs à partir de cette position sont gardés bruts (niveau de liste sauté). */
   keepRawFrom: number;
 }
@@ -392,6 +410,7 @@ function toRawLines(pieces: readonly Piece[]): RawLine[] {
       if (current.nodes.length === 0 && !current.block && (!next || next.value.startsWith('\n'))) {
         current.block = piece.block;
         current.blockSource = piece.value;
+        current.blockIndent = piece.indent;
         return;
       }
     }
@@ -480,9 +499,11 @@ function toBlocks(lines: RawLine[]): Block[] {
         ...block.content,
       );
     });
-    // Bloc indenté mal placé (pas sous une puce de niveau 1, ou suivi d'une forme non testée) : brut.
+    // Bloc indenté mal placé (pas sous une puce, indentation différente de celle du texte de la
+    // puce, ou suivi d'une forme non testée) : brut.
     const misplaced = normalized.findIndex(
-      (block, i) => block.type === 'codeBlock' && block.inBullet && blockInBulletProblem(normalized, i) !== null,
+      (block, i) => block.type === 'codeBlock' && block.inBullet && (blockInBulletProblem(normalized, i) !== null
+        || lines[i].blockIndent !== 2 * (listLevelBefore(normalized, i) ?? 0)),
     );
     if (misplaced === -1) return normalized;
     lines.splice(misplaced, 1, ...rawLines(lines[misplaced].blockSource!));
