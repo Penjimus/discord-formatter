@@ -153,7 +153,8 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Objectif** : les boutons dédiés.
 
 - Mentions utilisateur, rôle, salon : insertion du modèle et **avertissement discret** tant qu'un modèle reste (S8).
-- Sélecteur d'émojis standards (S8b).
+- **Sélecteur d'émojis standards** (S8b), construit par l'appli à partir de la bibliothèque **emojibase** (liste des émojis seule, option légère choisie par l'utilisateur ; nouvelle dépendance installée à cette étape) : recherche par nom, catégories, insertion du caractère Unicode.
+- Affichage en émoji, à gauche, des codes `:nom:` collés (conservés bruts par le cœur, `docs/discord-rules.md` §9), d'après les noms d'emojibase ; un nom inconnu reste affiché en texte.
 - Horodatage : **calendrier**, choix de l'heure, choix du **style**, aperçu lisible à gauche (S8c).
 
 **Scénarios** : S8, S8b, S8c.
@@ -280,6 +281,11 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 5 (rattrapage) | Pas d'espace invisible juste après `<`, `<a`, `<t` : le chevron échappé suffit | Test C15 de l'étape 1 inchangé |
 | 2026-11-13 | 5 (rattrapage) | Test « mentions, émojis, horodatages conservés » : `:star:` attendu brut au lieu de texte | Conséquence directe du choix 2 A |
 | 2026-11-13 | 5 (rattrapage) | Bibliothèque d'émojis standards demandée par l'utilisateur, pour afficher les `:nom:` à gauche ; choix en attente | Décision de l'utilisateur |
+| 2026-11-13 | 5 (rattrapage) | I4 relu : `:star\:` et `\:star\:` affichent « :star: » sans émoji ni antislash visible | Constaté par l'utilisateur |
+| 2026-11-13 | 5 (rattrapage) | **Remplace** l'espace invisible : un `:nom:` écrit comme texte est échappé par un antislash devant le dernier deux-points (`:star\:`) ; aucun caractère invisible | Demande de l'utilisateur |
+| 2026-11-13 | 5 (rattrapage) | **Remplace** « 12:30:45 compris » : un nombre seul n'est pas un code (heures intactes), sauf `:100:` et `:1234:`, émojis connus, échappés | Demande de l'utilisateur ; exceptions ajoutées par Claude (prudence) |
+| 2026-11-13 | 5 (rattrapage) | Tests I5 du rattrapage remplacés par les tests I4 de l'antislash | Règle changée par l'utilisateur |
+| 2026-11-13 | 5 (rattrapage) | Bibliothèque **emojibase** (option A, légère) ; sélecteur d'émojis construit par l'appli, prévu à l'étape 10 | Choix de l'utilisateur |
 
 ---
 

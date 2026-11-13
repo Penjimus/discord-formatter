@@ -274,8 +274,8 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
     }
     prefix = null;
 
-    // Code `:nom:` (§9) : `\:nom:` donne quand même l'émoji (I4), il reste brut ; la forme échappée
-    // par l'appli (`:<U+200B>nom:`, I5) est relue comme du texte, l'écriture remet l'espace invisible.
+    // Code `:nom:` (§9) : `\:nom:` donne quand même l'émoji (I4), il reste brut. La forme du test I5
+    // (`:<U+200B>nom:`) est relue comme du texte ; l'écriture l'échappera par un antislash (`:nom\:`).
     const escapedEmoji = /^\\:[A-Za-z0-9_+-]+:/.exec(rest);
     if (escapedEmoji) {
       push('raw', escapedEmoji[0]);

@@ -221,23 +221,34 @@ describe('Émojis (§9, série I)', () => {
 });
 
 describe('Codes :nom: (§9, I4, I5)', () => {
-  it('I5_nom_ecrit_comme_texte_echappe_par_l_espace_invisible', () => {
-    expect(write(text('Sont mes :star: préférées'))).toBe(`Sont mes :${ZWSP}star: préférées`);
-    expect(write(text(':+1: :-1: :100: :a_b:'))).toBe(`:${ZWSP}+1: :${ZWSP}-1: :${ZWSP}100: :${ZWSP}a_b:`);
+  // Rattrapage : l'antislash devant le dernier deux-points remplace l'espace invisible (I4 relu).
+  it('I4_nom_ecrit_comme_texte_echappe_par_un_antislash', () => {
+    expect(write(text('Sont mes :star: préférées'))).toBe('Sont mes :star\\: préférées');
+    expect(write(text(':+1: :-1: :a_b: :8ball:'))).toBe(':+1\\: :-1\\: :a_b\\: :8ball\\:');
+    // Codes enchaînés : chaque deux-points de fermeture est échappé.
+    expect(write(text(':a:b:'))).toBe(':a\\:b\\:');
   });
 
-  it('I5_prudence_toute_forme_de_code_echappee', () => {
-    // Convention §9 : la liste de Discord est inconnue, « 12:30:45 » est échappé aussi.
-    expect(write(text('12:30:45'))).toBe(`12:${ZWSP}30:45`);
+  it('I4_nombres_seuls_non_echappes_sauf_100_et_1234', () => {
+    expect(write(text('12:30:45'))).toBe('12:30:45');
+    expect(write(text(':100: :1234:'))).toBe(':100\\: :1234\\:');
   });
 
-  it('I5_formes_qui_ne_sont_pas_des_codes_intactes', () => {
-    for (const plain of ['a : b :', 'a: b:', '::', ': star:', ':star :', 'Note :']) {
+  it('I4_formes_qui_ne_sont_pas_des_codes_intactes', () => {
+    for (const plain of ['a : b :', 'a: b:', '::', ': star:', ':star :', 'Note :', 'à 8:30:']) {
       expect(write(text(plain))).toBe(plain);
     }
   });
 
-  it('I5_nom_echappe_relu_comme_texte', () => {
+  it('aucun_caractere_invisible_pour_un_code', () => {
+    expect(write(text(':star: 12:30:45 :+1:'))).not.toContain(ZWSP);
+  });
+
+  it('I4_nom_echappe_relu_comme_texte', () => {
+    expect(parse(':star\\:')).toEqual(line(text(':star:')));
+    expect(parse('\\:star\\:')).toEqual(line(text(':star:')));
+    expect(parse('12:30:45')).toEqual(line(text('12:30:45')));
+    // Forme du test I5 (espace invisible), relue comme du texte.
     expect(parse(`:${ZWSP}star:`)).toEqual(line(text(':star:')));
     expectRoundTrip(line(text('a :star: b')));
     expectRoundTrip(line(text(':star:', ['italic'])));
@@ -266,7 +277,8 @@ describe('Aller-retour avec mentions et horodatages (S14)', () => {
   const MESSAGES = [
     'Date limite : <t:1735689600:F>', '~~a\n> b <t:1735689600:F>~~', '**<@1>**<@2>', '*<#1>*_a_',
     '<@1><@&2><#3><t:4>', '||<@ID_UTILISATEUR>||', '<t:1735689600:R> <:ok:456> :star:',
-    'Sont mes *:star: préférées*:star:', '\\:star: :star\\: \\:star\\:', `:${ZWSP}star: et 12:${ZWSP}30:45`,
+    'Sont mes *:star: préférées*:star:', '\\:star: :star\\: \\:star\\:', `:${ZWSP}star: et 12:30:45`,
+    '*:star\\:*', ':100: et :1234:',
   ];
   for (const message of MESSAGES) {
     it(`stable : ${JSON.stringify(message)}`, () => {

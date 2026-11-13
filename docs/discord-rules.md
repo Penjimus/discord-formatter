@@ -507,7 +507,8 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 | Point | Statut |
 |---|---|
 | Un code `:nom:` (ex. `:star:`) est converti en émoji (⭐) | Testé (X2) |
-| L'antislash n'échappe pas un code `:nom:` : `\:star:` affiche ⭐ (antislash invisible, comme en C19) ; `:star\:` et `\:star\:` ne donnent pas d'émoji mais s'affichent avec des antislashs | Testé (I4) |
+| Antislash devant le **premier** deux-points (`\:star:`) : l'antislash disparaît (C19) mais l'émoji ⭐ est quand même généré | Testé (I4) |
+| Antislash devant le **dernier** deux-points (`:star\:` ou `\:star\:`) : pas d'émoji, affiche « :star: », antislashs invisibles | Testé (I4, relu par l'auteur) |
 | Un espace invisible `U+200B` dans le code (`:<U+200B>star:` ou `:star<U+200B>:`) empêche la conversion ; rien de parasite n'est visible | Testé (I5) |
 | **L'émoticône `:*` est convertie en émoji 😗.** Conséquence : un italique qui se termine par « : » (`*texte :*`) est cassé, le `*` de fermeture est avalé | Testé (X4) |
 | Autres émoticônes converties (`:)`, `:(`, `:D`, `:P`, `;)`, `<3`…) : lesquelles ? | À tester |
@@ -515,10 +516,10 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 | La conversion a-t-elle lieu aussi quand le texte est **collé** (et non tapé) ? | À tester |
 
 *Convention* (décidée par l'auteur le 13/11/2026) pour les codes `:nom:` :
-- **Forme visée** : deux-points, puis lettres, chiffres, `_`, `+` ou `-`, puis deux-points. L'appli ne connaît pas la liste exacte de Discord : par prudence, toute forme de ce type compte (« 12:30:45 » compris).
-- **Écriture** : un `:nom:` écrit comme texte dans l'éditeur de gauche est échappé par l'espace invisible `U+200B` placé juste après le premier deux-points (`:<U+200B>star:`, I5). L'émoji n'est pas généré. Exception : rien n'est inséré juste après `<`, `<a` ou `<t` (`\<t:1735689600:f>`, `\<:nom:123>`), le chevron échappé rendant déjà la forme littérale (C15).
-- **Lecture** : un `:nom:` collé (et `\:nom:`, qui donne aussi l'émoji, I4) est conservé brut et réécrit tel quel : l'émoji reste dans Discord. `:<U+200B>nom:` est relu comme le texte « :nom: ».
-- L'affichage de l'émoji dans l'éditeur de gauche demandera une bibliothèque d'émojis standards (décision de l'auteur, choix de la bibliothèque à faire).
+- **Forme visée** : deux-points, puis lettres, chiffres, `_`, `+` ou `-`, puis deux-points, **sauf les nombres seuls** (« 12:30:45 » n'est pas un code, décision de l'auteur). Exceptions connues : `:100:` et `:1234:` sont des émojis, ils comptent.
+- **Écriture** : un `:nom:` écrit comme texte dans l'éditeur de gauche est échappé par un antislash devant le **dernier** deux-points (`:star\:`, I4). Aucun caractère invisible. Rien n'est échappé juste après `<`, `<a` ou `<t` (`\<:nom:123>`) : le chevron échappé rend déjà la forme littérale (C15).
+- **Lecture** : un `:nom:` collé (et `\:nom:`, qui donne aussi l'émoji, I4) est conservé brut et réécrit tel quel : l'émoji reste dans Discord. `:star\:` et `:<U+200B>star:` (forme I5) sont relus comme le texte « :star: ».
+- L'affichage de l'émoji dans l'éditeur de gauche et le sélecteur utiliseront la bibliothèque **emojibase** (décision de l'auteur, option légère), installée à l'étape 10.
 
 *Convention* (décidée par l'auteur le 13/11/2026) : quand l'appli écrit un `*` d'italique juste après un « : », elle insère entre les deux l'espace de largeur nulle `U+200B` (`*texte :<U+200B>*`), pour que `:*` ne soit pas converti. Testé (I5) : l'italique est bien rendu, sans caractère visible. Le gras après « : » n'a pas ce problème : `**Note :**` s'affiche correctement (A35), rien n'est inséré.
 
@@ -645,4 +646,4 @@ Dans un bloc de code, rien n'est échappé.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).
-16. ~~Échapper un code `:nom:`~~ : tranché (I4, I5, convention §9). Reste : affichage exact de `:star\:` et `\:star\:` (quels antislashs sont visibles ?) ; d'ici là, `\:` suivi d'autre chose qu'un code `:nom:` reste lu comme en C19.
+16. ~~Échapper un code `:nom:`~~ : tranché (I4, I5, convention §9). `:star\:` et `\:star\:` affichent « :star: » (I4 relu). Plus de contradiction avec C19 ; `\:` suivi d'autre chose qu'un code `:nom:` reste lu comme en C19.

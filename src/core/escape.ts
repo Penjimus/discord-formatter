@@ -1,7 +1,6 @@
 // Échappement du texte ordinaire (docs/discord-rules.md §11).
 // Règle prudente : tant que les paires entre lignes ne sont pas testées, un symbole est échappé
 // dès qu'un partenaire existe n'importe où dans le message.
-import { ZERO_WIDTH_SPACE } from './characters';
 import type { DiscordDocument } from './document';
 
 /** Ce qui, dans tout le message, pourrait servir de partenaire à un symbole. */
@@ -29,8 +28,11 @@ const LINE_START_MARKER = /^(\s*)(?:(#+ )|(-# )|(- )|(\d+)\. |(>+ ))/u;
 /** Débuts de mention, d'émoji personnalisé, d'horodatage, de commande ou de lien après un `<`. */
 const ANGLE_PATTERN = /^(?:@|#|:|a:|t:|\/|id:|https?:)/u;
 
-/** Code `:nom:` que Discord pourrait convertir en émoji (convention §9, X2). */
-export const EMOJI_CODE = /^:[A-Za-z0-9_+-]+:/;
+/**
+ * Code `:nom:` que Discord pourrait convertir en émoji (convention §9, X2). Un nombre seul n'en est
+ * pas un (« 12:30:45 »), sauf `:100:` et `:1234:`.
+ */
+export const EMOJI_CODE = /^:(?:[A-Za-z0-9_+-]*[A-Za-z_+-][A-Za-z0-9_+-]*|100|1234):/;
 
 /** Compte les paires de symboles doublés (`~~`, `||`) dans une chaîne. */
 function countDoubled(textValue: string, symbol: string): number {
@@ -127,15 +129,25 @@ export function escapeText(
   around: TextSurroundings,
 ): string {
   const lineStartIndex = around.atLineStart ? lineStartEscapeIndex(textValue) : -1;
+  const emojiClosings = emojiCodeClosings(textValue);
   let result = '';
   for (let i = 0; i < textValue.length; i++) {
-    const escape = i === lineStartIndex || mustEscape(textValue, i, message, around);
+    const escape = i === lineStartIndex || emojiClosings.has(i) || mustEscape(textValue, i, message, around);
     result += escape ? `\\${textValue[i]}` : textValue[i];
-    // L'antislash n'empêche pas la conversion en émoji (I4) : espace invisible après le « : » (I5).
-    // Sauf juste après `<`, `<a` ou `<t` : le chevron, échappé, rend déjà toute la forme littérale (C15).
-    if (textValue[i] === ':' && EMOJI_CODE.test(textValue.slice(i)) && !/<[at]?$/.test(textValue.slice(0, i))) {
-      result += ZERO_WIDTH_SPACE;
-    }
   }
   return result;
+}
+
+/**
+ * Positions des deux-points qui ferment un code `:nom:` (§9). Un antislash devant le dernier
+ * deux-points empêche l'émoji (I4). Le deux-points de fermeture peut ouvrir le code suivant.
+ * Rien juste après `<`, `<a` ou `<t` : le chevron, échappé, rend déjà la forme littérale (C15).
+ */
+function emojiCodeClosings(textValue: string): Set<number> {
+  const closings = new Set<number>();
+  for (let i = textValue.indexOf(':'); i !== -1; i = textValue.indexOf(':', i + 1)) {
+    const match = EMOJI_CODE.exec(textValue.slice(i));
+    if (match && !/<[at]?$/.test(textValue.slice(0, i))) closings.add(i + match[0].length - 1);
+  }
+  return closings;
 }
