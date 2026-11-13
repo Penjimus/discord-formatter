@@ -1,6 +1,7 @@
 // Échappement du texte ordinaire (docs/discord-rules.md §11).
 // Règle prudente : tant que les paires entre lignes ne sont pas testées, un symbole est échappé
 // dès qu'un partenaire existe n'importe où dans le message.
+import { ZERO_WIDTH_SPACE } from './characters';
 import type { DiscordDocument } from './document';
 
 /** Ce qui, dans tout le message, pourrait servir de partenaire à un symbole. */
@@ -27,6 +28,9 @@ const SPACE = /\s/u;
 const LINE_START_MARKER = /^(\s*)(?:(#+ )|(-# )|(- )|(\d+)\. |(>+ ))/u;
 /** Débuts de mention, d'émoji personnalisé, d'horodatage, de commande ou de lien après un `<`. */
 const ANGLE_PATTERN = /^(?:@|#|:|a:|t:|\/|id:|https?:)/u;
+
+/** Code `:nom:` que Discord pourrait convertir en émoji (convention §9, X2). */
+export const EMOJI_CODE = /^:[A-Za-z0-9_+-]+:/;
 
 /** Compte les paires de symboles doublés (`~~`, `||`) dans une chaîne. */
 function countDoubled(textValue: string, symbol: string): number {
@@ -127,6 +131,11 @@ export function escapeText(
   for (let i = 0; i < textValue.length; i++) {
     const escape = i === lineStartIndex || mustEscape(textValue, i, message, around);
     result += escape ? `\\${textValue[i]}` : textValue[i];
+    // L'antislash n'empêche pas la conversion en émoji (I4) : espace invisible après le « : » (I5).
+    // Sauf juste après `<`, `<a` ou `<t` : le chevron, échappé, rend déjà toute la forme littérale (C15).
+    if (textValue[i] === ':' && EMOJI_CODE.test(textValue.slice(i)) && !/<[at]?$/.test(textValue.slice(0, i))) {
+      result += ZERO_WIDTH_SPACE;
+    }
   }
   return result;
 }

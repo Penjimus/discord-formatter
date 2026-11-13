@@ -30,6 +30,7 @@ import {
   type LineLayout,
   type Mark,
 } from './document';
+import { EMOJI_CODE } from './escape';
 
 type PieceKind = 'text' | 'code' | 'raw' | 'marker' | 'element';
 
@@ -273,6 +274,20 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
     }
     prefix = null;
 
+    // Code `:nom:` (§9) : `\:nom:` donne quand même l'émoji (I4), il reste brut ; la forme échappée
+    // par l'appli (`:<U+200B>nom:`, I5) est relue comme du texte, l'écriture remet l'espace invisible.
+    const escapedEmoji = /^\\:[A-Za-z0-9_+-]+:/.exec(rest);
+    if (escapedEmoji) {
+      push('raw', escapedEmoji[0]);
+      i += escapedEmoji[0].length;
+      continue;
+    }
+    if (rest.startsWith(`:${ZERO_WIDTH_SPACE}`) && EMOJI_CODE.test(`:${rest.slice(2)}`)) {
+      push('text', ':');
+      i += 2;
+      continue;
+    }
+
     const escape = ESCAPE.exec(rest);
     if (escape) {
       push('text', escape[1]);
@@ -291,6 +306,7 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
       CODE_BLOCK.exec(rest) ??
       ANGLE.exec(rest) ??
       MASKED_LINK.exec(rest) ??
+      EMOJI_CODE.exec(rest) ?? // Code `:nom:` collé : l'émoji reste dans Discord (§9).
       (i === 0 || !ASCII_ALNUM.test(source[i - 1]) ? URL.exec(rest) : null);
     if (rawMatch) {
       push('raw', rawMatch[0]);

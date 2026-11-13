@@ -253,7 +253,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **I1** | `<@ID_UTILISATEUR> <@&ID_ROLE> <#ID_SALON>` | les trois modèles restent du texte brut | ✅ Les trois modèles restent du texte brut | §7 |
 | **I2** | ```` Hors code : <#ID_SALON_REEL> ↵ Code en ligne : `<#ID_SALON_REEL>` ↵ ``` ↵ Bloc : <#ID_SALON_REEL> ↵ ``` ```` | ligne 1 : lien de salon ; ligne 2 : brut dans le code en ligne ; lignes suivantes : brut dans le bloc ? | ℹ️ L'identifiant fictif n'est pas interprété et s'affiche en texte brut. Conclusion rapportée par l'auteur : une mention n'est active qu'en dehors d'un bloc ou d'une ligne de code | §7 |
 | **I3** | `**😀** *😀* __😀__ ~~😀~~ \|\|😀\|\|` | émojis dans les styles : tous rendus normalement ? | ⚠️ Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji | §1, §9 |
-| **I4** | `\:star: ↵ :star\: ↵ \:star\:` | quelle forme empêche la conversion de `:star:` en émoji ? | ⚠️ Ligne 1 : `\` puis l'étoile ⭐ (conversion faite, antislash visible). Lignes 2 et 3 : affichées telles quelles, antislashs visibles (`:star\:`, `\:star\:`). L'antislash n'est pas une bonne manière d'échapper un code `:nom:` | §9, §11 |
+| **I4** | `\:star: ↵ :star\: ↵ \:star\:` | quelle forme empêche la conversion de `:star:` en émoji ? | ⚠️ Ligne 1 : l'étoile ⭐, sans antislash visible (correction de l'auteur ; première lecture « `\` puis ⭐ » erronée). Lignes 2 et 3 : pas d'émoji, affichées avec des antislashs (`:star\:` ou `\:star\:`). L'antislash n'est pas une bonne manière d'échapper un code `:nom:` | §9, §11 |
 | **I5** | `test-I5.txt` : `A : :<U+200B>star: ↵ B : :star<U+200B>: ↵ C : *Membres :<U+200B>*` | l'espace invisible empêche-t-il la conversion en émoji ? « Membres : » en italique ? | ✅ A et B : « :star: » sans étoile, aucun caractère parasite visible. C : « Membres : » en italique | §9 |
 
 ## Série J
@@ -357,7 +357,7 @@ Ces tests ont contredit ou nuancé une hypothèse de départ. Ils sont la raison
 | **E12** | `<ESC>[m` est équivalent à `<ESC>[0m` | `<ESC>[m` (reset vide) **ne réinitialise pas** : « normal (reset vide) » reste rouge ; les deux autres « normal » sont blancs |
 | **H2** | Un timestamp invalide est rejeté | Le timestamp en millisecondes n'est pas rejeté : il donne une date valide mais absurde (25 octobre 56971 à 2:00) |
 | **I3** | Gras, italique, etc. s'appliquent à un émoji | Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji |
-| **I4** | Un antislash devant `:` disparaît (C19) et empêche la conversion en émoji | Devant ou dans un code `:nom:`, l'antislash **reste visible** ; devant `:star:`, l'étoile est quand même générée |
+| **I4** | Un antislash devant `:` disparaît (C19) et empêche la conversion en émoji | Devant `:star:`, l'antislash disparaît mais l'étoile est **quand même générée** ; dans le code (`:star\:`), l'antislash reste visible |
 | **J2** | Discord réduit les lignes vides consécutives | Les lignes vides **ne sont pas réduites** : les trois lignes vides apparaissent |
 | **K3** | Un émoji compte pour 3 caractères | Accepté : 😀 compte pour **2** (666 × 2 = 1332), et non 3 |
 | **K4** | 667 émojis (3 chacun) dépassent la limite de 2000 | **Accepté** (667 × 2 = 1334), alors qu'on attendait un refus à 3 par émoji |

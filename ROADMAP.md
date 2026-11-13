@@ -275,6 +275,11 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 5 | Aperçu lisible de la date reporté à l'étape 10 | Hors de l'étape ; validé par l'utilisateur |
 | 2026-11-13 | 5 | Étape validée par l'utilisateur : sorties collées dans Discord (modèles bruts, gras autour d'une mention, mention sous spoiler, horodatage en gras, mention en sous-texte, 3 dates connues), toutes correctes. L'avertissement des modèles est affiché par l'appli, pas par Discord | — |
 | 2026-11-13 | 5 | `:nom:` écrit comme texte à gauche : à échapper, sans générer l'émoji. Forme d'échappement à tester (I4 proposé, §14 point 16) ; codée seulement après le test | Décision de l'utilisateur ; règle 2 (forme non testée) |
+| 2026-11-13 | 5 (rattrapage) | I4 : l'antislash n'empêche pas la conversion (`\:star:` donne ⭐). I5 : `U+200B` après le premier « : » l'empêche, sans rien de visible ; l'italique après « : » est confirmé | Testé par l'utilisateur |
+| 2026-11-13 | 5 (rattrapage) | Toute forme `:mot:` (lettres, chiffres, `_`, `+`, `-`) est échappée, « 12:30:45 » compris ; un `:nom:` ou `\:nom:` collé reste brut (l'émoji reste dans Discord) | Choix de l'utilisateur (choix 1 A, choix 2 A) |
+| 2026-11-13 | 5 (rattrapage) | Pas d'espace invisible juste après `<`, `<a`, `<t` : le chevron échappé suffit | Test C15 de l'étape 1 inchangé |
+| 2026-11-13 | 5 (rattrapage) | Test « mentions, émojis, horodatages conservés » : `:star:` attendu brut au lieu de texte | Conséquence directe du choix 2 A |
+| 2026-11-13 | 5 (rattrapage) | Bibliothèque d'émojis standards demandée par l'utilisateur, pour afficher les `:nom:` à gauche ; choix en attente | Décision de l'utilisateur |
 
 ---
 

@@ -386,9 +386,13 @@ describe('Syntaxe non reconnue conservée en brut (S12)', () => {
   });
 
   // Étape 5 : mention et horodatage lus ; l'émoji personnalisé reste brut (accord de l'utilisateur).
+  // `:star:` collé reste brut (convention §9, choix 2A de l'utilisateur).
   it('mentions, émojis, horodatages conservés', () => {
     expect(parse('<@123> <:ok:456> <t:1735689600:F> :star:')).toEqual(
-      line(mention('user', '123'), text(' '), raw('<:ok:456>'), text(' '), timestamp(1735689600, 'F'), text(' :star:')),
+      line(
+        mention('user', '123'), text(' '), raw('<:ok:456>'), text(' '), timestamp(1735689600, 'F'),
+        text(' '), raw(':star:'),
+      ),
     );
   });
 

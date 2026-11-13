@@ -1,5 +1,6 @@
 // Étape 5 : mentions, émojis, horodatages (séries H, I, M du cahier, docs/discord-rules.md §1, §7, §8, §9).
 import { describe, expect, it } from 'vitest';
+import { ZERO_WIDTH_SPACE as ZWSP } from '../../src/core/characters';
 import {
   bulletItem,
   code,
@@ -219,10 +220,53 @@ describe('Émojis (§9, série I)', () => {
   });
 });
 
+describe('Codes :nom: (§9, I4, I5)', () => {
+  it('I5_nom_ecrit_comme_texte_echappe_par_l_espace_invisible', () => {
+    expect(write(text('Sont mes :star: préférées'))).toBe(`Sont mes :${ZWSP}star: préférées`);
+    expect(write(text(':+1: :-1: :100: :a_b:'))).toBe(`:${ZWSP}+1: :${ZWSP}-1: :${ZWSP}100: :${ZWSP}a_b:`);
+  });
+
+  it('I5_prudence_toute_forme_de_code_echappee', () => {
+    // Convention §9 : la liste de Discord est inconnue, « 12:30:45 » est échappé aussi.
+    expect(write(text('12:30:45'))).toBe(`12:${ZWSP}30:45`);
+  });
+
+  it('I5_formes_qui_ne_sont_pas_des_codes_intactes', () => {
+    for (const plain of ['a : b :', 'a: b:', '::', ': star:', ':star :', 'Note :']) {
+      expect(write(text(plain))).toBe(plain);
+    }
+  });
+
+  it('I5_nom_echappe_relu_comme_texte', () => {
+    expect(parse(`:${ZWSP}star:`)).toEqual(line(text(':star:')));
+    expectRoundTrip(line(text('a :star: b')));
+    expectRoundTrip(line(text(':star:', ['italic'])));
+    expectRoundTrip(line(text('12:30:45')));
+  });
+
+  it('X2_I4_nom_colle_conserve_brut', () => {
+    // L'émoji reste dans Discord : le code collé est réécrit tel quel.
+    expect(parse('a :star: b')).toEqual(line(text('a '), raw(':star:'), text(' b')));
+    expect(serialize(parse('a :star: b'))).toBe('a :star: b');
+    expect(parse('\\:star:')).toEqual(line(raw('\\:star:')));
+    expect(serialize(parse('\\:star:'))).toBe('\\:star:');
+  });
+
+  it('I5_italique_apres_deux_points', () => {
+    expect(write(text('Membres :', ['italic']))).toBe(`*Membres :${ZWSP}*`);
+  });
+
+  it('rien_n_est_echappe_dans_le_code', () => {
+    expect(write(code(':star:'))).toBe('`:star:`');
+    expect(serialize(createDocument(codeBlock(':star:')))).toBe('```\n:star:\n```');
+  });
+});
+
 describe('Aller-retour avec mentions et horodatages (S14)', () => {
   const MESSAGES = [
     'Date limite : <t:1735689600:F>', '~~a\n> b <t:1735689600:F>~~', '**<@1>**<@2>', '*<#1>*_a_',
     '<@1><@&2><#3><t:4>', '||<@ID_UTILISATEUR>||', '<t:1735689600:R> <:ok:456> :star:',
+    'Sont mes *:star: préférées*:star:', '\\:star: :star\\: \\:star\\:', `:${ZWSP}star: et 12:${ZWSP}30:45`,
   ];
   for (const message of MESSAGES) {
     it(`stable : ${JSON.stringify(message)}`, () => {
