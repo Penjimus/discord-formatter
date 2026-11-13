@@ -1,7 +1,10 @@
 // Écriture du document en texte Discord (docs/discord-rules.md §1, §2, §3, §5, §11).
-import { ZERO_WIDTH_SPACE } from './characters';
+import { ESC, ZERO_WIDTH_SPACE } from './characters';
 import {
   analyzeLists,
+  ansiCodes,
+  isPlainAnsiStyle,
+  type AnsiSegment,
   MARK_ORDER,
   paragraph,
   text,
@@ -110,7 +113,7 @@ const STYLE_PREFIX: Record<Paragraph['style'], string> = {
 /** Marqueur de début de ligne : citation, puis liste (2 espaces par niveau), puis titre (§3). */
 function linePrefix(block: Block, position: ListPosition | 'too-deep' | null): string {
   const quote = block.quote ? '> ' : '';
-  if (block.type === 'codeBlock') return quote;
+  if (block.type === 'codeBlock') return block.inBullet ? '  ' : quote;
   let list = '';
   if (block.list && position && position !== 'too-deep') {
     const marker = position.kind === 'ordered' ? `${position.number}. ` : '- ';
@@ -263,9 +266,28 @@ function writeCode(content: string): string {
  * accents graves (Z4), `> ` devant chaque ligne s'il est cité (D10). Rien n'est échappé.
  */
 function writeCodeBlock(block: CodeBlock): string {
-  const body = block.code.replace(/`(?=``)/g, `\`${ZERO_WIDTH_SPACE}`);
+  const content = block.segments ? writeAnsi(block.segments) : block.code;
+  const body = content.replace(/`(?=``)/g, `\`${ZERO_WIDTH_SPACE}`);
   const lines = ['```' + block.language, ...body.split('\n'), '```'];
-  return lines.join(block.quote ? '\n> ' : '\n');
+  // Citation : `> ` devant chaque ligne (D10) ; puce : 2 espaces (D13, G9, G10).
+  return lines.join(block.quote ? '\n> ' : block.inBullet ? '\n  ' : '\n');
+}
+
+/**
+ * Contenu d'un bloc `ansi` (§6) : chaque passage mis en forme est ouvert par un seul code (styles,
+ * fond, texte) et refermé par `<ESC>[0m`, même sur plusieurs lignes (E6). Le reset est placé avant
+ * les sauts de ligne qui terminent le passage.
+ */
+function writeAnsi(segments: readonly AnsiSegment[]): string {
+  const sgr = (codes: string) => `${ESC}[${codes}m`;
+  return segments
+    .map((segment) => {
+      if (isPlainAnsiStyle(segment.style)) return segment.text;
+      const body = segment.text.replace(/\n+$/, '');
+      const trailing = segment.text.slice(body.length);
+      return sgr(ansiCodes(segment.style).join(';')) + body + sgr('0') + trailing;
+    })
+    .join('');
 }
 
 /** Les caractères d'un morceau, sans balise. */

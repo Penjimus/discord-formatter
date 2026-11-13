@@ -114,6 +114,60 @@ ligne 2 sans aucun code
 ```
 ----- fin -----
 
+===== E14a : 0 après d'autres codes, et fond au choix. Ligne 1 : rouge ou blanche ? Ligne 2 : « suite » en italique ? en gras ? en rouge ? Ligne 3 : fond violet ? =====
+```ansi
+[31;0mligne 1 : 31;0[0m
+[1;31mgras rouge [3;0msuite après 3;0[0m
+[48;2;120;40;160mfond au choix violet (48;2)[0m
+```
+----- fin -----
+
+===== E14b : langage ANSI en majuscules. « rouge » est-il rouge ? =====
+```ANSI
+[31mrouge[0m
+```
+----- fin -----
+
+===== E14c : bloc ansi dans une citation. Les deux lignes sont-elles rouges, dans la citation ? =====
+> ```ansi
+> [31mrouge ligne 1
+> rouge ligne 2[0m
+> ```
+----- fin -----
+
+===== E14d : bloc ansi dans une puce. Bloc sous la puce, les deux lignes rouges ? =====
+- puce
+  ```ansi
+  [31mrouge ligne 1
+  rouge ligne 2[0m
+  ```
+- puce suivante
+----- fin -----
+
+===== E14e : sous-puce après un bloc placé dans une puce. « sous-puce » est-elle une sous-puce, sous le bloc ? =====
+- puce
+  ```
+  bloc
+  ```
+  - sous-puce
+----- fin -----
+
+===== E14f : élément numéroté après un bloc placé dans une puce. « numéro » s'affiche avec « 1. » ou avec une puce ? =====
+- puce
+  ```
+  bloc
+  ```
+1. numéro
+----- fin -----
+
+===== E14g : texte normal après un bloc placé dans une puce. « texte » est-il hors de la liste ? =====
+- puce
+  ```
+  bloc
+  ```
+texte
+----- fin -----
+
 ===== Z1 : attendu : collision : gras puis italique séparés par un caractère invisible. 1 gras et 2 italique ? =====
 **1**​*2*
 ----- fin -----

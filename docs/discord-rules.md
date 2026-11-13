@@ -193,6 +193,9 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | **Bloc de code à l'intérieur d'une puce** : sur la ligne qui suit la puce, chaque ligne du bloc (ouverture, contenu, fermeture) indentée de 2 espaces ; le langage est permis et sans effet sur le placement (D13, G9, G10) | permis | Testé (D13, G9, G10) |
 | **Une ligne vide dans un bloc placé dans une puce casse le bloc** (G6, G11) ; un bloc ouvert sur la ligne même de la puce (`- ```js`) n'est pas un bloc (G7) | | Testé (G6, G7, G11) |
 | Bloc de code sous une puce de niveau 2 ou plus, sous un élément numéroté, ou dans une liste citée : indentation à utiliser | | À tester |
+| Ce qui suit un bloc placé dans une puce : une autre puce de niveau 1 (D13, G9, G10) | permis | Testé |
+| Après un bloc placé dans une puce : la liste **continue**. Une sous-puce s’affiche sous la puce (E14e) ; une ligne `1. ` s’affiche en puce, elle prend le type du premier élément (E14f) ; un texte non indenté sort de la liste (E14g) | | Testé (E14e, E14f, E14g) |
+| Deux blocs de suite sous une même puce ; un style autour d’un bloc placé dans une puce | | À tester |
 | Bloc de code non indenté juste après une puce : vrai bloc, coloration appliquée, affiché **hors de la liste** (non aligné avec les puces) ; la puce suivante reste une puce | | Testé (G8) |
 | Liste à l'intérieur d'une citation | permis | Testé (D11) |
 | Mention à l'intérieur d'une puce | permis | Testé |
@@ -336,7 +339,7 @@ Exemple : `<ESC>[1;4;45;37mTexte<ESC>[0m` (gras, souligné, fond indigo, texte b
 | Le caractère `<ESC>` compte pour 1 caractère dans la limite | Testé (K9, K10) |
 
 *Conventions* :
-- Chaque passage coloré ou stylé est refermé par `<ESC>[0m`. Un passage peut s'étendre sur plusieurs lignes (persistance).
+- Chaque passage coloré ou stylé est refermé par `<ESC>[0m`. Un passage peut s'étendre sur plusieurs lignes (persistance) : un seul code au début, un seul reset à la fin. Entre deux passages de mises en forme différentes : reset, puis le nouveau code.
 - L'appli n'écrit jamais de code ANSI en dehors d'un bloc `ansi`.
 - Le reset est toujours `<ESC>[0m`.
 
@@ -384,7 +387,11 @@ Statut de ces deux tableaux : codes Testés (E1, E2). Les noms des teintes sont 
 
 **Codes hors liste de départ, appliqués sur ordinateur d'après E13** : `91` (rouge clair, donc probablement `90` à `97`) et `38;5;196` (mode 256 couleurs). Statut : À confirmer. Non utilisés dans la première version.
 
-**Couleurs « au choix » `38;2;R;G;B`** (rouge, vert, bleu de 0 à 255, ex. `38;2;255;218;6` pour un jaune doré) : **appliquées sur ordinateur**. Statut : Testé (X3). Non proposées par l'appli dans la première version, mais **conservées telles quelles** si elles sont collées (S12).
+**Couleurs « au choix » `38;2;R;G;B`** (rouge, vert, bleu de 0 à 255, ex. `38;2;255;218;6` pour un jaune doré) : **appliquées sur ordinateur**. Statut : Testé (X3). **Utilisables par l'appli comme couleur de texte** (décision de l'auteur, 13/11/2026) : lues, affichées et écrites ; le choix d'une couleur au choix dans l'interface est prévu à l'étape 9. Écrites à la place du code de texte, donc en dernier : `<ESC>[1;45;38;2;255;218;6m`. **Fond au choix `48;2;R;G;B`** : appliqué sur ordinateur (Testé, E14a) ; utilisable aussi, écrit à la place du code de fond : `<ESC>[1;48;2;120;40;160;37m`.
+
+**Un `0` placé n’importe où dans une balise efface la mise en forme des balises précédentes ; les autres codes de la même balise s’appliquent quand même.** `<ESC>[31;0m` donne du rouge ; après `<ESC>[1;31m`, `<ESC>[3;0m` donne de l’italique seul, ni gras ni rouge. Statut : Testé (E14a, exemple `cellule_des_huit`) ; la règle générale (tout `0` agit comme s’il était en tête) est Généralisée de ces deux cas. L’appli ne l’écrit jamais ainsi : elle écrit le reset seul.
+
+*Lecture par l'appli d'un bloc `ansi` collé* : les balises ne sont interprétées que si **tous** leurs codes sont testés (`0` à n'importe quelle place, `1`, `3`, `4`, `2` et `7` sans effet, `30` à `37`, `40` à `47`, `38;2;R;G;B`, `48;2;R;G;B`, et `<ESC>[m` sans effet). Sinon le bloc entier est conservé tel quel, sans couleurs dans l'éditeur (S12). Le langage est insensible à la casse : `ANSI` colore comme `ansi` (Testé, E14b) ; l'appli le réécrit `ansi`. Un bloc `ansi` dans une citation (E14c) ou sous une puce (E14d) est coloré, couleur continuée d'une ligne à l'autre comprise (Testé).
 
 Code `2` combiné à d'autres (`2;1;2`) : sans effet, le reste s'applique (ici le gras). Statut : Testé (X3).
 
@@ -618,3 +625,4 @@ Dans un bloc de code, rien n'est échappé.
 12. ~~Bloc de code dans une puce~~ : tranché (G9 à G11), c'est la ligne vide qui casse le bloc. Reste : bloc sous une puce de niveau 2+, sous un élément numéroté, dans une liste citée.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
+15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).

@@ -1,7 +1,9 @@
 // Étape 3 : blocs de structure (séries D, F, G, X, Z du cahier, docs/discord-rules.md §2.4, §3, §5, §10).
 import { describe, expect, it } from 'vitest';
-import { ZERO_WIDTH_SPACE as ZWSP } from '../../src/core/characters';
+import { ESC, ZERO_WIDTH_SPACE as ZWSP } from '../../src/core/characters';
 import {
+  ansiBlock,
+  ansiText,
   bulletItem,
   codeBlock,
   createDocument,
@@ -253,8 +255,115 @@ describe('Blocs de code (D7 à D10, F1 à F5, Z4)', () => {
     expect(parse(written)).toEqual(message);
   });
 
-  it('D13_bloc_sous_une_puce_conserve_brut_en_attendant_la_regle', () => {
-    expectSameText('- puce\n  ```\n  bloc dans une puce\n  ```\n- puce suivante');
+  // Remplace « D13_bloc_sous_une_puce_conserve_brut_en_attendant_la_regle » (accord de
+  // l'utilisateur : la règle a été tranchée par G9 à G11, ROADMAP étape 4).
+  it('D13_G9_bloc_sous_une_puce_lu_comme_un_bloc', () => {
+    const message = doc(
+      bulletItem(1, text('puce')),
+      codeBlock('bloc dans une puce', { inBullet: true }),
+      bulletItem(1, text('puce suivante')),
+    );
+    const written = '- puce\n  ```\n  bloc dans une puce\n  ```\n- puce suivante';
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
+  it('G10_bloc_avec_langage_sous_une_puce', () => {
+    const message = doc(
+      bulletItem(1, text('puce')),
+      codeBlock('ligne 1\n  indentée', { language: 'js', inBullet: true }),
+      bulletItem(1, text('puce suivante')),
+    );
+    const written = '- puce\n  ```js\n  ligne 1\n    indentée\n  ```\n- puce suivante';
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
+  it('E14d_bloc_ansi_sous_une_puce', () => {
+    const message = doc(
+      bulletItem(1, text('puce')),
+      ansiBlock([ansiText('rouge\nsuite', { color: 31 })], { inBullet: true }),
+    );
+    const written = `- puce\n  \`\`\`ansi\n  ${ESC}[31mrouge\n  suite${ESC}[0m\n  \`\`\``;
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
+  it('bloc_sous_une_puce_suivi_d_une_ligne_vide_ou_en_fin_de_message', () => {
+    const message = doc(
+      bulletItem(1, text('a')),
+      codeBlock('x', { inBullet: true }),
+      paragraph(),
+      bulletItem(1, text('b')),
+      codeBlock('y', { inBullet: true }),
+    );
+    const written = '- a\n  ```\n  x\n  ```\n\n- b\n  ```\n  y\n  ```';
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
+  it('E14e_sous_puce_apres_un_bloc_sous_une_puce', () => {
+    const message = doc(
+      bulletItem(1, text('puce')),
+      codeBlock('bloc', { inBullet: true }),
+      bulletItem(2, text('sous-puce')),
+    );
+    const written = '- puce\n  ```\n  bloc\n  ```\n  - sous-puce';
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
+  it('E14f_la_liste_continue_apres_le_bloc_1_point_lu_en_puce', () => {
+    const expected = doc(
+      bulletItem(1, text('puce')),
+      codeBlock('bloc', { inBullet: true }),
+      bulletItem(1, text('numéro')),
+    );
+    expect(parse('- puce\n  ```\n  bloc\n  ```\n1. numéro')).toEqual(expected);
+    expect(serialize(expected)).toBe('- puce\n  ```\n  bloc\n  ```\n- numéro');
+  });
+
+  it('E14g_texte_apres_un_bloc_sous_une_puce_hors_de_la_liste', () => {
+    const message = doc(bulletItem(1, text('puce')), codeBlock('bloc', { inBullet: true }), paragraph(text('texte')));
+    const written = '- puce\n  ```\n  bloc\n  ```\ntexte';
+    expect(serialize(message)).toBe(written);
+    expect(parse(written)).toEqual(message);
+  });
+
+  it('G6_G11_ligne_vide_refusee_dans_un_bloc_sous_une_puce', () => {
+    expect(() => codeBlock('ligne 1\n\nligne 3', { inBullet: true })).toThrow();
+    const g11 = '- puce\n  ```\n  ligne 1\n\n  ligne 3\n  ```\n- puce suivante';
+    expect(parse(g11).blocks.some((block) => block.type === 'codeBlock')).toBe(false);
+    expectSameText(g11);
+  });
+
+  it('bloc_sous_une_puce_placements_non_testes_refuses', () => {
+    const block = codeBlock('x', { inBullet: true });
+    expect(() => doc(block)).toThrow();
+    expect(() => doc(paragraph(text('a')), block)).toThrow();
+    expect(() => doc(numberedItem(1, 1, text('a')), block)).toThrow();
+    expect(() => doc(bulletItem(1, text('a')), bulletItem(2, text('b')), block)).toThrow();
+    expect(() => doc(quoted(bulletItem(1, text('a'))), block)).toThrow();
+    // La liste continue après le bloc : un élément numéroté y est impossible (E14f, D3).
+    expect(() => doc(bulletItem(1, text('a')), block, numberedItem(1, 1, text('b')))).toThrow();
+    // Deux blocs de suite sous une même puce : non testé.
+    expect(() => doc(bulletItem(1, text('a')), block, block)).toThrow();
+    expect(() => codeBlock('x', { inBullet: true, marks: ['spoiler'] })).toThrow();
+    expect(() => codeBlock('x', { inBullet: true, quote: true })).toThrow();
+    expect(() => quoted(block)).toThrow();
+  });
+
+  it('bloc_sous_une_puce_placements_non_testes_lus_bruts', () => {
+    for (const message of [
+      '1. a\n  ```\n  x\n  ```',
+      '- a\n  - b\n  ```\n  x\n  ```',
+      '- a\n   ```\n   x\n   ```',
+      '- a\n  ```\n x\n  ```',
+      'texte\n  ```\n  x\n  ```',
+    ]) {
+      expect(parse(message).blocks.some((block) => block.type === 'codeBlock')).toBe(false);
+      expectSameText(message);
+    }
   });
 
   it('G6_G7_pas_de_bloc_dans_une_puce_texte_conserve', () => {

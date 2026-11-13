@@ -2,11 +2,17 @@
 // Méthode de Discord : à chaque position, on essaie les règles dans un ordre fixe ; pour `*` et `_`,
 // la règle qui couvre le plus long morceau l'emporte. Ce qui n'est pas reconnu reste du texte,
 // et ce que le document ne sait pas encore représenter devient un morceau brut, réécrit tel quel (S12).
-import { ZERO_WIDTH_SPACE } from './characters';
+import { ESC, ZERO_WIDTH_SPACE } from './characters';
 import {
   analyzeLists,
+  ansiBlock,
+  ansiStyle,
+  blockInBulletProblem,
   code,
   codeBlock,
+  type AnsiSegment,
+  type AnsiStyle,
+  type CodeBlockOptions,
   createDocument,
   layoutLine,
   MAX_LIST_LEVEL,
@@ -55,7 +61,11 @@ const ESCAPE = /^\\([^0-9A-Za-z\s])/u;
 const PLAIN_BLOCK = /^```([^\s`]*)\n((?:(?!```)[\s\S])*?)\n```(?=\n|$)/;
 /** Le même dans une citation : `> ` devant chaque ligne (D10). */
 const QUOTED_BLOCK = /^```([^\s`]*)\n((?:> (?:(?!```)[^\n])*\n)*?)> ```(?=\n|$)/;
-/** Autres formes de bloc (F3, F5, bloc indenté de D13) : conservées brutes. */
+/** Le même sous une puce : 2 espaces devant chaque ligne (D13, G9, G10). */
+const BULLET_BLOCK = /^  ```([^\s`]*)\n((?:  (?:(?!```)[^\n])*\n)*?)  ```(?=\n|$)/;
+/** Balise ANSI : `<ESC>[`, codes séparés par `;`, puis `m` (§6). */
+const ANSI_TAG = new RegExp(`${ESC}\\[([0-9;]*)m`, 'g');
+/** Autres formes de bloc (F3, F5, bloc mal indenté sous une puce) : conservées brutes. */
 const CODE_BLOCK = /^```[\s\S]*?```/;
 /** Espace invisible placé par l'appli entre le premier et le deuxième de trois accents graves (Z4). */
 const BLOCK_ZERO_WIDTH = new RegExp(`\`${ZERO_WIDTH_SPACE}(?=\`\`)`);
@@ -118,21 +128,87 @@ function inlineCode(fence: string, content: string): string | null {
   }
 }
 
+/**
+ * Applique une balise ANSI (codes sans `<ESC>[` ni `m`) à une mise en forme. `null` si un code
+ * n'est pas testé (§6) : le bloc entier reste alors tel quel.
+ */
+function applyAnsiCodes(style: AnsiStyle, codes: string): AnsiStyle | null {
+  if (codes === '') return style; // `<ESC>[m` ne réinitialise pas (E12).
+  const parts = codes.split(';');
+  if (!parts.every((part) => /^(?:0|[1-9]\d*)$/.test(part))) return null;
+  // Un `0`, à n'importe quelle place, efface ce que les balises précédentes avaient mis ; les autres
+  // codes de la balise s'appliquent quand même (E12 `0;31`, E14a `31;0` et `3;0`).
+  const next: Partial<Record<keyof AnsiStyle, unknown>> = parts.includes('0') ? ansiStyle() : { ...style };
+  for (let i = 0; i < parts.length; i++) {
+    const value = Number(parts[i]);
+    if (value === 0 || value === 2 || value === 7) continue; // 2 et 7 : sans effet (E13, X3).
+    else if (value === 1) next.bold = true;
+    else if (value === 3) next.italic = true;
+    else if (value === 4) next.underline = true;
+    else if (value >= 30 && value <= 37) next.color = value;
+    else if (value >= 40 && value <= 47) next.background = value;
+    else if ((value === 38 || value === 48) && parts[i + 1] === '2' && i + 4 < parts.length) {
+      const [r, g, b] = parts.slice(i + 2, i + 5).map(Number);
+      if (![r, g, b].every((part) => part <= 255)) return null;
+      // Couleur au choix (X3), fond au choix (E14a).
+      next[value === 38 ? 'color' : 'background'] = { r, g, b };
+      i += 4;
+    } else return null;
+  }
+  return ansiStyle(next as Partial<AnsiStyle>);
+}
+
+/**
+ * Lit le contenu d'un bloc `ansi` (§6, E3, E4, E6, E12). `null` si le contenu n'a aucune balise, ou
+ * contient une forme non testée : il est alors gardé tel quel (S12).
+ */
+function readAnsi(content: string): AnsiSegment[] | null {
+  const segments: AnsiSegment[] = [];
+  let style = ansiStyle();
+  let last = 0;
+  let found = false;
+  for (const match of content.matchAll(ANSI_TAG)) {
+    found = true;
+    segments.push({ text: content.slice(last, match.index), style });
+    const next = applyAnsiCodes(style, match[1]);
+    if (!next) return null;
+    style = next;
+    last = match.index + match[0].length;
+  }
+  segments.push({ text: content.slice(last), style });
+  const plain = segments.map((segment) => segment.text).join('');
+  // ESC isolé, ou ligne du bord qui ne contient qu'une balise : forme douteuse.
+  if (!found || plain.includes(ESC) || plain.startsWith('\n') || plain.endsWith('\n')) return null;
+  return segments;
+}
+
+/** Bloc de code lu ; les blocs `ansi` (casse indifférente, E14b) sont lus en couleurs quand c'est sûr. */
+function readCodeBlock(content: string, options: CodeBlockOptions): CodeBlock {
+  const segments = options.language?.toLowerCase() === 'ansi' ? readAnsi(content) : null;
+  if (segments) {
+    const { language: _language, ...placement } = options;
+    return ansiBlock(segments, placement);
+  }
+  return codeBlock(content, options);
+}
+
 /** Bloc de code reconnu à cette position, ou `null`. `prefix` : marqueurs déjà lus sur la ligne. */
 function matchCodeBlock(rest: string, prefix: string, marks: readonly Mark[]): Piece | null {
   const quote = prefix === '> ';
-  if (prefix !== '' && !quote) return null; // Bloc dans une puce ou un titre : non pris en charge.
-  const match = (quote ? QUOTED_BLOCK : PLAIN_BLOCK).exec(rest);
+  if (prefix !== '' && !quote) return null; // Bloc sur la ligne d'une puce ou d'un titre (G7).
+  // Bloc sous une puce, indenté de 2 espaces (D13) : sa place est vérifiée avec les lignes voisines.
+  const inBullet = !quote && rest.startsWith('  ```') && marks.length === 0;
+  const match = (quote ? QUOTED_BLOCK : inBullet ? BULLET_BLOCK : PLAIN_BLOCK).exec(rest);
   if (!match) return null;
-  let content = quote
+  let content = quote || inBullet
     ? match[2].split('\n').slice(0, -1).map((line) => line.slice(2)).join('\n')
     : match[2];
   while (BLOCK_ZERO_WIDTH.test(content)) content = content.replace(BLOCK_ZERO_WIDTH, '`');
   try {
-    const block = codeBlock(content, { language: match[1], marks, quote });
+    const block = readCodeBlock(content, { language: match[1], marks, quote, inBullet });
     return { kind: 'codeBlock', block, value: match[0], marks };
   } catch {
-    return null; // Bloc vide, ou ligne vide dans un bloc cité : conservé brut.
+    return null; // Bloc vide, ou ligne vide dans un bloc cité ou dans une puce : conservé brut.
   }
 }
 
@@ -244,6 +320,8 @@ interface RawLine {
   readonly markers: Piece[];
   readonly nodes: InlineNode[];
   block?: CodeBlock;
+  /** Texte d'origine du bloc, réécrit tel quel s'il s'avère mal placé. */
+  blockSource?: string;
   /** Les marqueurs à partir de cette position sont gardés bruts (niveau de liste sauté). */
   keepRawFrom: number;
 }
@@ -262,6 +340,7 @@ function toRawLines(pieces: readonly Piece[]): RawLine[] {
       const next = pieces[p + 1];
       if (current.nodes.length === 0 && !current.block && (!next || next.value.startsWith('\n'))) {
         current.block = piece.block;
+        current.blockSource = piece.value;
         return;
       }
     }
@@ -339,7 +418,7 @@ function toBlocks(lines: RawLine[]): Block[] {
       }
     });
     if (demoted) continue;
-    return blocks.map((block, i) => {
+    const normalized = blocks.map((block, i) => {
       const position = positions[i];
       if (block.type !== 'paragraph' || !block.list || position === null || position === 'too-deep') {
         return block;
@@ -350,7 +429,22 @@ function toBlocks(lines: RawLine[]): Block[] {
         ...block.content,
       );
     });
+    // Bloc indenté mal placé (pas sous une puce de niveau 1, ou suivi d'une forme non testée) : brut.
+    const misplaced = normalized.findIndex(
+      (block, i) => block.type === 'codeBlock' && block.inBullet && blockInBulletProblem(normalized, i) !== null,
+    );
+    if (misplaced === -1) return normalized;
+    lines.splice(misplaced, 1, ...rawLines(lines[misplaced].blockSource!));
   }
+}
+
+/** Lignes gardées telles quelles, une par ligne du texte. */
+function rawLines(source: string): RawLine[] {
+  return source.split('\n').map((segment) => ({
+    markers: [],
+    nodes: segment === '' ? [] : [raw(segment)],
+    keepRawFrom: Infinity,
+  }));
 }
 
 /** Texte Discord → document. Rien n'est perdu : ce qui n'est pas reconnu reste du texte ou du brut. */

@@ -71,7 +71,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Tests** : séries D, F, G du cahier (D3, D10 à D14, F1 à F5, G1 à G4 en particulier), et X2.
 **Validation** : tableau « entrée → sortie » ; l'utilisateur vérifie les imbrications (liste dans citation, bloc dans puce, etc.).
 
-### [ ] Étape 4 : Couleurs ANSI
+### [x] Étape 4 : Couleurs ANSI
 
 **Objectif** : blocs colorés, en lecture et en écriture.
 
@@ -257,6 +257,14 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 | 2026-11-13 | 3 | G5 : chaque sous-liste repart de son propre numéro (déjà le comportement de l'appli) | Testé par l'utilisateur |
 | 2026-11-13 | 3 | G6 à G8 : pas de bloc de code dans une puce (avec langage et ligne vide, ou ouvert sur la ligne de la puce) ; bloc non indenté après une puce = bloc hors de la liste. D13 gardé, marqué contradictoire, à repasser à l'identique. Code inchangé (déjà refusé) | Testé par l'utilisateur |
 | 2026-11-13 | 3 | G9 à G11 : D13 confirmé ; c'est la ligne vide qui casse un bloc dans une puce, le langage est sans effet. Bloc dans une puce de niveau 1 autorisé, sans ligne vide : prévu en rattrapage à l'étape 4, avec suites aux étapes 6 et 9 | Décision de l'utilisateur ; niveaux 2+, éléments numérotés et listes citées non testés |
+| 2026-11-13 | 4 | Lecture ANSI : un bloc n'est lu en couleurs que si tous ses codes sont testés ; sinon il reste brut (option A) | Choix de l'utilisateur ; aucune couleur ne peut « déborder » à la réécriture |
+| 2026-11-13 | 4 | Couleurs au choix `38;2;R;G;B` utilisables comme couleur de texte (écriture comprise) ; leur choix dans l'interface est à prévoir à l'étape 9 | Décision de l'utilisateur : ne pas restreindre ce que l'appli sait lire |
+| 2026-11-13 | 4 | E14 passé : un `0` dans une balise efface les balises précédentes, le reste de la balise s'applique (règle générale tirée de `31;0` et `3;0`) ; fond au choix `48;2` utilisable ; `ANSI` = `ansi` ; bloc `ansi` coloré permis dans une citation et sous une puce ; la liste continue après un bloc sous une puce (sous-puce, `1.` lu en puce), un texte en sort. Tests « en attendant E14 » remplacés par les tests E14a à E14g | Résultats de l'utilisateur |
+| 2026-11-13 | 4 | Étape validée par l'utilisateur : V1 à V5 collés dans Discord (couleurs, fonds, couleurs et fond au choix, exemples `couleurs` et `cellule_des_huit` réécrits, bloc coloré cité, blocs sous une puce), tous corrects | — |
+| 2026-11-13 | 4 | Un saut de ligne au bord d'un passage coloré est rangé hors du passage ; entre deux passages identiques, il les relie en un seul (un seul reset) | Un même rendu n'a qu'une forme dans le document (aller-retour stable) |
+| 2026-11-13 | 4 | Codes sans effet (`2`, `7`, `<ESC>[m`) retirés à la réécriture ; un bloc `ansi` où rien n'est coloré est réécrit sans balises | Même rendu (E12, E13, X3) |
+| 2026-11-13 | 4 | Test D13 « conservé brut » remplacé par `D13_G9_bloc_sous_une_puce_lu_comme_un_bloc` | Prévu par la ROADMAP (accord de l'utilisateur) |
+| 2026-11-13 | 4 | `3;0` (italique constaté), `0` après d'autres codes, fond `48;2`, `ANSI` en majuscules, `ansi` dans une citation, suite d'un bloc dans une puce : test E14 préparé ; non interprétés en attendant | Choix de l'utilisateur (questions 2 et 3, option a) |
 
 ---
 

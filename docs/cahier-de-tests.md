@@ -187,6 +187,13 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **E11** | `<ESC>[31mrouge hors bloc<ESC>[0m` | codes ANSI hors de tout bloc de code : que voit-on ? | ℹ️ Formatage ANSI non appliqué hors d'un bloc | §6 |
 | **E12** | ```` ```ansi ↵ <ESC>[31mrouge<ESC>[0m normal ↵ <ESC>[31mrouge<ESC>[m normal (reset vide) ↵ <ESC>[0;31mrouge (0;31)<ESC>[0m normal ↵ ``` ```` | variantes de reset : 0 ; vide ; 0 avec couleur (0;31) | ⚠️ `<ESC>[m` (reset vide) **ne réinitialise pas** : « normal (reset vide) » reste rouge ; les deux autres « normal » sont blancs | §6 |
 | **E13** | ```` ```ansi ↵ <ESC>[91mcode 91<ESC>[0m ↵ <ESC>[38;5;196mcode 38;5;196<ESC>[0m ↵ <ESC>[9mcode 9<ESC>[0m ↵ <ESC>[7mcode 7<ESC>[0m ↵ <ESC>[2mcode 2<ESC>[0m ↵ ``` ```` | codes non listés dans les règles : clairs 91, 256 couleurs 38;5;196, barré 9, inversé 7, atténué 2 : ignorés ? | ℹ️ `91`, `38;5;196` et `9` : l'auteur note « OK » (appliqués sur ordinateur, effet exact à confirmer). `7` et `2` : sans effet. Mobile : balises masquées, texte non formaté | §6 |
+| **E14a** | ```` ```ansi ↵ <ESC>[31;0mligne 1 : 31;0<ESC>[0m ↵ <ESC>[1;31mgras rouge <ESC>[3;0msuite après 3;0<ESC>[0m ↵ <ESC>[48;2;120;40;160mfond au choix violet (48;2)<ESC>[0m ↵ ``` ```` | `0` après d'autres codes ; fond au choix | ℹ️ Ligne 1 rouge ; « suite » en italique, ni gras ni rouge ; fond violet affiché (13/11/2026) | §6 |
+| **E14b** | ```` ```ANSI ↵ <ESC>[31mrouge<ESC>[0m ↵ ``` ```` | langage en majuscules | ✅ Rouge : le langage `ANSI` est reconnu | §6 |
+| **E14c** | ```` > ```ansi ↵ > <ESC>[31mrouge ligne 1 ↵ > rouge ligne 2<ESC>[0m ↵ > ``` ```` | bloc ansi dans une citation | ✅ Les deux lignes rouges, dans la citation | §6, §10 |
+| **E14d** | ```` - puce ↵   ```ansi ↵   <ESC>[31mrouge ligne 1 ↵   rouge ligne 2<ESC>[0m ↵   ``` ↵ - puce suivante ```` | bloc ansi dans une puce | ✅ Bloc indenté sous la puce, deux lignes rouges | §3, §6 |
+| **E14e** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵   - sous-puce ```` | sous-puce après un bloc dans une puce | ✅ Sous-puce affichée | §3 (listes) |
+| **E14f** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵ 1. numéro ```` | élément numéroté après un bloc dans une puce | ℹ️ « 1. » s'affiche en puce : la liste continue après le bloc | §3 (listes) |
+| **E14g** | ```` - puce ↵   ``` ↵   bloc ↵   ``` ↵ texte ```` | texte après un bloc dans une puce | ✅ Texte hors de la liste | §3 (listes) |
 
 ## Série F
 

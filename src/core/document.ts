@@ -1,4 +1,5 @@
 // Le « document » : la source de vérité unique, indépendante de l'interface.
+import { ESC } from './characters';
 // Les constructeurs refusent tout ce que Discord ne sait pas rendre (docs/discord-rules.md §1, §5, §10).
 
 /** Styles de texte, rangés du plus extérieur au plus intérieur (§2.1). */
@@ -61,14 +62,47 @@ export interface Paragraph {
   readonly content: readonly InlineNode[];
 }
 
+/** Couleur au choix `38;2;R;G;B` (X3), composantes de 0 à 255. */
+export interface Rgb {
+  readonly r: number;
+  readonly g: number;
+  readonly b: number;
+}
+
+/** Couleur ANSI : code (30 à 37 pour le texte, 40 à 47 pour le fond), ou couleur au choix (§6). */
+export type AnsiColor = number | Rgb;
+
+/** Mise en forme ANSI d'un morceau de texte (§6). */
+export interface AnsiStyle {
+  readonly bold: boolean;
+  readonly italic: boolean;
+  readonly underline: boolean;
+  /** Code 40 à 47, ou fond au choix `48;2;R;G;B` (E14a), ou `null`. */
+  readonly background: AnsiColor | null;
+  readonly color: AnsiColor | null;
+}
+
+/** Morceau de texte d'un bloc `ansi` ; il peut contenir des sauts de ligne (persistance, E6). */
+export interface AnsiSegment {
+  readonly text: string;
+  readonly style: AnsiStyle;
+}
+
 /** Bloc de code : rien n'y est interprété (§5). Les styles l'entourent en entier (X2). */
 export interface CodeBlock {
   readonly type: 'codeBlock';
   readonly quote: boolean;
+  /** Bloc placé sous une puce de niveau 1, chaque ligne indentée de 2 espaces (D13, G9, G10). */
+  readonly inBullet: boolean;
   /** Champ libre, vide par défaut (§5). */
   readonly language: string;
   /** Contenu réel, lignes séparées par `\n`, sans lignes vides au début ni à la fin. */
   readonly code: string;
+  /**
+   * Bloc `ansi` coloré : le contenu en morceaux mis en forme (`code` en est le texte seul).
+   * `null` pour un bloc sans couleur : `code` est alors écrit tel quel (S12).
+   */
+  readonly segments: readonly AnsiSegment[] | null;
   readonly marks: readonly Mark[];
 }
 
@@ -189,13 +223,20 @@ export function numberedItem(level: number, start: number | null, ...content: In
   return layoutLine({ list: { kind: 'ordered', level, start } }, ...content);
 }
 
+/** Placement et styles d'un bloc de code. */
+export interface CodeBlockOptions {
+  readonly language?: string;
+  readonly marks?: readonly Mark[];
+  readonly quote?: boolean;
+  readonly inBullet?: boolean;
+}
+
 /** Bloc de code. Lignes vides du début et de la fin supprimées (F4). */
-export function codeBlock(
-  content: string,
-  options: { language?: string; marks?: readonly Mark[]; quote?: boolean } = {},
-): CodeBlock {
+export function codeBlock(content: string, options: CodeBlockOptions = {}): CodeBlock {
   const language = options.language ?? '';
   const quote = options.quote ?? false;
+  const inBullet = options.inBullet ?? false;
+  const marks = normalizeMarks(options.marks ?? []);
   if (/[\s`]/u.test(language)) {
     throw new Error('Le langage est un mot sans espace ni accent grave.');
   }
@@ -207,13 +248,158 @@ export function codeBlock(
   if (quote && lines.includes('')) {
     throw new Error('Ligne vide dans un bloc de code cité : non testé dans Discord.');
   }
-  return { type: 'codeBlock', quote, language, code: lines.join('\n'), marks: normalizeMarks(options.marks ?? []) };
+  if (inBullet) {
+    // Une ligne vide casse le bloc placé dans une puce (G6, G11).
+    if (lines.includes('')) throw new Error('Pas de ligne vide dans un bloc placé dans une puce (G11).');
+    if (quote) throw new Error('Bloc dans une liste citée : non testé dans Discord.');
+    if (marks.length > 0) throw new Error('Style autour d\'un bloc placé dans une puce : non testé dans Discord.');
+  }
+  return { type: 'codeBlock', quote, inBullet, language, code: lines.join('\n'), segments: null, marks };
+}
+
+const ANSI_STYLE_CODES = { bold: 1, italic: 3, underline: 4 } as const;
+
+function isRgb(color: AnsiColor): color is Rgb {
+  return typeof color === 'object';
+}
+
+/**
+ * Vérifie une couleur : code de `min` à `min + 7`, ou couleur au choix (X3, E14a).
+ * Renvoie une copie (la couleur au choix est recopiée composante par composante).
+ */
+function checkColor(color: AnsiColor | null, min: number, name: string): AnsiColor | null {
+  if (color === null) return null;
+  if (isRgb(color)) {
+    const parts = [color.r, color.g, color.b];
+    if (!parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
+      throw new Error(`${name} au choix impossible : rouge, vert et bleu de 0 à 255.`);
+    }
+    return { r: color.r, g: color.g, b: color.b };
+  }
+  if (!(Number.isInteger(color) && color >= min && color <= min + 7)) {
+    throw new Error(`${name} ANSI impossible : code de ${min} à ${min + 7}.`);
+  }
+  return color;
+}
+
+/** Mise en forme ANSI ; refuse les codes que l'appli ne propose pas (§6). */
+export function ansiStyle(options: Partial<AnsiStyle> = {}): AnsiStyle {
+  return {
+    bold: options.bold ?? false,
+    italic: options.italic ?? false,
+    underline: options.underline ?? false,
+    background: checkColor(options.background ?? null, 40, 'Fond'),
+    color: checkColor(options.color ?? null, 30, 'Couleur de texte'),
+  };
+}
+
+/** Le morceau est-il sans aucune mise en forme ? */
+export function isPlainAnsiStyle(style: AnsiStyle): boolean {
+  return !style.bold && !style.italic && !style.underline && style.background === null && style.color === null;
+}
+
+export function sameAnsiStyle(a: AnsiStyle, b: AnsiStyle): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+/** Codes d'une mise en forme, dans l'ordre de l'appli : styles, fond, texte (§6). */
+export function ansiCodes(style: AnsiStyle): string[] {
+  const codes: string[] = [];
+  for (const key of ['bold', 'italic', 'underline'] as const) {
+    if (style[key]) codes.push(String(ANSI_STYLE_CODES[key]));
+  }
+  const write = (color: AnsiColor, rgbPrefix: string) =>
+    isRgb(color) ? `${rgbPrefix};2;${color.r};${color.g};${color.b}` : String(color);
+  if (style.background !== null) codes.push(write(style.background, '48'));
+  if (style.color !== null) codes.push(write(style.color, '38'));
+  return codes;
+}
+
+/** Morceau de texte d'un bloc `ansi`. Le caractère ESC n'y est pas permis : l'appli écrit les codes. */
+export function ansiText(content: string, style: Partial<AnsiStyle> = {}): AnsiSegment {
+  if (content.includes(ESC)) throw new Error('Le caractère ESC ne s\'écrit pas dans le texte.');
+  return { text: content, style: ansiStyle(style) };
+}
+
+/**
+ * Bloc `ansi` coloré. Les morceaux voisins de même mise en forme sont fusionnés, les lignes vides
+ * du début et de la fin retirées (F4). Sans aucune couleur, c'est un bloc `ansi` normal (D9).
+ */
+export function ansiBlock(
+  segments: readonly AnsiSegment[],
+  options: Omit<CodeBlockOptions, 'language'> = {},
+): CodeBlock {
+  // Un même rendu n'a qu'une seule forme. Un saut de ligne au bord d'un passage n'a pas de couleur
+  // visible : il est sorti du passage ; entre deux passages identiques, il les relie (E6).
+  const split = segments.flatMap((segment) => {
+    const checked = ansiText(segment.text, segment.style);
+    if (isPlainAnsiStyle(checked.style)) return [checked];
+    const [, before, body, after] = /^(\n*)([\s\S]*?)(\n*)$/.exec(checked.text)!;
+    return [ansiText(before), { ...checked, text: body }, ansiText(after)];
+  });
+  const merged = mergeAnsiSegments(split);
+  const linked = merged.flatMap((segment, i) => {
+    const [previous, next] = [merged[i - 1], merged[i + 1]];
+    const linksPassages = isPlainAnsiStyle(segment.style) && /^\n+$/.test(segment.text)
+      && previous && next && sameAnsiStyle(previous.style, next.style);
+    return linksPassages ? [{ ...segment, style: previous.style }] : [segment];
+  });
+  const result = mergeAnsiSegments(linked);
+  ansiTrimBorders(result);
+  const plain = codeBlock(result.map((segment) => segment.text).join(''), { ...options, language: 'ansi' });
+  if (result.every((segment) => isPlainAnsiStyle(segment.style))) return plain;
+  return { ...plain, segments: result };
+}
+
+/** Retire les morceaux vides et fusionne les voisins de même mise en forme. */
+function mergeAnsiSegments(segments: readonly AnsiSegment[]): AnsiSegment[] {
+  const merged: AnsiSegment[] = [];
+  for (const segment of segments) {
+    const previous = merged[merged.length - 1];
+    if (segment.text === '') continue;
+    if (previous && sameAnsiStyle(previous.style, segment.style)) {
+      merged[merged.length - 1] = { ...previous, text: previous.text + segment.text };
+    } else {
+      merged.push(segment);
+    }
+  }
+  return merged;
+}
+
+/** Lignes vides du bord (F4) : retire les sauts de ligne en tête et en fin. */
+function ansiTrimBorders(merged: AnsiSegment[]): void {
+  while (merged.length > 0 && merged[0].text.startsWith('\n')) {
+    const rest = merged[0].text.replace(/^\n+/, '');
+    if (rest === '') merged.shift();
+    else merged[0] = { ...merged[0], text: rest };
+  }
+  while (merged.length > 0 && merged[merged.length - 1].text.endsWith('\n')) {
+    const last = merged.length - 1;
+    const rest = merged[last].text.replace(/\n+$/, '');
+    if (rest === '') merged.pop();
+    else merged[last] = { ...merged[last], text: rest };
+  }
+}
+
+/**
+ * Colore un bloc de code (§5, « langage et couleur ») : un bloc sans langage devient `ansi` ;
+ * un bloc avec un autre langage ne peut pas être coloré.
+ */
+export function colorBlock(block: CodeBlock, segments: readonly AnsiSegment[]): CodeBlock {
+  // Le langage est insensible à la casse (F2, E14b).
+  if (block.language !== '' && block.language.toLowerCase() !== 'ansi') {
+    throw new Error('Un bloc avec un langage ne peut pas être coloré.');
+  }
+  return ansiBlock(segments, { marks: block.marks, quote: block.quote, inBullet: block.inBullet });
 }
 
 /** Place une ligne ou un bloc de code dans une citation (`> ` sur chaque ligne). */
 export function quoted<T extends Block>(block: T): T {
   if (block.type === 'codeBlock') {
-    return codeBlock(block.code, { language: block.language, marks: block.marks, quote: true }) as T;
+    const options = { marks: block.marks, quote: true, inBullet: block.inBullet };
+    // Bloc ansi coloré dans une citation : permis (E14c).
+    if (block.segments) return ansiBlock(block.segments, options) as T;
+    return codeBlock(block.code, { ...options, language: block.language }) as T;
   }
   const line = block as Paragraph;
   return layoutLine({ quote: true, list: line.list ?? undefined, style: line.style }, ...line.content) as T;
@@ -224,6 +410,7 @@ export function quoted<T extends Block>(block: T): T {
  * numéro de départ sur le premier élément seulement (1 par défaut).
  */
 export function createDocument(...blocks: Block[]): DiscordDocument {
+  checkBlocksInBullets(blocks);
   const positions = analyzeLists(blocks);
   const checked = blocks.map((block, i) => {
     const position = positions[i];
@@ -243,6 +430,27 @@ export function createDocument(...blocks: Block[]): DiscordDocument {
   return { blocks: checked };
 }
 
+/**
+ * Raison pour laquelle le bloc `index` (placé dans une puce) est mal placé, ou `null`.
+ * Testé : juste après une puce de niveau 1 hors citation (D13, G9, G10). Ce qui suit est libre :
+ * la liste continue (E14e, E14f) ou s'arrête (E14g). Deux blocs de suite : non testé.
+ */
+export function blockInBulletProblem(blocks: readonly Block[], index: number): string | null {
+  const previous = blocks[index - 1];
+  const position = analyzeLists(blocks)[index - 1];
+  const afterBullet = previous?.type === 'paragraph' && !previous.quote && previous.list?.level === 1
+    && position !== null && position !== undefined && position !== 'too-deep' && position.kind === 'bullet';
+  return afterBullet ? null : 'Un bloc placé dans une puce suit une puce de niveau 1 (D13).';
+}
+
+function checkBlocksInBullets(blocks: readonly Block[]): void {
+  blocks.forEach((block, i) => {
+    if (block.type !== 'codeBlock' || !block.inBullet) return;
+    const problem = blockInBulletProblem(blocks, i);
+    if (problem) throw new Error(problem);
+  });
+}
+
 /** Place d'un élément dans sa sous-liste. */
 export interface ListPosition {
   /** Type de la sous-liste : celui de son premier élément (D3). */
@@ -255,13 +463,19 @@ export interface ListPosition {
 /**
  * Pour chaque bloc : sa place dans une liste, `null` s'il n'est pas un élément de liste,
  * `'too-deep'` s'il saute un niveau. Une liste est interrompue par tout autre bloc, y compris
- * une ligne vide (réponse de l'auteur), ou par l'entrée / la sortie d'une citation.
- * Une sous-liste commence à chaque nouveau parent (non testé).
+ * une ligne vide (réponse de l'auteur), ou par l'entrée / la sortie d'une citation. Un bloc de
+ * code placé dans une puce ne l'interrompt pas (E14e, E14f).
+ * Une sous-liste commence à chaque nouveau parent (G5).
  */
 export function analyzeLists(blocks: readonly Block[]): (ListPosition | 'too-deep' | null)[] {
   let stack: { kind: ListKind; next: number }[] = [];
   let quote = false;
   return blocks.map((block) => {
+    if (block.type === 'codeBlock' && block.inBullet) {
+      // Le bloc appartient à la puce de niveau 1 qui précède : ses sous-listes sont closes.
+      stack.length = Math.min(stack.length, 1);
+      return null;
+    }
     if (block.type !== 'paragraph' || !block.list) {
       stack = [];
       return null;
