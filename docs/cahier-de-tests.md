@@ -22,6 +22,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 |---|---|
 | A, B, C, D, F, G, H, I, J | `tests-discord.md` (un bloc par message) |
 | E, K, Z (caractères invisibles et longueurs) | `tests-discord-speciaux.txt` (à ouvrir dans un éditeur de texte simple) |
+| I5 (caractère invisible dans un code `:nom:`) | `test-I5.txt` (à ouvrir dans un éditeur de texte simple) |
 | M | Essais libres de l'auteur, sans fichier de départ : leurs identifiants M1 à M6 ont été créés pour ce cahier |
 | X | Messages réels du dossier `examples/` (`NOM.txt`) |
 
@@ -37,7 +38,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
 | [G](#série-g) | Listes et citations | G1 à G4 (4) | §3 |
 | [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
-| [I](#série-i) | Mentions et émojis | I1 à I3 (3) | §1, §7, §9 |
+| [I](#série-i) | Mentions et émojis | I1 à I4 (4) | §1, §7, §9, §11 |
 | [J](#série-j) | Lignes vides | J1 à J4 (4) | §13 |
 | [K](#série-k) | Longueur et comptage | K1 à K10 (10) | §9, §12 |
 | [Z](#série-z) | Caractères invisibles | Z1 à Z6 (6) | §2.3, §5, §13 |
@@ -252,6 +253,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **I1** | `<@ID_UTILISATEUR> <@&ID_ROLE> <#ID_SALON>` | les trois modèles restent du texte brut | ✅ Les trois modèles restent du texte brut | §7 |
 | **I2** | ```` Hors code : <#ID_SALON_REEL> ↵ Code en ligne : `<#ID_SALON_REEL>` ↵ ``` ↵ Bloc : <#ID_SALON_REEL> ↵ ``` ```` | ligne 1 : lien de salon ; ligne 2 : brut dans le code en ligne ; lignes suivantes : brut dans le bloc ? | ℹ️ L'identifiant fictif n'est pas interprété et s'affiche en texte brut. Conclusion rapportée par l'auteur : une mention n'est active qu'en dehors d'un bloc ou d'une ligne de code | §7 |
 | **I3** | `**😀** *😀* __😀__ ~~😀~~ \|\|😀\|\|` | émojis dans les styles : tous rendus normalement ? | ⚠️ Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji | §1, §9 |
+| **I4** | `\:star: ↵ :star\: ↵ \:star\:` | quelle forme empêche la conversion de `:star:` en émoji ? | ⚠️ Ligne 1 : `\` puis l'étoile ⭐ (conversion faite, antislash visible). Lignes 2 et 3 : affichées telles quelles, antislashs visibles (`:star\:`, `\:star\:`). L'antislash n'est pas une bonne manière d'échapper un code `:nom:` | §9, §11 |
 
 ## Série J
 
@@ -354,6 +356,7 @@ Ces tests ont contredit ou nuancé une hypothèse de départ. Ils sont la raison
 | **E12** | `<ESC>[m` est équivalent à `<ESC>[0m` | `<ESC>[m` (reset vide) **ne réinitialise pas** : « normal (reset vide) » reste rouge ; les deux autres « normal » sont blancs |
 | **H2** | Un timestamp invalide est rejeté | Le timestamp en millisecondes n'est pas rejeté : il donne une date valide mais absurde (25 octobre 56971 à 2:00) |
 | **I3** | Gras, italique, etc. s'appliquent à un émoji | Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji |
+| **I4** | Un antislash devant `:` disparaît (C19) et empêche la conversion en émoji | Devant ou dans un code `:nom:`, l'antislash **reste visible** ; devant `:star:`, l'étoile est quand même générée |
 | **J2** | Discord réduit les lignes vides consécutives | Les lignes vides **ne sont pas réduites** : les trois lignes vides apparaissent |
 | **K3** | Un émoji compte pour 3 caractères | Accepté : 😀 compte pour **2** (666 × 2 = 1332), et non 3 |
 | **K4** | 667 émojis (3 chacun) dépassent la limite de 2000 | **Accepté** (667 × 2 = 1334), alors qu'on attendait un refus à 3 par émoji |

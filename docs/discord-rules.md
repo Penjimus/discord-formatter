@@ -507,7 +507,9 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 | Point | Statut |
 |---|---|
 | Un code `:nom:` (ex. `:star:`) est converti en émoji (⭐) | Testé (X2) |
-| *Convention* (décidée par l'auteur le 13/11/2026) : un `:nom:` écrit comme texte dans l'éditeur de gauche est **échappé**, l'étoile n'est pas générée. Forme d'échappement à tester (§14, point 16) : pas encore codé | À tester |
+| *Convention* (décidée par l'auteur le 13/11/2026) : un `:nom:` écrit comme texte dans l'éditeur de gauche est **échappé**, l'étoile n'est pas générée. Pas encore codé | Convention |
+| L'antislash n'échappe pas un code `:nom:` : `\:star:` affiche `\` puis ⭐ ; `:star\:` et `\:star\:` s'affichent tels quels, antislashs visibles | Testé (I4) |
+| Espace invisible `U+200B` dans le code (`:<U+200B>star:` ou `:star<U+200B>:`) : empêche-t-il la conversion, sans rien afficher ? | À tester (I5) |
 | **L'émoticône `:*` est convertie en émoji 😗.** Conséquence : un italique qui se termine par « : » (`*texte :*`) est cassé, le `*` de fermeture est avalé | Testé (X4) |
 | Autres émoticônes converties (`:)`, `:(`, `:D`, `:P`, `;)`, `<3`…) : lesquelles ? | À tester |
 | Cette conversion dépend-elle d'une option de Discord (« convertir automatiquement les émoticônes », paramètres Texte et images) ? | À tester |
@@ -638,4 +640,4 @@ Dans un bloc de code, rien n'est échappé.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).
-16. **Échapper un code `:nom:`** (convention §9, décidée le 13/11/2026) : quelle forme empêche la conversion en émoji ? Message de test proposé (I4) : `\:star: ↵ :star\: ↵ \:star\:`. Rappel : `\:` s'affiche « : » (C19), mais l'effet sur la conversion n'est pas testé.
+16. **Échapper un code `:nom:`** : l'antislash ne convient pas (I4). Test I5 préparé (`docs/tests-discord/test-I5.txt`) : espace invisible `U+200B` dans le code. Contradiction à trancher : I4 montre un `\:` visible, alors que C19 montrait `\:` affiché « : ».
