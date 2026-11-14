@@ -221,6 +221,7 @@ button:disabled:hover { background: var(--panel); }
 .char-counter-line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .char-counter-count { color: var(--muted); }
 .char-counter-count strong { color: var(--text); }
+.draft-status { margin-left: auto; color: var(--muted); font-size: 0.8rem; }
 .char-counter-limits { display: inline-flex; }
 .char-counter-limits button { border-radius: 0; }
 .char-counter-limits button:first-child { border-radius: 6px 0 0 6px; }

@@ -253,7 +253,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 
 **Validation** : l'utilisateur colle un long texte, découpe, copie chaque message dans Discord et vérifie que rien n'est perdu ni cassé.
 
-### [ ] Étape 16 : Brouillons
+### [x] Étape 16 : Brouillons
 
 **Objectif** : ne plus perdre son texte en fermant la page.
 
@@ -261,6 +261,8 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 - Questions à trancher pendant l'étape : un seul brouillon ou plusieurs (avec un nom) ? sauvegarde automatique ou par bouton ? La limite 2000 / 4000 est-elle aussi gardée ? (étape 11 : « non mémorisée »)
 
 **Validation** : l'utilisateur écrit, ferme la page, la rouvre et retrouve son texte.
+
+Choix faits (1A, 2A, 3A) : un seul brouillon, enregistré automatiquement (texte de droite tel quel et limite), mention « ✓ Brouillon enregistré » près du compteur. Scénarios S27 à S30 (`SPEC.md` §6). Cœur : `src/core/draft.ts` ; mémoire du navigateur : `src/ui/draftStorage.ts`.
 
 ### [ ] Étape 17 : Aperçu façon Discord
 
@@ -276,6 +278,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 
 À ne faire que si le point pose un vrai problème à l'usage :
 
+- **Plusieurs brouillons avec un nom** (étape 16, option C écartée pour l'instant) : une liste pour choisir, renommer et supprimer ses brouillons. Attention à deux onglets ouverts en même temps, qui pourraient s'écraser l'un l'autre.
 - **Découpage lent sur une très longue ligne** (constaté à l'étape 15b) : sur une seule ligne sans retour à la ligne, le temps de découpe croît vite (4 000 caractères : 23 ms ; 8 600 : 0,13 s ; 18 000 : 1 s ; 30 000 : 4,6 s), et il est refait à chaque frappe. Avec des retours à la ligne, aucun souci (30 000 caractères : 15 ms). Piste : accélérer la recherche de la coupe dans une ligne (`src/core/split.ts`) sans changer les messages produits.
 
 ## Toujours hors périmètre
@@ -527,6 +530,10 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 15b | Lenteur du découpage sur une très longue ligne : laissée telle quelle, notée dans « Mises à jour possibles plus tard » | Décision de l'utilisateur : cas très rare |
 | 2026-11-14 | 15b | Avertissement des modèles de mention aussi dans le cadre de chaque message qui en contient un (S26) ; celui sous le panneau droit est gardé | Demande de l'utilisateur ; « gardé » décidé par Claude |
 | 2026-11-14 | 15b | Étape validée par l'utilisateur (cadres des messages découpés, copie, « ✓ Copié », avertissement de mention par cadre, collage dans Discord) | — |
+| 2026-11-14 | 16 | Un seul brouillon (1A ; plusieurs brouillons nommés notés dans « Mises à jour possibles plus tard ») ; enregistrement automatique (2A) ; limite 2000 / 4000 gardée (3A), ce qui **remplace** « non mémorisée » (étape 11) | Choix de l'utilisateur |
+| 2026-11-14 | 16 | On enregistre le texte de droite tel quel, pas le document (rien n'est perdu, forme du document libre de changer) ; mémoire du navigateur (`localStorage`) ; brouillon relu à l'ouverture comme un texte collé à droite | Décidé par Claude |
+| 2026-11-14 | 16 | Enregistrement 0,5 s après la dernière modification, et tout de suite à la fermeture de la page ; « ✓ Brouillon enregistré » près du compteur, masqué si le navigateur refuse ; brouillon illisible ou mémoire bloquée : texte vide, limite 2000, aucun message (S30) ; historique « Annuler » et position du curseur non gardés | Décidé par Claude |
+| 2026-11-14 | 16 | Étape validée par l'utilisateur (texte et limite retrouvés après fermeture et réouverture de la page) | — |
 
 ---
 

@@ -12,9 +12,11 @@ interface Props {
   text: string;
   limit: MessageLimit;
   onLimitChange(limit: MessageLimit): void;
+  /** Vrai quand le brouillon a pu être enregistré dans le navigateur (S28) ; sinon rien n'est affiché (S30). */
+  draftSaved?: boolean;
 }
 
-export function CharacterCounter({ text, limit, onLimitChange }: Props) {
+export function CharacterCounter({ text, limit, onLimitChange, draftSaved }: Props) {
   const check = checkLength(text, limit);
   const percent = progressRatio(check) * 100;
   const status = check.over
@@ -27,6 +29,11 @@ export function CharacterCounter({ text, limit, onLimitChange }: Props) {
         <span className="char-counter-count" aria-live="polite">
           <strong>{formatNumber(check.length)}</strong> / {formatNumber(limit)} · {status}
         </span>
+        {draftSaved && (
+          <span className="draft-status" title="Gardé dans ce navigateur seulement : vous le retrouverez en rouvrant la page">
+            ✓ Brouillon enregistré
+          </span>
+        )}
         <span className="char-counter-limits" role="group" aria-label="Limite de caractères">
           {LIMITS.map((value) => (
             <button key={value} type="button" aria-pressed={value === limit}

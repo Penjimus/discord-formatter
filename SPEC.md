@@ -102,6 +102,12 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S25** — Dès que mon texte dépasse la limite choisie, un cadre par message apparaît sous le panneau de droite, l'un en dessous de l'autre, dans l'ordre d'envoi (N messages → N cadres). Le texte de droite n'est jamais modifié. Si je continue d'écrire ou si je change de limite, les cadres se mettent à jour ; repassé sous la limite, ils disparaissent.
 - **S26** — Chaque cadre affiche son numéro, son propre compteur et son bouton « Copier ». Un message copié reste marqué « Copié » jusqu'à la prochaine modification du texte (ou de la limite) ; un nouveau clic le copie à nouveau. Un message qui contient un modèle de mention à compléter (S8) porte l'avertissement dans son propre cadre.
 
+### Brouillon (étape 16)
+- **S27** — J'écris (à gauche ou à droite), je ferme la page puis je la rouvre → je retrouve mon texte, à droite exactement tel qu'il était (syntaxe non reconnue et caractères invisibles compris), à gauche son rendu visuel. Un seul brouillon, enregistré automatiquement peu après chaque modification et à la fermeture de la page, **dans le navigateur seulement**.
+- **S28** — Une petite mention près du compteur indique que le brouillon est enregistré. Pour commencer un autre texte, j'efface le texte : le brouillon devient vide.
+- **S29** — Je choisis la limite 4000, je ferme et je rouvre la page → la limite est toujours 4000.
+- **S30** — Le navigateur refuse la sauvegarde (mémoire bloquée ou pleine) ou le brouillon est illisible → l'appli fonctionne normalement, en partant d'un texte vide, sans message d'erreur.
+
 ## 7. Contraintes techniques
 
 Exprimées en langage simple. Le choix précis des technologies est laissé à Claude Code, qui doit **proposer 2-3 options avec leurs compromis et une recommandation, puis attendre ma décision**.
@@ -160,6 +166,7 @@ Ces fonctions entrent dans le périmètre, **une étape à la fois**, dans l'ord
 | Compteur de caractères | Dès la première version ; un compteur par message découpé (étape 15b) |
 | Limite de caractères | Bouton 2000 / 4000 choisi par l'utilisateur |
 | Dépassement | Écriture libre, barre de progression ; messages découpés affichés en cadres sous le panneau droit (étape 15b) |
+| Brouillon | Étape 16 : un seul, enregistré automatiquement dans le navigateur (texte de droite et limite) ; plusieurs brouillons nommés : évolution possible plus tard |
 
 ### À préciser
 Aucun point ouvert pour l'instant.
