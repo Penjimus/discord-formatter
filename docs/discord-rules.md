@@ -201,6 +201,16 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Mention à l'intérieur d'une puce | permis | Testé |
 | Un barré peut englober plusieurs puces (`~~- a ↵ - b~~`) : les puces restent des puces, barrées | permis | Testé (X7) |
 | **Anomalie** : juste après des puces englobées dans un barré, une puce `- -# texte` affiche `-#` tel quel (sous-texte non appliqué), alors que la même puce sans barré au-dessus fonctionne (X6). Cause inconnue | | Constaté (X7) |
+| Anomalie X7 précisée : `-#` reste visible dans une puce `- -# texte` quand, plus haut, une ligne **commence par une balise de style** (`~~- a`, `**- a`, `~~a`), que le style soit refermé sur la même ligne ou plus bas, et même si une puce normale s'intercale. Balises placées **après** le tiret (`- ~~a~~`) : aucun effet. Sous-texte **hors puce** (`-# c`) : aucun effet | | Constaté (G12 à G18) |
+| X7 encore précisée : aussi avec une ligne `**a**`, `__a__`, `\|\|a\|\|` ou `*a*` au-dessus (style refermé sur la même ligne, sans puce), et avec un style ouvert **au milieu** d'une ligne (`x ~~a`). Une **ligne vide** entre les deux supprime le problème | | Constaté (G19 à G24) |
+| Hypothèse « texte ordinaire au-dessus » écartée : une ligne sans balise (G25, G26) ou une citation (G27) au-dessus n'empêche pas le sous-texte. Ce sont bien les **balises de style** | | Constaté (G25 à G27) |
+| **Règle X7 retenue** : dans une puce, `- -# texte` n'est **pas** un sous-texte (`-#` visible) si, plus haut et **sans ligne vide** entre les deux, une ligne porte une balise de style placée **hors du texte d'une puce** : ligne sans puce stylée (G19, G20, G22 à G24), ou balise écrite avant le tiret d'une puce (G12, G13, G15, G16, G18). Une puce normale intercalée ne change rien (G16) ; une ligne vide, si (G21) | | Constaté (G12 à G27) |
+| *Généralisé (décision de Claude, prudence)* : titre ou citation stylés au-dessus, bloc de code entouré d'un style au-dessus, style qui traverse une fin de ligne entre deux puces : comptent comme une ligne stylée. Code en ligne, mention, horodatage sans style : ne comptent pas | | Généralisé |
+
+*Conventions de l'application pour X7* (option A, décision de l'auteur le 14/11/2026) :
+- **Lecture** : une puce `- -# texte` dans le cas X7 est lue comme une puce normale dont le texte commence par « -# » (visible, comme dans Discord). Elle est réécrite `- \-# texte` (échappement C12) : le rendu reste le même, même quand les styles au-dessus sont réécrits après le tiret (où `- -# ` redeviendrait un sous-texte, G14).
+- **Écriture** : dans un groupe de lignes (entre deux lignes vides) qui contient une puce en sous-texte, aucun style ne traverse une fin de ligne : il est refermé et rouvert sur chaque ligne, après le tiret (forme G14).
+- **Modèle** : une puce en sous-texte placée sous une ligne stylée sans ligne vide entre les deux est refusée ; le bouton « Sous-texte » est grisé dans ce cas, et les styles de texte sont grisés sur une ligne sans puce placée au-dessus d'une telle puce. Contournement : une ligne vide au-dessus de la liste (G21).
 
 *Conventions* :
 - L'appli écrit les puces avec `-`.
@@ -527,6 +537,8 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 - L'affichage de l'émoji dans l'éditeur de gauche et le sélecteur utilisent la bibliothèque **emojibase** (décision de l'auteur, option légère), installée à l'étape 10.
 - *Convention de l'appli* (étape 10) : emojibase n'a pas de liste de noms « Discord » ; l'appli reconnaît les noms de sa liste **GitHub**, la plus proche (choix de l'auteur). Quelques noms Discord n'y figurent pas (`:flag_fr:` s'y écrit `:fr:`) : à gauche, ils restent affichés en texte, et le texte de droite n'est pas modifié. Correspondance exacte des noms entre Discord et GitHub : À tester.
 
+*Convention de lecture* (décidée par l'auteur le 14/11/2026, étape 12, d'après X4) : dans un message collé, `:*` est lu comme l'émoticône (morceau brut, réécrit tel quel : 😗 dans Discord). Ce `*` ne peut donc pas fermer un italique : `*Membres de la cellule :*` se lit « *Membres de la cellule » suivi de `:*`, comme Discord l'affiche. Exception : `:**` n'est pas une émoticône (A35, `**Note :**` est un gras correct). Seule `:*` est concernée ; les autres émoticônes restent « À tester ». Un `:*` tapé comme texte à gauche est écrit `:\*` : l'antislash empêche la conversion, Discord affiche « :* » (Testé, I6).
+
 *Convention* (décidée par l'auteur le 13/11/2026) : quand l'appli écrit un `*` d'italique juste après un « : », elle insère entre les deux l'espace de largeur nulle `U+200B` (`*texte :<U+200B>*`), pour que `:*` ne soit pas converti. Testé (I5) : l'italique est bien rendu, sans caractère visible. Le gras après « : » n'a pas ce problème : `**Note :**` s'affiche correctement (A35), rien n'est inséré.
 
 ---
@@ -644,11 +656,11 @@ Dans un bloc de code, rien n'est échappé.
 4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
 5. ~~Mention dans un sous-texte (`-#`) ; styles sur un horodatage~~ : tranchés (M7, H3).
 6. ~~Titre, liste ou citation dans un spoiler~~ : tranché (D15), permis.
-7. Une fois l'appli construite : le bouton « Copier » conserve-t-il le caractère `<ESC>` et les caractères invisibles `U+200B` ?
+7. ~~Le bouton « Copier » conserve-t-il `<ESC>` et `U+200B` ?~~ : tranché (Z7), oui. Un message ANSI copié **depuis** Discord garde aussi `<ESC>` (Z8).
 8. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs. Palette provisoire en place depuis l'étape 9 (§6) ; un écart de teinte est accepté par l'auteur.
 9. **Émoticônes converties en émojis** (§9) : liste des émoticônes concernées, rôle de l'option de Discord, cas du texte collé.
 10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
-11. Anomalie X7 : pourquoi une puce `- -# ` après des puces barrées n'affiche pas le sous-texte.
+11. ~~Anomalie X7~~ : tranchée (G12 à G27), règle et conventions en §3, « Listes ». Cas généralisés (titre, citation, bloc stylé au-dessus) non testés.
 12. ~~Bloc de code dans une puce~~ : tranché (G9 à G11), c'est la ligne vide qui casse le bloc. Sous-puces : généralisé (décision de l'auteur). Reste : bloc sous un élément numéroté, dans une liste citée.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
 14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
@@ -656,3 +668,4 @@ Dans un bloc de code, rien n'est échappé.
 16. ~~Échapper un code `:nom:`~~ : tranché (I4, I5, convention §9). `:star\:` et `\:star\:` affichent « :star: » (I4 relu). Plus de contradiction avec C19 ; `\:` suivi d'autre chose qu'un code `:nom:` reste lu comme en C19.
 17. Espaces et sauts de ligne au début ou à la fin d'un message : Discord les retire-t-il avant de compter ? En attendant, le compteur de l'appli les compte tels quels (§12).
 18. ~~Codes ANSI étendus~~ : tranché (E16, 14/11/2026), `90` à `97`, `100` à `107`, `38;5;N` et `48;5;N` sont tous appliqués (§6).
+19. ~~`:\*` écrit par l'appli pour un `:*` tapé comme texte~~ : tranché (I6), l'antislash empêche la conversion.

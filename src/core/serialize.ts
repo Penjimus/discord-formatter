@@ -139,6 +139,25 @@ function bulletIndent(blocks: readonly Block[], index: number): string {
   return '  '.repeat(listLevelBefore(blocks, index) ?? 1);
 }
 
+function isBlankLine(block: Block): boolean {
+  return block.type === 'paragraph' && block.content.length === 0;
+}
+
+/** Pour chaque bloc : fait-il partie d'un groupe de lignes (entre deux lignes vides) qui contient une puce en sous-texte ? */
+function inSubtextGroups(blocks: readonly Block[]): boolean[] {
+  const result = blocks.map(() => false);
+  let start = 0;
+  for (let i = 0; i <= blocks.length; i++) {
+    if (i < blocks.length && !isBlankLine(blocks[i])) continue;
+    const group = blocks.slice(start, i);
+    if (group.some((b) => b.type === 'paragraph' && b.list !== null && b.style === 'subtext')) {
+      result.fill(true, start, i);
+    }
+    start = i + 1;
+  }
+  return result;
+}
+
 /** Met tout le message à plat : marqueur et morceaux de chaque ligne, séparés par des sauts de ligne. */
 function toLayout(blocks: readonly Block[]): Layout {
   const atoms: Atom[] = [];
@@ -147,12 +166,17 @@ function toLayout(blocks: readonly Block[]): Layout {
   const positions = analyzeLists(blocks);
   const indents = blocks.map((_, i) => bulletIndent(blocks, i));
   const contents = blocks.map((block, i) => blockContent(block, indents[i]));
+  // X7 (§3) : dans un groupe qui contient une puce en sous-texte, aucun style ne traverse une fin
+  // de ligne ; il est refermé et rouvert après le tiret (forme G14).
+  const subtextGroup = inSubtextGroups(blocks);
+  const closedBreaks = new Set<number>();
   blocks.forEach((block, i) => {
     if (i > 0) {
       // Les lignes vides sont traversées (A27) : on compare les lignes non vides de part et d'autre.
       const previous = contents.slice(0, i).reverse().find((c) => c.length > 0)?.at(-1);
       const next = contents.slice(i).find((c) => c.length > 0)?.[0];
       const marks = previous && next ? previous.marks.filter((mark) => next.marks.includes(mark)) : [];
+      if (subtextGroup[i] || subtextGroup[i - 1]) closedBreaks.add(atoms.length);
       atoms.push({ type: 'break', marks });
       lineOf.push(-1);
     }
@@ -167,6 +191,18 @@ function toLayout(blocks: readonly Block[]): Layout {
       lineOf.push(i);
     }
   });
+  // Toute la suite de sauts de ligne (lignes vides comprises) est refermée, pour qu'aucune balise
+  // ne reste seule sur une ligne vide.
+  for (let k = 0; k < atoms.length; k++) {
+    if (atoms[k].type !== 'break') continue;
+    let end = k;
+    while (atoms[end + 1]?.type === 'break') end++;
+    const run = Array.from({ length: end - k + 1 }, (_, j) => k + j);
+    if (run.some((j) => closedBreaks.has(j))) {
+      for (const j of run) atoms[j] = { type: 'break', marks: [] };
+    }
+    k = end;
+  }
   return { atoms, lineOf, prefixed };
 }
 

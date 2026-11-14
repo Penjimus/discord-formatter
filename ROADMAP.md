@@ -170,7 +170,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Scénarios** : S9, S9b, S9c.
 **Validation** : l'utilisateur colle un long texte, bascule la limite, dépasse, et vérifie que rien n'est coupé.
 
-### [ ] Étape 12 : Fidélité sur messages réels
+### [x] Étape 12 : Fidélité sur messages réels
 
 **Objectif** : vérifier l'appli sur de vrais messages.
 
@@ -179,7 +179,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
   - `NOM.md` : ce que Discord affiche, une ligne par ligne du message, sous la forme `ligne N : description | texte de la ligne`.
 - Aller-retour sur tous les exemples (S14).
 - Correction des écarts trouvés ; toute nouvelle règle entre d'abord dans `docs/discord-rules.md`.
-- À vérifier : le bouton « Copier » conserve bien `<ESC>` et `U+200B` une fois collés dans Discord (`docs/discord-rules.md` §14, point 8).
+- À vérifier : le bouton « Copier » conserve bien `<ESC>` et `U+200B` une fois collés dans Discord (`docs/discord-rules.md` §14, point 7).
 - Point à vérifier : si on **copie un message ANSI depuis Discord**, le caractère `<ESC>` est-il conservé ? Sinon, le collage d'un message ANSI ne peut pas fonctionner et il faudra en parler.
 
 **Validation** : l'utilisateur fournit de nouveaux messages inédits et vérifie.
@@ -384,6 +384,17 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 11 | Affichage « longueur / limite · N restants » ou « N de trop », nombres au format français ; barre pleine (100 %) dès la limite atteinte et au-delà ; rouge seulement au-delà de la limite (2000 pile accepté, K1) ; bulle d'aide « avec / sans Nitro » sur les boutons | Décidé par Claude |
 | 2026-11-14 | 11 | Calcul de la barre dans le cœur (`progressRatio`, tests à part) ; l'éditeur de gauche n'est pas redessiné à chaque frappe pour le compteur | Décidé par Claude |
 | 2026-11-14 | 11 | Étape validée par l'utilisateur (compteur, bascule 2000 / 4000, dépassement sans coupure) | — |
+| 2026-11-14 | 12 | Tests « rendu attendu » par exemple (`tests/core/examples.test.ts`), une vérification par ligne des fichiers `.md` | S15 : les tests ne vérifiaient que l'absence de perte |
+| 2026-11-14 | 12 | X7 (`ODJ`, ligne 4) : messages de test G12 à G18 avant de coder (1A) ; test de la ligne 4 mis en attente (`it.skip`) | Choix de l'utilisateur ; cause inconnue |
+| 2026-11-14 | 12 | `:*` collé lu comme l'émoticône (brut) : ne ferme pas un italique ; `:**` non concerné (A35) ; message malformé réécrit `\*Membres de la cellule :*`, même rendu (2A, §9) | Choix de l'utilisateur ; règle X4 |
+| 2026-11-14 | 12 | `:*` tapé comme texte écrit `:\*` (échappement habituel de `*`) ; effet à vérifier (I6, §14 point 19) | Décidé par Claude, non testé |
+| 2026-11-14 | 12 | Renvoi de la ROADMAP vers §14 corrigé (point 7, pas 8) | Accord de l'utilisateur |
+| 2026-11-14 | 12 | Tests G12 à G27, I6, Z7, Z8 passés et notés dans le cahier (176 tests) ; Copier et copie depuis Discord gardent `<ESC>` et `U+200B` | Résultats de l'utilisateur |
+| 2026-11-14 | 12 | Règle X7 (§3) : pas de sous-texte dans une puce sous une ligne stylée (balise hors du texte d'une puce) sans ligne vide entre les deux. Option A : « Sous-texte » grisé, styles de texte grisés sur une ligne sans puce au-dessus d'une telle puce | Choix de l'utilisateur (A) |
+| 2026-11-14 | 12 | Lecture X7 : « -# » lu comme du texte, réécrit `- \-# ` (C12) ; écriture : dans un groupe avec une puce en sous-texte, les styles sont refermés à chaque ligne (forme G14) | Décidé par Claude : garder le même rendu quelle que soit la réécriture |
+| 2026-11-14 | 12 | Généralisé : titre, citation ou bloc stylés au-dessus comptent comme ligne stylée ; puce en sous-texte rendue invalide à gauche (ligne vide supprimée…) redevient une puce normale | Décidé par Claude, prudence ; non testé |
+| 2026-11-14 | 12 | Test `ODJ` ligne 4 réactivé ; tests X7 écrits ce jour ajustés (« -# » en texte au lieu de brut) avant validation | Conséquence du choix de lecture ci-dessus |
+| 2026-11-14 | 12 | Étape validée par l'utilisateur (ODJ collé, sous-texte grisé, puces barrées + sous-texte dans Discord, réécriture `\-# `) ; pas de nouveaux exemples, les 8 actuels suffisent | — |
 
 ---
 

@@ -8,6 +8,7 @@ import {
   ansiBlock,
   ansiStyle,
   blockInBulletProblem,
+  isStyledOutsideBullet,
   listLevelBefore,
   code,
   codeBlock,
@@ -106,6 +107,8 @@ const LINE_MARKER = /^[ \t]*(?:#+ |-# |[-*] |\d+\. |>+ )/;
 /** Marqueur de liste : indentation en espaces, puis `-`, `*` ou un numéro (sans zéro inutile). */
 const LIST_MARKER = /^( *)(?:[-*]|(0|[1-9]\d{0,8})\.) $/;
 const HEADING_MARKER = /^(#{1,3}) $/;
+/** Émoticône `:*`, convertie en 😗 par Discord (X4) ; `:**` n'en est pas une (A35). */
+const EMOTICON_KISS = /^:\*(?!\*)/;
 
 const STYLE_RULES: readonly { mark: Mark; pattern: RegExp; bonus: number }[] = [
   { mark: 'spoiler', pattern: /^\|\|((?:\\[\s\S]|[^\\])+?)\|\|/, bonus: 0 },
@@ -113,8 +116,9 @@ const STYLE_RULES: readonly { mark: Mark; pattern: RegExp; bonus: number }[] = [
   { mark: 'bold', pattern: /^\*\*((?:\\[\s\S]|[^\\])+?)\*\*(?!\*)/, bonus: 0.1 },
   { mark: 'underline', pattern: /^__((?:\\[\s\S]|[^\\])+?)__(?!_)/, bonus: 0 },
   // Italique `*` : jamais suivi d'un espace à l'ouverture (C1, A29) ; un `*` seul ne peut pas
-  // être dans le contenu, seulement une paire `**` (A31).
-  { mark: 'italic', pattern: /^\*(?=\S)((?:\*\*|\\[\s\S]|[^\\*])+?)\*(?!\*)/, bonus: 0.2 },
+  // être dans le contenu, seulement une paire `**` (A31). Le `*` de l'émoticône `:*` ne ferme pas
+  // l'italique : Discord l'a déjà converti en 😗 (X4, §9).
+  { mark: 'italic', pattern: /^\*(?=\S)((?:\*\*|\\[\s\S]|:\*(?!\*)|[^\\*])+?)(?<!:)\*(?!\*)/, bonus: 0.2 },
   // Italique `_` : la fermeture n'est pas suivie d'une lettre ou d'un chiffre (B1) ; l'ouverture
   // peut être collée à une lettre (A30).
   { mark: 'italic', pattern: /^_((?:__|\\[\s\S]|[^\\_])+?)_(?![\p{L}\p{N}_])/u, bonus: 0.2 },
@@ -329,6 +333,7 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
       ANGLE.exec(rest) ??
       MASKED_LINK.exec(rest) ??
       EMOJI_CODE.exec(rest) ?? // Code `:nom:` collé : l'émoji reste dans Discord (§9).
+      EMOTICON_KISS.exec(rest) ?? // Émoticône `:*` collée : 😗 dans Discord (X4, §9).
       (i === 0 || !ASCII_ALNUM.test(source[i - 1]) ? URL.exec(rest) : null);
     if (rawMatch) {
       push('raw', rawMatch[0]);
@@ -399,6 +404,8 @@ interface RawLine {
   blockIndent?: number;
   /** Les marqueurs à partir de cette position sont gardés bruts (niveau de liste sauté). */
   keepRawFrom: number;
+  /** Le marqueur `-# ` à la position `keepRawFrom` est du texte visible (X7). */
+  visibleSubtextMarker?: boolean;
 }
 
 /** Découpe la lecture en lignes. Un bloc de code mal placé (texte sur sa ligne) redevient brut. */
@@ -466,7 +473,8 @@ function interpretLine(line: RawLine): { block: Block; listMarker: number } {
     }
     used++;
   }
-  const rawMarkers = line.markers.slice(used).map((m) => raw(m.value, m.marks));
+  const rawMarkers = line.markers.slice(used).map((m, j) =>
+    line.visibleSubtextMarker && j === 0 ? text(m.value, m.marks) : raw(m.value, m.marks));
   const content = dropBoundaryZeroWidthSpaces([...rawMarkers, ...line.nodes]);
   try {
     return { block: layoutLine({ quote, list, style }, ...content), listMarker };
@@ -475,6 +483,32 @@ function interpretLine(line: RawLine): { block: Block; listMarker: number } {
     const all = line.markers.map((m) => raw(m.value, m.marks));
     return { block: paragraph(...dropBoundaryZeroWidthSpaces([...all, ...line.nodes])), listMarker: -1 };
   }
+}
+
+/**
+ * X7 (G12 à G27, §3) : dans une puce, `-# ` n'est pas un sous-texte si une ligne plus haut, sans
+ * ligne vide entre les deux, porte une balise hors du texte d'une puce (balise avant le tiret, ou
+ * ligne sans puce stylée). Le `-# ` devient alors du texte, visible comme dans Discord ; l'écriture
+ * l'échappe (`- \-# `, C12), ce qui garde le même rendu quelle que soit la forme réécrite.
+ * Renvoie `true` si une ligne a changé (lecture à refaire).
+ */
+function demoteBrokenSubtexts(lines: RawLine[], blocks: readonly Block[]): boolean {
+  let styledAbove = false;
+  let changed = false;
+  blocks.forEach((block, i) => {
+    const line = lines[i];
+    if (!line.block && line.markers.length === 0 && line.nodes.length === 0) {
+      styledAbove = false; // Ligne vide (G21).
+      return;
+    }
+    if (styledAbove && block.type === 'paragraph' && block.list && block.style === 'subtext') {
+      line.keepRawFrom = line.markers.findIndex((marker) => marker.value === '-# ');
+      line.visibleSubtextMarker = true;
+      changed = true;
+    }
+    if (line.markers.some((marker) => marker.marks.length > 0) || isStyledOutsideBullet(block)) styledAbove = true;
+  });
+  return changed;
 }
 
 /**
@@ -494,6 +528,7 @@ function toBlocks(lines: RawLine[]): Block[] {
       }
     });
     if (demoted) continue;
+    if (demoteBrokenSubtexts(lines, blocks)) continue;
     const normalized = blocks.map((block, i) => {
       const position = positions[i];
       if (block.type !== 'paragraph' || !block.list || position === null || position === 'too-deep') {

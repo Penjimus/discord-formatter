@@ -496,6 +496,10 @@ export function quoted<T extends Block>(block: T): T {
  */
 export function createDocument(...blocks: Block[]): DiscordDocument {
   checkBlocksInBullets(blocks);
+  blocks.forEach((_, i) => {
+    const problem = subtextBulletProblem(blocks, i);
+    if (problem) throw new Error(problem);
+  });
   const positions = analyzeLists(blocks);
   const checked = blocks.map((block, i) => {
     const position = positions[i];
@@ -533,6 +537,31 @@ export function blockInBulletProblem(blocks: readonly Block[], index: number): s
   const afterBullet = previous?.type === 'paragraph' && !previous.quote && previous.list !== null
     && position !== null && position !== undefined && position !== 'too-deep' && position.kind === 'bullet';
   return afterBullet ? null : 'Un bloc placé dans une puce suit une puce, pas un élément numéroté (D13).';
+}
+
+/** Bloc qui porte un style hors du texte d'une puce : ligne sans puce stylée, bloc de code entouré d'un style. */
+export function isStyledOutsideBullet(block: Block): boolean {
+  if (block.type === 'codeBlock') return block.marks.length > 0;
+  return block.list === null && block.content.some((node) => node.marks.length > 0);
+}
+
+/**
+ * Raison pour laquelle le bloc `index` (puce en sous-texte) ne serait pas rendu, ou `null`.
+ * X7 (G12 à G27, §3) : Discord n'applique pas le sous-texte dans une puce si une ligne stylée la
+ * précède sans ligne vide entre les deux. L'écriture place les styles des puces après le tiret (G14).
+ */
+export function subtextBulletProblem(blocks: readonly Block[], index: number): string | null {
+  const block = blocks[index];
+  if (block?.type !== 'paragraph' || block.list === null || block.style !== 'subtext') return null;
+  for (let i = index - 1; i >= 0; i--) {
+    const previous = blocks[i];
+    if (previous.type === 'paragraph' && previous.content.length === 0) return null; // Ligne vide (G21).
+    if (isStyledOutsideBullet(previous)) {
+      return 'Discord n\'applique pas le sous-texte dans une puce placée sous une ligne stylée : '
+        + 'ajoutez une ligne vide au-dessus de la liste (X7).';
+    }
+  }
+  return null;
 }
 
 function checkBlocksInBullets(blocks: readonly Block[]): void {

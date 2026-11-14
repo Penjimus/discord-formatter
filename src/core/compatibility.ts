@@ -10,6 +10,7 @@ import {
   type DiscordDocument,
   type LineStyle,
   type ListKind,
+  type Mark,
   type Paragraph,
 } from './document';
 import { validate } from './validate';
@@ -145,6 +146,14 @@ function lineToolbar(blocks: readonly Block[], index: number, line: Paragraph, i
 
   const toggleStyle = (style: LineStyle) => change({ style: line.style === style ? 'normal' : style });
 
+  // Style de texte : jugé en l'ajoutant à toute la ligne, car une ligne stylée sans puce peut
+  // empêcher le sous-texte d'une puce plus bas (X7). Dans une puce, rien à vérifier (G14).
+  const textStyle = (mark: Mark): OptionState => {
+    if (line.list || line.content.length === 0) return ALLOWED;
+    const content = line.content.map((node) => ({ ...node, marks: [...new Set([...node.marks, mark])] }));
+    return change({ content });
+  };
+
   const toggleList = (kind: ListKind): OptionState => {
     if (line.list?.kind === kind) return change({ list: null });
     if (!line.list) return change({ list: { kind, level: 1, start: null } });
@@ -176,8 +185,9 @@ function lineToolbar(blocks: readonly Block[], index: number, line: Paragraph, i
   const insideCode = inInlineCode ? greyed(NOTHING_IN_INLINE_CODE) : ALLOWED;
   const ansi = greyed(ANSI_ONLY_IN_BLOCK);
   return {
-    // Styles permis partout ; dans un code en ligne, ils entourent tout le code (§5, X8).
-    ...Object.fromEntries(TEXT_STYLES.map((option) => [option, ALLOWED])),
+    // Styles permis partout, sauf au-dessus d'une puce en sous-texte (X7) ; dans un code en ligne,
+    // ils entourent tout le code (§5, X8).
+    ...Object.fromEntries(TEXT_STYLES.map((option) => [option, textStyle(option)])),
     inlineCode: ALLOWED,
     heading1: toggleStyle('heading1'),
     heading2: toggleStyle('heading2'),

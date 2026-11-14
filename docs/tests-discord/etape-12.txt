@@ -1,0 +1,128 @@
+Étape 12 : messages de test à envoyer dans Discord
+==================================================
+
+Envoie chaque message SÉPARÉMENT (un message Discord par test).
+Copie uniquement les lignes entre "--- début ---" et "--- fin ---".
+Pour chaque test, note : est-ce que "-#" est visible ? la dernière ligne est-elle en petit (sous-texte) ?
+
+
+G12 : reproduction de X7 (comme l'exemple ODJ)
+--- début ---
+~~- a
+- b~~
+- -# c
+--- fin ---
+
+G13 : une seule puce barrée au-dessus
+--- début ---
+~~- a~~
+- -# c
+--- fin ---
+
+G14 : barré à l'intérieur de chaque puce (balises après le tiret)
+--- début ---
+- ~~a~~
+- ~~b~~
+- -# c
+--- fin ---
+
+G15 : gras au lieu du barré
+--- début ---
+**- a
+- b**
+- -# c
+--- fin ---
+
+G16 : une puce normale entre les puces barrées et le sous-texte
+--- début ---
+~~- a
+- b~~
+- c
+- -# d
+--- fin ---
+
+G17 : sous-texte sans puce après les puces barrées
+--- début ---
+~~- a
+- b~~
+-# c
+--- fin ---
+
+G18 : barré sur deux lignes ordinaires (sans puce), puis la puce en sous-texte
+--- début ---
+~~a
+b~~
+- -# c
+--- fin ---
+
+
+Deuxième série (portée de X7)
+----------------------------
+
+G19 : une ligne qui commence par du gras refermé sur la même ligne, sans puce
+--- début ---
+**a**
+- -# c
+--- fin ---
+
+G20 : barré sur deux lignes, mais ouvert au milieu de la première ligne
+--- début ---
+x ~~a
+b~~
+- -# c
+--- fin ---
+
+G21 : une ligne vide entre la puce barrée et la puce en sous-texte
+--- début ---
+~~- a~~
+
+- -# c
+--- fin ---
+
+G22 : souligné en début de ligne
+--- début ---
+__a__
+- -# c
+--- fin ---
+
+G23 : spoiler en début de ligne
+--- début ---
+||a||
+- -# c
+--- fin ---
+
+G24 : italique en début de ligne
+--- début ---
+*a*
+- -# c
+--- fin ---
+
+
+Troisième série (texte ordinaire, sans aucune balise)
+----------------------------------------------------
+
+G25 : une ligne de texte simple au-dessus
+--- début ---
+a
+- -# c
+--- fin ---
+
+G26 : une ligne de texte simple, puis une puce normale, puis la puce en sous-texte
+--- début ---
+a
+- b
+- -# c
+--- fin ---
+
+G27 : une citation au-dessus
+--- début ---
+> a
+- -# c
+--- fin ---
+
+
+I6 : émoticône :* précédée d'un antislash (l'antislash est volontaire)
+--- début ---
+Bisous :\* !
+--- fin ---
+Note : voit-on "Bisous :* !" (deux-points et étoile), ou "Bisous 😗 !" ?

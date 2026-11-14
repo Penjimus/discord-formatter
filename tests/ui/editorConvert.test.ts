@@ -121,3 +121,17 @@ describe('Changement minimal du texte de droite (S13)', () => {
     expect(change.insert).toBe('😃');
   });
 });
+
+describe('X7 : puce en sous-texte sous une ligne stylée (étape 12)', () => {
+  it('ligne vide supprimée à gauche : la puce redevient une puce normale', () => {
+    const root = documentToEditor(parse('**a**\n\n- -# c'));
+    const withoutBlank = { ...root, content: (root.content ?? []).filter((_, i) => i !== 1) };
+    const back = editorToDocument(withoutBlank);
+    expect(serialize(back)).toBe('**a**\n- c');
+  });
+
+  it('ODJ passé par l\'éditeur : « -# » reste visible', () => {
+    const { document, back } = throughEditor('~~- a\n- b~~\n- -# c');
+    expect(back).toEqual(document);
+  });
+});

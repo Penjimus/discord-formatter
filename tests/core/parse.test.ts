@@ -405,3 +405,17 @@ describe('Syntaxe non reconnue conservée en brut (S12)', () => {
     expect(parse('`` a ``')).toEqual(line(raw('`` a ``')));
   });
 });
+
+describe('Étape 12 : émoticône :* (X4, §9)', () => {
+  it('X4_le_deux_points_etoile_ne_ferme_pas_l_italique', () => {
+    expect(parse('*Membres de la cellule :*')).toEqual(line(text('*Membres de la cellule '), raw(':*')));
+  });
+
+  it('X4_emoticone_seule_gardee_brute', () => {
+    expect(parse('Bisous :* !')).toEqual(line(text('Bisous '), raw(':*'), text(' !')));
+  });
+
+  it('A35_gras_apres_deux_points_inchange', () => {
+    expect(parse('**Note :**')).toEqual(line(text('Note :', ['bold'])));
+  });
+});

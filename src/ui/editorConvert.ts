@@ -4,6 +4,7 @@ import {
   ansiBlock,
   ansiStyle,
   blockInBulletProblem,
+  subtextBulletProblem,
   code,
   codeBlock,
   createDocument,
@@ -317,6 +318,17 @@ function repairLists(blocks: readonly Block[]): Block[] {
   return repaired;
 }
 
+/** Puce en sous-texte placée sous une ligne stylée (X7) : elle redevient une puce normale. */
+function repairSubtextBullets(blocks: readonly Block[]): Block[] {
+  const repaired = [...blocks];
+  repaired.forEach((block, i) => {
+    if (block.type === 'paragraph' && subtextBulletProblem(repaired, i) !== null) {
+      repaired[i] = { ...block, style: 'normal' };
+    }
+  });
+  return repaired;
+}
+
 function isEmptyLine(block: Block): boolean {
   return block.type === 'paragraph' && block.content.length === 0;
 }
@@ -334,7 +346,7 @@ export function editorToDocument(root: EditorNode): DiscordDocument {
   }
   // L'éditeur garde toujours au moins une ligne : seule et vide, c'est un message vide.
   if (blocks.length === 1 && isEmptyLine(blocks[0])) return createDocument();
-  return createDocument(...repairLists(blocks));
+  return createDocument(...repairSubtextBullets(repairLists(blocks)));
 }
 
 /**
@@ -345,5 +357,5 @@ export function editorToDocument(root: EditorNode): DiscordDocument {
 export function editorToAnalysisDocument(root: EditorNode): DiscordDocument {
   const blocks = (root.content ?? []).map((node) =>
     node.type === 'codeBlock' ? codeBlockFromEditor(node, true) ?? codeBlock('x') : lineFromEditor(node, true));
-  return createDocument(...repairLists(blocks));
+  return createDocument(...repairSubtextBullets(repairLists(blocks)));
 }

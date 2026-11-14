@@ -36,16 +36,16 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [D](#série-d) | Matrice de compatibilité | D1 à D15 (15) | §3, §5, §10 |
 | [E](#série-e) | Couleurs ANSI | E1 à E16, dont E14a à E14g (22) | §3, §6, §10 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
-| [G](#série-g) | Listes et citations | G1 à G11 (11) | §3, §5 |
+| [G](#série-g) | Listes et citations | G1 à G27 (27) | §3, §5 |
 | [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
-| [I](#série-i) | Mentions et émojis | I1 à I5 (5) | §1, §7, §9, §11 |
+| [I](#série-i) | Mentions et émojis | I1 à I6 (6) | §1, §7, §9, §11 |
 | [J](#série-j) | Lignes vides | J1 à J4 (4) | §13 |
 | [K](#série-k) | Longueur et comptage | K1 à K10 (10) | §9, §12 |
-| [Z](#série-z) | Caractères invisibles | Z1 à Z6 (6) | §2.3, §5, §13 |
+| [Z](#série-z) | Caractères invisibles | Z1 à Z8 (8) | §2.3, §5, §6, §9, §13 |
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 
-**Total : 157 tests** (✅ 87 confirmés, ⚠️ 16 écarts, ℹ️ 54 constats).
+**Total : 176 tests** (✅ 90 confirmés, ⚠️ 16 écarts, ℹ️ 70 constats).
 
 ---
 
@@ -232,6 +232,22 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **G9** | D13 repassé à l'identique (13/11/2026) | lever la contradiction D13 / G6 | ✅ Bloc affiché sous la puce, au-dessus de « puce suivante » : D13 confirmé. G6 échoue donc à cause du langage, de la ligne vide, ou des deux | §3 (listes), §5 |
 | **G10** | ```` - puce ↵   ```js ↵   ligne 1 ↵   ``` ↵ - puce suivante ```` | bloc avec langage, sans ligne vide, sous une puce | ✅ Bloc affiché sous la puce : le langage n'a aucun effet sur le placement | §3 (listes), §5 |
 | **G11** | ```` - puce ↵   ``` ↵   ligne 1 ↵  ↵   ligne 3 ↵   ``` ↵ - puce suivante ```` | bloc sans langage, avec ligne vide, sous une puce | ⚠️ Pas de bloc : **la ligne vide casse le bloc dans la liste** | §3 (listes), §5 |
+| **G12** | `~~- a ↵ - b~~ ↵ - -# c` | reproduction de X7 | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G13** | `~~- a~~ ↵ - -# c` | une seule puce barrée au-dessus | ℹ️ Comme X7 : `-#` visible | §3 (listes) |
+| **G14** | `- ~~a~~ ↵ - ~~b~~ ↵ - -# c` | barré à l'intérieur de chaque puce | ℹ️ Correct : sous-texte appliqué, `-#` invisible | §3 (listes) |
+| **G15** | `**- a ↵ - b** ↵ - -# c` | gras au lieu du barré | ℹ️ Comme X7 : `-#` visible sur la ligne « c » | §3 (listes) |
+| **G16** | `~~- a ↵ - b~~ ↵ - c ↵ - -# d` | une puce normale entre les deux | ℹ️ Comme X7 : `-#` visible sur la ligne « d » | §3 (listes) |
+| **G17** | `~~- a ↵ - b~~ ↵ -# c` | sous-texte sans puce après les puces barrées | ℹ️ Correct : sous-texte appliqué | §3 |
+| **G18** | `~~a ↵ b~~ ↵ - -# c` | barré sur deux lignes ordinaires, puis la puce en sous-texte | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G19** | `**a** ↵ - -# c` | gras refermé sur la même ligne, sans puce | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G20** | `x ~~a ↵ b~~ ↵ - -# c` | barré ouvert au milieu d'une ligne | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G21** | `~~- a~~ ↵  ↵ - -# c` | ligne vide entre les deux | ℹ️ Correct : sous-texte appliqué, `-#` invisible | §3 (listes) |
+| **G22** | `__a__ ↵ - -# c` | souligné en début de ligne | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G23** | `\|\|a\|\| ↵ - -# c` | spoiler en début de ligne | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G24** | `*a* ↵ - -# c` | italique en début de ligne | ℹ️ Comme X7 : `-#` visible, sous-texte non appliqué | §3 (listes) |
+| **G25** | `a ↵ - -# c` | texte ordinaire, sans balise, au-dessus | ℹ️ Correct : sous-texte appliqué | §3 (listes) |
+| **G26** | `a ↵ - b ↵ - -# c` | texte ordinaire, puis une puce normale | ℹ️ Correct : sous-texte appliqué | §3 (listes) |
+| **G27** | `> a ↵ - -# c` | citation au-dessus | ℹ️ Correct : sous-texte appliqué | §3 (listes) |
 
 ## Série H
 
@@ -258,6 +274,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **I3** | `**😀** *😀* __😀__ ~~😀~~ \|\|😀\|\|` | émojis dans les styles : tous rendus normalement ? | ⚠️ Les émojis sont tous identiques (gras, italique, souligné, barré sans effet visible). Le spoiler cache l'émoji | §1, §9 |
 | **I4** | `\:star: ↵ :star\: ↵ \:star\:` | quelle forme empêche la conversion de `:star:` en émoji ? | ⚠️ Ligne 1 : l'étoile ⭐, sans antislash visible (correction de l'auteur ; première lecture « `\` puis ⭐ » erronée). Lignes 2 et 3 : pas d'émoji, affichent « :star: », antislashs invisibles (deuxième relecture de l'auteur ; la première, « antislashs visibles », était erronée). L'antislash échappe un code `:nom:` s'il est placé devant le **dernier** deux-points | §9, §11 |
 | **I5** | `test-I5.txt` : `A : :<U+200B>star: ↵ B : :star<U+200B>: ↵ C : *Membres :<U+200B>*` | l'espace invisible empêche-t-il la conversion en émoji ? « Membres : » en italique ? | ✅ A et B : « :star: » sans étoile, aucun caractère parasite visible. C : « Membres : » en italique | §9 |
+| **I6** | `Bisous :\* !` | l'antislash empêche-t-il la conversion de `:*` en 😗 ? | ✅ Affiche « Bisous :* ! », sans émoji ni antislash visible | §9, §11 |
 
 ## Série J
 
@@ -305,6 +322,8 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **Z4** | ```` ``` ↵ avant `<U+200B>`` après ↵ ``` ```` | trois accents graves dans un bloc, avec un caractère invisible au milieu : le bloc reste entier ? | ✅ Le bloc reste entier : les trois accents graves du milieu font partie du contenu | §5 |
 | **Z5** | `ligne 1 ↵ <U+2800> ↵ ligne 3` | ligne vide « braille » : message de 3 lignes, la ligne 2 est vide visuellement ? | ✅ La ligne 2 est vide et visible | §13 |
 | **Z6** | `<U+2800>` | message composé uniquement d'un caractère braille vide : accepté ? | ✅ Message accepté | §13 |
+| **Z7** | Bouton « Copier » de l'appli (14/11/2026) : `examples/couleurs.txt`, et « Note : » en italique écrit à gauche | `<ESC>` et `U+200B` conservés une fois collés dans Discord ? | ✅ Les 8 couleurs s'affichent ; « Note : » en italique, sans 😗 | §6, §9, §13 |
+| **Z8** | Message ANSI copié **depuis** Discord (clic droit, « Copier le texte »), collé dans l'appli | `<ESC>` conservé ? | ✅ Les couleurs apparaissent dans l'appli : `<ESC>` est conservé | §6 |
 
 ## Série M
 
