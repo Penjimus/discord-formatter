@@ -104,8 +104,9 @@ L'appli manipule des caractères **invisibles** : `U+001B` (ESC, pour l'ANSI) et
 - Lancer l'appli en local : `npm run dev` (ouvre le navigateur sur http://localhost:5173)
 - Lancer les tests : `npm test`
 - Vérification du code (lint) : `npm run lint` (contrôle des types TypeScript)
-- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`, trois pages : l'appli et le guide en français et en anglais)
-- Mise en ligne : pas encore faite (choix de l'utilisateur, étape 13). GitHub Pages reste possible (dépôt `Penjimus/discord-formatter`, dépôt public nécessaire).
+- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`, trois pages : l'appli et le guide en français et en anglais), adresse de base `/discord-formatter/` ; la voir en local : `npm run preview` (http://localhost:4173/discord-formatter/)
+- Mise en ligne (étape 19) : site https://penjimus.github.io/discord-formatter/ (dépôt public `Penjimus/discord-formatter`). **Automatique** à chaque envoi sur `main` (`git push`) : `.github/workflows/pages.yml` lance les tests, construit et publie ; si un test échoue, rien n'est publié. Envoyer sur GitHub = publier : toujours avec l'accord de l'utilisateur.
+- Licence : PolyForm Noncommercial 1.0.0, © Benjamin Moro (`LICENSE.md`) ; présentation du dépôt : `README.md` (français et anglais, à tenir à jour avec le guide).
 
 ## Tests
 

@@ -11,7 +11,7 @@ import type { HLJSApi } from 'highlight.js';
 import { highlightRanges, loadHighlighter } from './syntaxHighlight';
 import { analyzeLists, type TimestampStyle } from '../core/document';
 import { timestampPreview } from '../core/timestampPreview';
-import { loadedEmojiIndex } from './emojiLibrary';
+import { loadedEmojiIndex, onEmojiIndexLoaded } from './emojiLibrary';
 import { currentLanguage, currentTexts, onLanguageChange } from './i18n/language';
 import { EMOTICON_EMOJIS, findEmoticons } from '../core/emoticons';
 import { linkKeepMask, type LinkPiece } from '../core/links';
@@ -88,7 +88,8 @@ function chip(name: string, view: (attrs: Record<string, unknown>) => ChipView, 
       const classes = `chip chip-${name}${extraClass ? ` ${extraClass}` : ''}`;
       return ['span', { class: classes, contenteditable: 'false', ...(title ? { title } : {}) }, label];
     },
-    // À l'écran, la pastille se redessine quand la langue change (horodatage, bulle d'aide, S36) :
+    // À l'écran, la pastille se redessine quand la langue change (horodatage, bulle d'aide, S36)
+    // et quand les émojis finissent de se charger (code `:nom:` affiché en émoji) :
     // l'éditeur garderait sinon l'ancien affichage d'un élément inchangé.
     addNodeView() {
       return ({ node }) => {
@@ -102,8 +103,15 @@ function chip(name: string, view: (attrs: Record<string, unknown>) => ChipView, 
           else dom.removeAttribute('title');
         };
         draw();
-        const stop = onLanguageChange(draw);
-        return { dom, destroy: stop };
+        const stopLanguage = onLanguageChange(draw);
+        const stopEmojis = onEmojiIndexLoaded(draw);
+        return {
+          dom,
+          destroy: () => {
+            stopLanguage();
+            stopEmojis();
+          },
+        };
       };
     },
   });

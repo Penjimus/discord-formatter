@@ -121,6 +121,12 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S38** — Le texte de droite est exactement le même dans les deux langues. Les modèles de mention sont en anglais dans les deux langues (`<@ID_USER>`, `<@&ID_ROLE>`, `<#ID_CHANNEL>`) ; un texte qui contient encore les anciens modèles (`ID_UTILISATEUR`, `ID_SALON`) les garde tels quels, avec l'avertissement. Les horodatages, à gauche et dans l'aperçu, s'affichent dans la langue de l'interface, comme Discord les affiche dans la langue de chaque lecteur ; les nombres du compteur aussi.
 - **S39** — Le sélecteur d'émojis trouve un émoji par son nom en français comme en anglais, quelle que soit la langue ; il affiche les noms dans la langue de l'interface. Le lien « Guide » de l'en-tête ouvre le guide dans la langue choisie ; chaque guide propose un lien vers l'autre langue.
 
+### Mise en ligne (étape 19)
+- **S40** — J'ouvre l'adresse publique `https://penjimus.github.io/discord-formatter/` : l'appli fonctionne comme en local (écriture des deux côtés, barre d'outils, émojis, coloration des blocs, compteur, découpage, aperçu, copie), et le lien « Guide » ouvre le guide dans la langue choisie, qui ramène à l'appli.
+- **S41** — Sur le site, mon brouillon, ma limite et ma langue sont gardés dans **mon** navigateur, d'une ouverture à l'autre ; ils ne sont envoyés nulle part et aucun autre visiteur ne les voit. Ce que j'ai écrit dans l'appli lancée en local n'apparaît pas sur le site (deux adresses, deux mémoires séparées).
+- **S42** — Quand j'envoie une nouvelle version sur GitHub, le site se met à jour tout seul en quelques minutes, seulement si tous les tests passent ; sinon l'ancienne version reste en ligne.
+- **S43** — La page du dépôt sur GitHub présente l'appli en français et en anglais (ce qu'elle fait, lien vers le site, rien n'est envoyé ailleurs) et indique sa licence.
+
 ## 7. Contraintes techniques
 
 Exprimées en langage simple. Le choix précis des technologies est laissé à Claude Code, qui doit **proposer 2-3 options avec leurs compromis et une recommandation, puis attendre ma décision**.

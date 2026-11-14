@@ -591,6 +591,10 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 18 | Propositions @ # : « ro », « util », « sal » (français) et « role », « us », « chan » (anglais) marchent dans les deux langues | Décidé par Claude, comme la recherche d'émojis (4B) |
 | 2026-11-14 | 18 | Noms des couleurs ANSI retirés de `ansiPalette.ts`, placés dans les textes ; pastilles de l'éditeur redessinées au changement de langue | Un seul endroit pour les textes (ROADMAP) |
 | 2026-11-14 | 18 | Étape validée par l'utilisateur (passage FR ↔ EN dans toute l'appli, texte de droite identique, langue gardée, guides) | — |
+| 2026-11-14 | 19 | Dépôt rendu public tel quel, historique compris (1A) ; mise à jour automatique du site à chaque envoi sur `main`, après les tests (2A) ; `README.md` court en français et en anglais (3A). Scénarios S40 à S43 | Choix de l'utilisateur |
+| 2026-11-14 | 19 | Licence PolyForm Noncommercial 1.0.0 (réutilisable, non commerciale), au nom de Benjamin Moro, dans `LICENSE.md` (texte officiel, version 1.0.0) | Choix de l'utilisateur |
+| 2026-11-14 | 19 | Adresse de base `/discord-formatter/` pour la version construite et `npm run preview` seulement ; `npm run dev` reste sur http://localhost:5173/ ; configuration « site-verif » ajoutée à `.claude/launch.json` | Décidé par Claude : rien ne change pour l'usage local |
+| 2026-11-14 | 19 | Mise en ligne par GitHub Actions (`.github/workflows/pages.yml`), Node « LTS », aussi lançable à la main depuis l'onglet Actions | Décidé par Claude |
 
 ---
 

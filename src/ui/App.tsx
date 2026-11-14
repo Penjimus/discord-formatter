@@ -46,10 +46,11 @@ export function App() {
   const language = useLanguage();
   // Les émojis chargés : les codes `:nom:` déjà affichés à gauche sont redessinés en émoji.
   useEffect(() => onEmojiIndexLoaded(() => visualRef.current?.showDocument(documentRef.current)), []);
-  // Un brouillon qui contient un code `:nom:` : les émojis sont chargés pour l'afficher à gauche.
+  // Émojis chargés dès l'ouverture de la page (demande de l'utilisateur, étape 19), en arrière-plan :
+  // les codes `:nom:` du brouillon ou d'un texte collé s'affichent en émoji à gauche au plus tôt.
   useEffect(() => {
-    if (!loadedEmojiIndex() && mayContainEmojiCode(initialDraft.text)) void loadEmojiIndex();
-  }, [initialDraft]);
+    void loadEmojiIndex();
+  }, []);
 
   // Brouillon enregistré peu après chaque modification, et tout de suite à la fermeture de la page.
   const latestDraftRef = useRef<Draft>(initialDraft);
