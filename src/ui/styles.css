@@ -232,6 +232,23 @@ button:disabled:hover { background: var(--panel); }
 .char-counter.is-over .char-counter-count strong { color: #c0262d; }
 .char-counter.is-over .char-counter-fill { background: #da373c; }
 
+/* Messages découpés (étape 15b, S25, S26) : cadres sous le panneau droit */
+.right-column { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.right-column > .panel { flex: 1 1 0; min-height: 220px; }
+.split-messages { flex: 1 1 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.split-intro { margin: 0; color: #c0262d; font-size: 0.85rem; }
+.split-message { flex: none; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.split-message-header { display: flex; align-items: center; gap: 12px; padding: 6px 12px; border-bottom: 1px solid var(--border); }
+.split-message-header h3 { margin: 0; font-size: 0.95rem; }
+.split-message-count { margin-right: auto; color: var(--muted); font-size: 0.85rem; }
+.copy-button.is-copied { background: #248046; border-color: #248046; }
+.copy-button.is-copied:hover { background: #1a6334; }
+.split-message-text {
+  margin: 0; padding: 8px 12px; max-height: 12em; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+  font-family: Consolas, 'Courier New', monospace; font-size: 0.85rem; line-height: 1.45;
+}
+.invisible-char { color: #d22; }
+
 /* Liens masqués (étape 14) */
 .visual-editor .editor-link { color: #006ce7; text-decoration: underline; text-underline-offset: 2px; cursor: text; }
 .link-bubble {

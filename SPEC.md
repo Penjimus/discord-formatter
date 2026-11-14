@@ -29,7 +29,7 @@ Deux panneaux côte à côte :
 - Un **compteur de caractères** est visible en permanence et porte sur le texte du panneau droit (ce que Discord comptera réellement).
 - Un **bouton à deux positions (2000 / 4000)** permet de choisir la limite selon l'abonnement Nitro de l'utilisateur.
 - Une **barre de progression** montre le nombre de caractères restants. Elle change d'aspect en cas de dépassement.
-- **L'écriture reste libre** : l'appli ne bloque, ne tronque et ne coupe jamais le texte, même au-delà de la limite. Le découpage automatique est prévu pour une version future (section 9).
+- **L'écriture reste libre** : l'appli ne bloque, ne tronque et ne coupe jamais le texte, même au-delà de la limite. Au-delà, les messages découpés s'affichent à part, sous le panneau droit (S25, S26), sans toucher au texte.
 
 ## 4. Fonctionnalités à supporter
 
@@ -98,6 +98,10 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S23** — Un élément plus long que la limite à lui seul est coupé quand même : un mot ou une ligne de code au caractère près, sans jamais couper un émoji en deux ; un bloc de code trop long entre deux lignes si possible ; un lien en deux liens de même adresse. Un lien dont l'adresse seule dépasse la limite devient du texte simple.
 - **S24** — Les messages relus et mis bout à bout redonnent mon texte d'origine : **rien n'est perdu**.
 
+### Découpage dans l'interface (étape 15b)
+- **S25** — Dès que mon texte dépasse la limite choisie, un cadre par message apparaît sous le panneau de droite, l'un en dessous de l'autre, dans l'ordre d'envoi (N messages → N cadres). Le texte de droite n'est jamais modifié. Si je continue d'écrire ou si je change de limite, les cadres se mettent à jour ; repassé sous la limite, ils disparaissent.
+- **S26** — Chaque cadre affiche son numéro, son propre compteur et son bouton « Copier ». Un message copié reste marqué « Copié » jusqu'à la prochaine modification du texte (ou de la limite) ; un nouveau clic le copie à nouveau. Un message qui contient un modèle de mention à compléter (S8) porte l'avertissement dans son propre cadre.
+
 ## 7. Contraintes techniques
 
 Exprimées en langage simple. Le choix précis des technologies est laissé à Claude Code, qui doit **proposer 2-3 options avec leurs compromis et une recommandation, puis attendre ma décision**.
@@ -153,9 +157,9 @@ Ces fonctions entrent dans le périmètre, **une étape à la fois**, dans l'ord
 | Langage des blocs de code | Liste filtrable ; le mode ANSI en fait partie |
 | Citations | Sur une ou plusieurs lignes, sans imbrication |
 | Listes | Plusieurs niveaux (limites dans `docs/discord-rules.md`) |
-| Compteur de caractères | Dès la première version, sans découpage |
+| Compteur de caractères | Dès la première version ; un compteur par message découpé (étape 15b) |
 | Limite de caractères | Bouton 2000 / 4000 choisi par l'utilisateur |
-| Dépassement | Écriture libre, barre de progression ; découpage en version future |
+| Dépassement | Écriture libre, barre de progression ; messages découpés affichés en cadres sous le panneau droit (étape 15b) |
 
 ### À préciser
 Aucun point ouvert pour l'instant.

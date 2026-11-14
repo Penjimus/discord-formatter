@@ -243,7 +243,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 **Tests** : nouveaux tests du cahier ; chaque message produit est relu avec `parse` et ne dépasse pas la limite ; l'ensemble des messages relus redonne le document d'origine.
 **Validation** : tableau « texte → messages » ; l'utilisateur colle chaque message dans Discord, l'un après l'autre.
 
-### [ ] Étape 15b : Découpage dans l'interface
+### [x] Étape 15b : Découpage dans l'interface
 
 **Objectif** : voir et copier les messages découpés.
 
@@ -271,6 +271,12 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 - C'est un **affichage** : le document et le texte de droite ne changent pas.
 
 **Validation** : l'utilisateur compare l'aperçu et Discord sur les exemples de `examples/`.
+
+## Mises à jour possibles plus tard
+
+À ne faire que si le point pose un vrai problème à l'usage :
+
+- **Découpage lent sur une très longue ligne** (constaté à l'étape 15b) : sur une seule ligne sans retour à la ligne, le temps de découpe croît vite (4 000 caractères : 23 ms ; 8 600 : 0,13 s ; 18 000 : 1 s ; 30 000 : 4,6 s), et il est refait à chaque frappe. Avec des retours à la ligne, aucun souci (30 000 caractères : 15 ms). Piste : accélérer la recherche de la coupe dans une ligne (`src/core/split.ts`) sans changer les messages produits.
 
 ## Toujours hors périmètre
 
@@ -515,6 +521,12 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 15a | `split(document, limite)` dans `src/core/split.ts` : coupe le document, chaque morceau écrit par `serialize` ; à préférence égale, la coupe la plus loin qui tient (même si un message reste court) | Décidé par Claude |
 | 2026-11-14 | 15a | Ligne coupée : la suite garde puce, numéro, titre ou citation (un numéro peut apparaître dans les deux messages) ; bloc de puce en tête de message écrit hors de la liste ; ligne citée vide en fin de message retirée ; morceau brut coupé en tout dernier recours ; coupe entre deux mots d'un lien avant la coupe au caractère près | Décidé par Claude |
 | 2026-11-14 | 15a | Étape validée par l'utilisateur : V1 à V7 de `docs/tests-discord/validation-etape-15a.txt` collés dans Discord (spoiler en gras, liste et sous-listes, bloc `js`, ANSI, citation, lien, exemples à la vraie limite 2000), tous corrects | — |
+| 2026-11-14 | 15b | Présentation : un cadre par message sous le panneau droit, affichés d'office dès que le texte dépasse la limite, sans bouton « Découper » (1A) ; « ✓ Copié » gardé jusqu'à la modification du texte ou de la limite, nouveau clic = nouvelle copie (Q2) ; messages écrits à la manière de l'appli, même rendu (Q3) | Choix de l'utilisateur |
+| 2026-11-14 | 15b | Scénarios S25, S26 écrits dans `SPEC.md` §6 ; §3 et §10 mis à jour | Réponses de l'utilisateur |
+| 2026-11-14 | 15b | Le découpage porte sur le document (texte de droite relu), seulement en dépassement du texte de droite ; phrase d'introduction au-dessus des cadres ; caractères invisibles montrés par un point rouge (copie intacte) ; cadres et texte défilent séparément ; copie partagée avec le panneau droit (`src/ui/clipboard.ts`) | Décidé par Claude |
+| 2026-11-14 | 15b | Lenteur du découpage sur une très longue ligne : laissée telle quelle, notée dans « Mises à jour possibles plus tard » | Décision de l'utilisateur : cas très rare |
+| 2026-11-14 | 15b | Avertissement des modèles de mention aussi dans le cadre de chaque message qui en contient un (S26) ; celui sous le panneau droit est gardé | Demande de l'utilisateur ; « gardé » décidé par Claude |
+| 2026-11-14 | 15b | Étape validée par l'utilisateur (cadres des messages découpés, copie, « ✓ Copié », avertissement de mention par cadre, collage dans Discord) | — |
 
 ---
 

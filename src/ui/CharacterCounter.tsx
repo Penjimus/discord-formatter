@@ -4,7 +4,7 @@ import { checkLength, progressRatio, type MessageLimit } from '../core/length';
 
 const LIMITS: MessageLimit[] = [2000, 4000];
 
-function formatNumber(value: number): string {
+export function formatNumber(value: number): string {
   return value.toLocaleString('fr-FR');
 }
 

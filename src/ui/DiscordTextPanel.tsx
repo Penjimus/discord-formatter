@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Annotation, EditorState } from '@codemirror/state';
 import { EditorView, highlightSpecialChars, keymap, placeholder } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { copyText } from './clipboard';
 import { textChange } from './textChange';
 
 /** Marque les mises à jour venues de la gauche : le panneau n'y réagit pas (pas de boucle, S13). */
@@ -21,23 +22,6 @@ interface Props {
   handleRef: React.MutableRefObject<DiscordTextHandle | null>;
   /** Message affiché sous le texte (avertissement des modèles à compléter). */
   notice?: React.ReactNode;
-}
-
-/** Méthode de secours quand le navigateur refuse l'accès direct au presse-papiers. */
-function copyWithSelection(text: string): boolean {
-  const area = document.createElement('textarea');
-  area.value = text;
-  area.style.position = 'fixed';
-  area.style.opacity = '0';
-  document.body.appendChild(area);
-  area.select();
-  try {
-    return document.execCommand('copy');
-  } catch {
-    return false;
-  } finally {
-    area.remove();
-  }
 }
 
 export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice }: Props) {
@@ -86,13 +70,7 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice 
   async function copy() {
     const view = viewRef.current;
     if (!view) return;
-    const text = view.state.doc.toString();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyState('done');
-    } catch {
-      setCopyState(copyWithSelection(text) ? 'done' : 'failed');
-    }
+    setCopyState((await copyText(view.state.doc.toString())) ? 'done' : 'failed');
     window.setTimeout(() => setCopyState('idle'), 2000);
   }
 

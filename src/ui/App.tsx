@@ -1,31 +1,22 @@
 // Application : les deux panneaux, vues du même document (CLAUDE.md, « Principe central »).
 // Gauche → document → texte de droite ; droite → document → gauche. Aucune conversion directe.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createDocument, MENTION_TEMPLATES, type DiscordDocument, type MentionKind } from '../core/document';
+import { createDocument, type DiscordDocument, type MentionKind } from '../core/document';
 import { unfilledTemplates } from '../core/elements';
-import type { MessageLimit } from '../core/length';
+import { checkLength, type MessageLimit } from '../core/length';
 import { parse } from '../core/parse';
 import { serialize } from '../core/serialize';
+import { split } from '../core/split';
 import { editorToDocument, type EditorNode } from './editorConvert';
 import { loadEmojiIndex, loadedEmojiIndex, mayContainEmojiCode, onEmojiIndexLoaded } from './emojiLibrary';
 import { CharacterCounter } from './CharacterCounter';
 import { DiscordTextPanel, type DiscordTextHandle } from './DiscordTextPanel';
+import { SplitMessages } from './SplitMessages';
+import { TemplateWarning } from './TemplateWarning';
 import { VisualPanel, type VisualHandle } from './VisualPanel';
 
 function sameDocument(a: DiscordDocument, b: DiscordDocument): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
-}
-
-/** Avertissement discret tant qu'un modèle de mention reste à compléter (S8, §7). */
-function TemplateWarning({ kinds }: { kinds: MentionKind[] }) {
-  if (kinds.length === 0) return null;
-  const names = kinds.map((kind) => MENTION_TEMPLATES[kind]).join(', ');
-  return (
-    <p className="template-warning" role="status">
-      À compléter dans Discord : remplacez {names} par le vrai identifiant (mode développeur, clic droit &gt; Copier
-      l'identifiant), ou mentionnez directement la personne, le rôle ou le salon.
-    </p>
-  );
 }
 
 export function App() {
@@ -78,6 +69,13 @@ export function App() {
     [onVisualChange],
   );
 
+  // Messages découpés, seulement quand le texte de droite dépasse la limite (S25). Le découpage
+  // porte sur le document, tenu à jour avant chaque changement du texte de droite.
+  const messages = useMemo(
+    () => (checkLength(discordText, limit).over ? split(documentRef.current, limit) : null),
+    [discordText, limit],
+  );
+
   return (
     <div className="app">
       <header className="app-header">
@@ -89,11 +87,14 @@ export function App() {
       </header>
       <main className="panels">
         {visualPanel}
-        <DiscordTextPanel initialText="" onUserChange={onTextChange} handleRef={textRef}
-          notice={<>
-            <CharacterCounter text={discordText} limit={limit} onLimitChange={setLimit} />
-            <TemplateWarning kinds={templates} />
-          </>} />
+        <div className="right-column">
+          <DiscordTextPanel initialText="" onUserChange={onTextChange} handleRef={textRef}
+            notice={<>
+              <CharacterCounter text={discordText} limit={limit} onLimitChange={setLimit} />
+              <TemplateWarning kinds={templates} />
+            </>} />
+          {messages && <SplitMessages messages={messages} limit={limit} />}
+        </div>
       </main>
     </div>
   );
