@@ -13,6 +13,7 @@ import { analyzeLists, type TimestampStyle } from '../core/document';
 import { timestampPreview } from '../core/timestampPreview';
 import { loadedEmojiIndex } from './emojiLibrary';
 import { EMOTICON_EMOJIS, findEmoticons } from '../core/emoticons';
+import { linkKeepMask, type LinkPiece } from '../core/links';
 import { MentionSuggest } from './mentionSuggest';
 import { cssColor } from './ansiPalette';
 import { changeListLevel, codeBlockBackspace, codeBlockEnter, toggleAnsiFlag } from './editorCommands';
@@ -21,7 +22,9 @@ import {
   ANSI_COLOR_MARK,
   ANSI_FLAG_MARKS,
   CODE_MARK,
+  LINK_MARK,
   editorToAnalysisDocument,
+  linkFromMarks,
   type AnsiFlag,
   type CodeBlockAttrs,
   type EditorNode,
@@ -29,7 +32,7 @@ import {
 } from './editorConvert';
 
 const ANSI_MARK_NAMES = [...Object.values(ANSI_FLAG_MARKS), ANSI_COLOR_MARK, ANSI_BACKGROUND_MARK];
-const LINE_MARK_NAMES = ['bold', 'italic', 'underline', 'strike', 'spoiler', CODE_MARK];
+const LINE_MARK_NAMES = [LINK_MARK, 'bold', 'italic', 'underline', 'strike', 'spoiler', CODE_MARK];
 
 const DocumentNode = Node.create({ name: 'doc', topNode: true, content: 'block+' });
 
@@ -184,7 +187,26 @@ function ansiColorMark(name: string, property: 'color' | 'background-color') {
   });
 }
 
+/**
+ * Lien masqué (§4) : affiché comme un lien, son texte se modifie directement. Placé en premier :
+ * il entoure les autres styles. La frappe juste après le lien ne le prolonge pas.
+ */
+const LinkMark = Mark.create({
+  name: LINK_MARK,
+  inclusive: false,
+  addAttributes() {
+    return {
+      url: { default: '', rendered: false },
+      noPreview: { default: false, rendered: false },
+    };
+  },
+  renderHTML({ mark }) {
+    return ['span', { class: 'editor-link', 'data-url': String(mark.attrs.url) }, 0];
+  },
+});
+
 const marks = [
+  LinkMark,
   simpleMark('bold', ['strong', 'b'], 'strong', 'Mod-b'),
   simpleMark('italic', ['em', 'i'], 'em', 'Mod-i'),
   simpleMark('underline', ['u'], 'u', 'Mod-u'),
@@ -358,6 +380,55 @@ const EmoticonDisplay = Extension.create({
   },
 });
 
+/** Un morceau d'une ligne de l'éditeur, vu pour les liens (`linkKeepMask`, cœur). */
+function editorLinkPiece(child: PmNode): LinkPiece {
+  const target = linkFromMarks(child.marks.map((mark) => ({ type: mark.type.name, attrs: mark.attrs })));
+  if (child.isText) {
+    const isCode = child.marks.some((mark) => mark.type.name === CODE_MARK);
+    return { text: child.text ?? '', kind: isCode ? 'code' : 'text', link: target };
+  }
+  return { text: '', kind: child.type.name === 'timestamp' ? 'element' : 'blocker', link: target };
+}
+
+/**
+ * Ce qui ne peut pas être dans le texte d'un lien en sort aussitôt (choix A, §4) : émoji, mention,
+ * `[` seul… Le lien est alors coupé en deux, comme à droite. Les règles viennent du cœur.
+ */
+const LinkCleanup = Extension.create({
+  name: 'linkCleanup',
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction(transactions, _old, state) {
+          if (!transactions.some((tr) => tr.docChanged)) return null;
+          const linkType = state.schema.marks[LINK_MARK];
+          const tr = state.tr;
+          state.doc.descendants((block, blockPos) => {
+            if (block.type.name !== 'line') return false;
+            const children: { node: PmNode; pos: number }[] = [];
+            block.forEach((node, offset) => children.push({ node, pos: blockPos + 1 + offset }));
+            if (!children.some(({ node }) => linkType.isInSet(node.marks))) return false;
+            const masks = linkKeepMask(children.map(({ node }) => editorLinkPiece(node)));
+            children.forEach(({ node, pos }, i) => {
+              if (!linkType.isInSet(node.marks)) return;
+              const mask = masks[i];
+              for (let k = 0; k < mask.length; k++) {
+                if (mask[k]) continue;
+                let end = k;
+                while (end + 1 < mask.length && !mask[end + 1]) end++;
+                tr.removeMark(pos + k, pos + end + 1, linkType);
+                k = end;
+              }
+            });
+            return false;
+          });
+          return tr.steps.length > 0 ? tr : null;
+        },
+      }),
+    ];
+  },
+});
+
 const syntaxHighlightKey = new PluginKey<DecorationSet>('syntaxHighlight');
 /** Highlight.js, une fois chargé (au premier bloc avec un langage). */
 let highlighter: HLJSApi | null = null;
@@ -433,5 +504,6 @@ export const EDITOR_EXTENSIONS = [
   LineBehaviour,
   MentionSuggest,
   EmoticonDisplay,
+  LinkCleanup,
   SyntaxHighlight,
 ];

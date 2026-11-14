@@ -218,7 +218,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 - Les scénarios de l'étape (S16, S17…) sont écrits dans `SPEC.md` §6 au début de l'étape, puis validés par l'utilisateur.
 - Les points encore ouverts de `docs/discord-rules.md` §14 ne sont testés que si une étape en a besoin.
 
-### [ ] Étape 14 : Liens masqués
+### [x] Étape 14 : Liens masqués
 
 **Objectif** : écrire et lire des liens `[texte](adresse)`, et les insérer depuis la barre d'outils.
 
@@ -314,6 +314,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 | @ ou # | Ouvre les propositions de mention (« @ » : Utilisateur, Rôle ; « # » : Salon) ; les lettres tapées ensuite filtrent | Étape 10 |
 | Flèches haut / bas, Entrée ou Tab dans les propositions | Choisir une proposition et insérer le modèle, suivi d'un espace | Étape 10 |
 | Espace ou Échap dans les propositions | Les ferme sans ajouter d'espace ; l'écriture reprend | Étape 10 |
+| Échap ou Entrée dans la fenêtre de lien | Ferme la fenêtre / insère ou modifie le lien | Étape 14 |
 
 ### Panneau de droite (texte Discord)
 
@@ -490,6 +491,22 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | — | Partie 3 (deuxième version) : liens masqués, découpage (cœur puis interface), brouillons, aperçu façon Discord. Restent hors périmètre : mise en ligne (possible sur demande), mobile, comptes, partage, envoi direct, émojis personnalisés. `SPEC.md` §9 mis à jour | Choix de l'utilisateur |
 | 2026-11-14 | — | Ordre : du plus simple au plus gros (liens, découpage, brouillons, aperçu) ; points ouverts de `docs/discord-rules.md` §14 laissés tels quels, testés seulement si une étape en a besoin | Choix de l'utilisateur |
 | 2026-11-14 | — | Contenu des étapes 14 à 17 (tests Discord d'abord, cœur avant interface, scénarios S16+ écrits au début de l'étape, questions à trancher) | Proposé par Claude ; à valider étape par étape |
+| 2026-11-14 | 14 | Interface : bulle au survol du lien (adresse, boutons « Modifier » et « Ouvrir ») (option B) ; case « sans aperçu » (adresse écrite `<…>`) ; le champ « adresse » accepte toutes les adresses, pas seulement `http(s)://` | Choix de l'utilisateur ; formes d'adresse reconnues par Discord à vérifier (L7) |
+| 2026-11-14 | 14 | Série L (L1 à L10) préparée dans `docs/tests-discord/tests-liens.md` ; `<adresse>` seul non testé (Documenté) | Proposé par Claude |
+| 2026-11-14 | 14 | Série L passée (12 tests, cahier : 193 tests), règles inscrites en §4. Protocoles acceptés dans le champ : `https://`, `http://`, `mailto:`, `tel:`, `discord://` seulement ; tout autre refusé | Résultats de l'utilisateur (L7 : « à ne pas autoriser ») ; protocoles non testés refusés par Claude (prudence) |
+| 2026-11-14 | 14 | Style à cheval sur le bord d'un lien (L3) : à l'écriture, il est refermé au bord du lien et rouvert dedans (formes L1, L2) | Décidé par Claude : seules formes testées |
+| 2026-11-14 | 14 | Lien avec titre (`"info"`, L9) : gardé brut, pas de titre dans l'appli | Décidé par Claude : hors SPEC |
+| 2026-11-14 | 14 | Tests complémentaires L11 (émoji, `:nom:`, horodatage, mention dans le texte) et L12 (`\)`, `%20`, `[` seul) préparés | Points restés ouverts après L9, L6, L5 |
+| 2026-11-14 | 14 | L11, L12 passés (cahier : 195 tests). Dans le texte d'un lien : horodatage permis ; émoji, `:nom:`, mentions interdits ; `[` seul impossible. Adresse : espace écrit `%20`, `)` non appariée écrite `%29` | Résultats de l'utilisateur ; `%29` plutôt que `\)` décidé par Claude (adresse ouverte avec `\)` non relevée) |
+| 2026-11-14 | 14 | Scénarios S16 à S19 écrits dans `SPEC.md` §6 | Accord de l'utilisateur (réponse « Option A ») |
+| 2026-11-14 | 14 | Émoji, mention ou `[` seul dans le texte d'un lien : il sort du lien, qui est coupé en deux morceaux de même adresse (option A) | Choix de l'utilisateur |
+| 2026-11-14 | 14 | Modèle : le lien est porté par chaque morceau de son texte (texte, code en ligne, horodatage), comme un style ; deux morceaux voisins de même adresse forment un seul lien. Règles des liens dans `src/core/links.ts`, partagées par le cœur et l'éditeur | Décidé par Claude ; même logique que les styles, et l'éditeur (TipTap) traite le lien comme une marque |
+| 2026-11-14 | 14 | Écriture : les styles qui couvrent tout le texte du lien sont écrits autour (`**[a](…)**` plutôt que `[**a**](…)`, même rendu, L1, L2) ; `]` seul écrit `\]` ; `[` jamais échappé dans le texte d'un lien | Décidé par Claude, formes testées |
+| 2026-11-14 | 14 | Généralisés par prudence : adresse dans le texte du lien (tout `xxx://`) → pas de lien ; code en ligne contenant un crochet → hors du lien ; caractères `<`, `>`, `\` refusés dans une adresse ; protocole en minuscules seulement | Décidé par Claude, non testés |
+| 2026-11-14 | 14 | Lecture : un lien n'est lu que sous les formes testées ; sinon le morceau `[…](…)` reste brut (titre, espace, `\)`, `\[`, protocole refusé, émoji…) | S12 |
+| 2026-11-14 | 14 | Test `C16_lien_masque_brut` (étape 2) remplacé par `C16_lien_masque_lu_et_crochet_echappe` | Prévu par la ROADMAP ; accord de l'utilisateur |
+| 2026-11-14 | 14 | Étape validée par l'utilisateur | — |
+| 2026-11-14 | 14 | Interface : bouton « 🔗 Lien » ; avec le curseur dans un lien, il ouvre la modification de ce lien ; la frappe juste après un lien ne le prolonge pas ; « Ouvrir » ouvre un nouvel onglet ; lien à gauche en bleu souligné | Décidé par Claude |
 
 ---
 

@@ -9,6 +9,8 @@ import {
   emptyQuoteLine,
   isEmptyQuoteLine,
   layoutLine,
+  link,
+  linkOf,
   mention,
   raw,
   text,
@@ -16,6 +18,7 @@ import {
   type Block,
   type DiscordDocument,
   type InlineNode,
+  type LinkTarget,
 } from './document';
 
 /** Un problème : le bloc concerné (`null` s'il tient à plusieurs blocs, par exemple une liste) et sa raison. */
@@ -24,18 +27,36 @@ export interface Problem {
   readonly message: string;
 }
 
+/** Adresse vérifiée à nouveau (elle doit déjà être sous sa forme écrite). */
+function rebuildLink(target: LinkTarget | undefined): LinkTarget | undefined {
+  if (!target) return undefined;
+  const rebuilt = link(target.url, target.noPreview);
+  if (rebuilt.url !== target.url) throw new Error('Adresse de lien mal écrite (espace ou parenthèse seule).');
+  return rebuilt;
+}
+
 function rebuildInline(node: InlineNode): InlineNode {
   switch (node.type) {
     case 'text':
-      return text(node.text, node.marks);
+      return text(node.text, node.marks, rebuildLink(node.link));
     case 'code':
-      return code(node.code, node.marks);
+      return code(node.code, node.marks, rebuildLink(node.link));
     case 'raw':
       return raw(node.raw, node.marks);
     case 'mention':
       return mention(node.kind, node.id, node.marks);
     case 'timestamp':
-      return timestamp(node.seconds, node.style, node.marks);
+      return timestamp(node.seconds, node.style, node.marks, rebuildLink(node.link));
+  }
+}
+
+/** Les liens d'une ligne sont-ils déjà sous leur forme réglée (rien à couper ni à retirer) ? */
+function checkLinks(original: readonly InlineNode[], rebuilt: readonly InlineNode[]): void {
+  // Le lien de chaque caractère (un seul pour un élément) : il ne doit pas avoir changé.
+  const flatten = (nodes: readonly InlineNode[]) => nodes.flatMap((node) =>
+    node.type === 'text' ? [...node.text].map(() => linkOf(node)) : [linkOf(node)]);
+  if (JSON.stringify(flatten(original)) !== JSON.stringify(flatten(rebuilt))) {
+    throw new Error('Un lien contient ce qui ne peut pas être dans son texte (émoji, mention, « [ » seul, L5, L11).');
   }
 }
 
@@ -43,7 +64,9 @@ function rebuildBlock(block: Block): Block {
   if (isEmptyQuoteLine(block)) return emptyQuoteLine();
   if (block.type === 'paragraph') {
     const list = block.list ? { kind: block.list.kind, level: block.list.level, start: block.list.start } : undefined;
-    return layoutLine({ quote: block.quote, list, style: block.style }, ...block.content.map(rebuildInline));
+    const rebuilt = layoutLine({ quote: block.quote, list, style: block.style }, ...block.content.map(rebuildInline));
+    checkLinks(block.content, rebuilt.content);
+    return rebuilt;
   }
   const options = { marks: block.marks, quote: block.quote, inBullet: block.inBullet };
   if (block.segments === null) return codeBlock(block.code, { ...options, language: block.language });

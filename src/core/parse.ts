@@ -19,6 +19,9 @@ import {
   type CodeBlockOptions,
   createDocument,
   layoutLine,
+  link,
+  linkOf,
+  type LinkTarget,
   MAX_LIST_LEVEL,
   mention,
   type MentionKind,
@@ -47,6 +50,8 @@ type Piece =
       readonly kind: PieceKind;
       readonly value: string;
       readonly marks: readonly Mark[];
+      /** Morceau du texte d'un lien masqué (§4). */
+      readonly link?: LinkTarget;
     }
   | {
       readonly kind: 'codeBlock';
@@ -101,8 +106,14 @@ const MENTION_KINDS: Readonly<Record<string, MentionKind>> = { '@': 'user', '@&'
 const TIMESTAMP = /^<t:(0|[1-9][0-9]*)(?::([tTdDfFsSR]))?>/;
 /** Autres formes entre chevrons (émojis personnalisés, commandes, liens sans aperçu…) : brutes (§4, §7). */
 const ANGLE = /^<(?:@!?|@&|#|:|a:|t:|\/|id:|https?:\/\/)[^<>\n]*>/;
-/** Lien masqué (C16). */
-const MASKED_LINK = /^\[[^\]\n]*\]\([^)\s]+\)/;
+/**
+ * Lien masqué, sous les formes testées (C16, L1 à L12) : texte sans saut de ligne, où un `[` a son
+ * `]` (paire simple) et où un `]` seul est échappé (`\]`) ; `\[` casse le lien (L5). Adresse sans
+ * espace, chevron ni antislash, avec des paires `( … )` simples (L6) ; entre chevrons : sans aperçu (L8b).
+ */
+const MASKED_LINK = /^\[((?:\\[^[\n]|[^[\]\\\n]|\[(?:\\[^[\n]|[^[\]\\\n])*\])*)\]\((<?)((?:[^\s()<>\\]|\([^\s()<>\\]*\))+)(>?)\)/;
+/** Autres formes de lien (titre, espace dans l'adresse, `\[`…) : brutes (S12). */
+const LINK_LIKE = /^\[[^\]\n]*\]\([^)\n]*\)/;
 /** Adresse : jusqu'au premier espace ou `<`, sans ponctuation finale (C21, §4). */
 const URL = /^https?:\/\/[^\s<]+[^<.,:;"')\]\s]/;
 /** Débuts de ligne : titre, sous-texte, puce, liste numérotée, citation. */
@@ -340,10 +351,18 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
       continue;
     }
 
+    const linkMatch = MASKED_LINK.exec(rest);
+    const linkPieces = linkMatch ? readLink(linkMatch, marks) : null;
+    if (linkMatch && linkPieces) {
+      pieces.push(...linkPieces);
+      i += linkMatch[0].length;
+      continue;
+    }
+
     const rawMatch =
       CODE_BLOCK.exec(rest) ??
       ANGLE.exec(rest) ??
-      MASKED_LINK.exec(rest) ??
+      LINK_LIKE.exec(rest) ??
       EMOJI_CODE.exec(rest) ?? // Code `:nom:` collé : l'émoji reste dans Discord (§9).
       EMOTICON_KISS.exec(rest) ?? // Émoticône `:*` collée : 😗 dans Discord (X4, §9).
       (i === 0 || !ASCII_ALNUM.test(source[i - 1]) ? URL.exec(rest) : null);
@@ -386,10 +405,41 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
   return pieces;
 }
 
-function toNode(kind: PieceKind, value: string, marks: readonly Mark[]): InlineNode {
-  if (kind === 'code') return code(value, marks);
-  if (kind === 'element') return readElement(value, marks)!;
-  return kind === 'text' ? text(value, marks) : raw(value, marks);
+/**
+ * Morceaux du texte d'un lien, chacun avec son lien, ou `null` si le lien n'est pas sûr : il reste
+ * alors brut (S12). Pas de lien si son texte contient un émoji, une mention, un morceau brut (L9, L11),
+ * s'il est vide, blanc ou une adresse (L9), ou si son adresse n'est pas permise (L7).
+ */
+function readLink(match: RegExpExecArray, marks: readonly Mark[]): Piece[] | null {
+  const [, inner, open, url, close] = match;
+  if (open !== close.replace('>', '<')) return null; // Un seul chevron.
+  let target: LinkTarget;
+  try {
+    target = link(url, open === '<');
+  } catch {
+    return null;
+  }
+  if (target.url !== url) return null; // Adresse que l'appli écrirait autrement.
+  const pieces = parseRange(inner, marks, null);
+  const allowed = pieces.every((piece) =>
+    piece.kind === 'text' || piece.kind === 'code' || (piece.kind === 'element' && TIMESTAMP.test(piece.value)));
+  if (!allowed) return null;
+  const linked = pieces.map((piece) => ({ ...piece, link: target }));
+  // Ce que le document retirerait du lien (émoji, `[` seul…) : Discord ne fait pas le lien.
+  const nodes = linked.map((piece) => toNode(piece.kind as PieceKind, piece.value, piece.marks, target));
+  const linkedLength = (list: readonly InlineNode[]) =>
+    list.reduce((sum, node) => sum + (linkOf(node) ? (node.type === 'text' ? node.text.length : 1) : 0), 0);
+  if (nodes.length === 0 || linkedLength(paragraph(...nodes).content) !== linkedLength(nodes)) return null;
+  return linked;
+}
+
+function toNode(kind: PieceKind, value: string, marks: readonly Mark[], target?: LinkTarget): InlineNode {
+  if (kind === 'code') return code(value, marks, target);
+  if (kind === 'element') {
+    const node = readElement(value, marks)!;
+    return node.type === 'timestamp' && target ? { ...node, link: target } : node;
+  }
+  return kind === 'text' ? text(value, marks, target) : raw(value, marks);
 }
 
 /**
@@ -442,7 +492,8 @@ function toRawLines(pieces: readonly Piece[]): RawLine[] {
     piece.value.split('\n').forEach((segment, index) => {
       if (index > 0) lines.push(newLine());
       const kind = piece.kind === 'codeBlock' ? 'raw' : piece.kind;
-      if (segment !== '') lines[lines.length - 1].nodes.push(toNode(kind, segment, piece.marks));
+      const target = piece.kind === 'codeBlock' ? undefined : piece.link;
+      if (segment !== '') lines[lines.length - 1].nodes.push(toNode(kind, segment, piece.marks, target));
     });
   });
   return lines;

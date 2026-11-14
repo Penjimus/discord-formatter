@@ -1,6 +1,6 @@
 // Commandes de la barre d'outils et des raccourcis : elles modifient le contenu de l'éditeur.
 // Les règles (ce qui est permis) viennent du cœur : voir toolbarState (src/core/compatibility.ts).
-import type { Editor } from '@tiptap/core';
+import { getMarkRange, type Editor } from '@tiptap/core';
 import type { Node as PmNode } from '@tiptap/pm/model';
 import { TextSelection, type EditorState, type Transaction } from '@tiptap/pm/state';
 import { subListIndices, subtreeIndices } from '../core/compatibility';
@@ -9,6 +9,7 @@ import {
   MENTION_TEMPLATES,
   type DiscordDocument,
   type LineStyle,
+  type LinkTarget,
   type ListKind,
   type MentionKind,
   type TimestampStyle,
@@ -17,6 +18,7 @@ import {
   ANSI_BACKGROUND_MARK,
   ANSI_COLOR_MARK,
   ANSI_FLAG_MARKS,
+  LINK_MARK,
   editorToAnalysisDocument,
   type AnsiFlag,
   type CodeBlockAttrs,
@@ -322,5 +324,57 @@ export function placeTimestamp(editor: Editor, seconds: number, style: Timestamp
   const node = state.doc.nodeAt(position);
   if (node?.type.name !== 'timestamp') return;
   view.dispatch(state.tr.setNodeMarkup(position, undefined, { seconds, style }));
+  view.focus();
+}
+
+/** Un lien de l'éditeur : son étendue et son adresse. */
+export interface EditorLink {
+  from: number;
+  to: number;
+  url: string;
+  noPreview: boolean;
+}
+
+/** Le lien sous le curseur (ou au début de la sélection), ou `null`. */
+export function linkAt(state: EditorState, position: number = state.selection.from): EditorLink | null {
+  const linkType = state.schema.marks[LINK_MARK];
+  const $pos = state.doc.resolve(position);
+  const mark = linkType.isInSet($pos.marks()) ?? linkType.isInSet($pos.nodeAfter?.marks ?? []);
+  if (!mark) return null;
+  const range = getMarkRange($pos, linkType, mark.attrs);
+  if (!range) return null;
+  return { ...range, url: String(mark.attrs.url), noPreview: Boolean(mark.attrs.noPreview) };
+}
+
+/**
+ * Pose un lien (S16) : sur la sélection, sur un lien existant (`range`), ou, sans sélection, sur le
+ * texte `label` inséré au curseur avec les styles en cours. L'adresse est déjà vérifiée par le cœur.
+ */
+export function applyLink(
+  editor: Editor,
+  target: LinkTarget,
+  label: string | null,
+  range: { from: number; to: number } | null,
+): void {
+  const { state, view } = editor;
+  const mark = state.schema.marks[LINK_MARK].create({ url: target.url, noPreview: target.noPreview });
+  let tr = state.tr;
+  if (range) {
+    tr = tr.removeMark(range.from, range.to, state.schema.marks[LINK_MARK]).addMark(range.from, range.to, mark);
+  } else if (label !== null) {
+    const marks = [...(state.storedMarks ?? state.selection.$from.marks()), mark];
+    tr = tr.replaceSelectionWith(state.schema.text(label, marks), false);
+  } else {
+    tr = tr.addMark(state.selection.from, state.selection.to, mark);
+  }
+  // Ce qui suit le lien ne le prolonge pas.
+  view.dispatch(tr.removeStoredMark(state.schema.marks[LINK_MARK]).scrollIntoView());
+  view.focus();
+}
+
+/** Retire le lien : le texte reste, sans lien. */
+export function removeLink(editor: Editor, range: { from: number; to: number }): void {
+  const { state, view } = editor;
+  view.dispatch(state.tr.removeMark(range.from, range.to, state.schema.marks[LINK_MARK]));
   view.focus();
 }

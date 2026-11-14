@@ -77,14 +77,23 @@
         <li>Les smileys <code>:)</code> <code>:(</code> <code>:D</code> <code>:P</code> <code>;)</code> <code>&lt;3</code> <code>:o</code>, entourés d'espaces, sont changés en émojis par Discord. L'éditeur les montre donc déjà en émoji (🙂 🙁 😄 😛 😉 ❤️ 😮).</li>
       </ul>
 
-      <h2>5. Le compteur</h2>
+      <h2>5. Liens</h2>
+      <ul>
+        <li><strong>🔗 Lien</strong> : sélectionnez un texte, cliquez sur le bouton et saisissez l'adresse. Le texte devient cliquable dans Discord, l'adresse reste cachée (<code>[texte](adresse)</code>). Sans sélection, la fenêtre demande aussi le texte.</li>
+        <li>Adresses permises : <code>https://</code>, <code>http://</code>, <code>mailto:</code>, <code>tel:</code>, <code>discord://</code>. Les autres (sans <code>https://</code>, <code>www.</code>, <code>ftp://</code>…) ne sont pas cliquables dans Discord : l'appli les refuse. Un espace dans l'adresse est écrit <code>%20</code>.</li>
+        <li><strong>Sans aperçu</strong> : cochez la case pour que Discord n'affiche pas de carte sous le message (l'adresse est alors écrite entre <code>&lt; &gt;</code>).</li>
+        <li>Passez la souris sur un lien à gauche : une bulle montre son adresse, avec <strong>Modifier</strong> (adresse, aperçu, retirer le lien) et <strong>Ouvrir</strong> (nouvel onglet). Le texte du lien se modifie directement, avec tous les styles.</li>
+        <li>Un émoji, une mention ou un <code>[</code> seul ne peuvent pas être dans le texte d'un lien : s'il y en a un, il sort du lien, qui est coupé en deux morceaux de même adresse. Un horodatage, lui, est permis.</li>
+      </ul>
+
+      <h2>6. Le compteur</h2>
       <ul>
         <li>Sous le panneau de droite, le compteur indique la longueur du message et ce qu'il reste. Les boutons <strong>2000</strong> et <strong>4000</strong> choisissent la limite (4000 avec Nitro).</li>
         <li>Au-delà de la limite, la barre devient rouge, mais rien n'est coupé : vous continuez à écrire librement.</li>
         <li>Le compte suit celui de Discord : un émoji compte souvent pour 2, un drapeau pour 4, et les symboles de mise en forme comptent aussi.</li>
       </ul>
 
-      <h2>6. Raccourcis clavier</h2>
+      <h2>7. Raccourcis clavier</h2>
       <p>Sur Mac, remplacez <kbd>Ctrl</kbd> par <kbd>Cmd</kbd>.</p>
       <table>
         <thead><tr><th>Raccourci</th><th>Effet (éditeur de gauche)</th></tr></thead>
@@ -99,18 +108,18 @@
           <tr><td><kbd>Retour arrière</kbd> sur une puce vide</td><td>Quitte la liste</td></tr>
           <tr><td><kbd>Entrée</kbd> sur une ligne vide à la fin d'un bloc de code</td><td>Sort du bloc</td></tr>
           <tr><td><kbd>@</kbd> ou <kbd>#</kbd></td><td>Propositions de mention ; flèches, <kbd>Entrée</kbd> ou <kbd>Tab</kbd> pour choisir, <kbd>Échap</kbd> ou <kbd>Espace</kbd> pour fermer</td></tr>
-          <tr><td><kbd>Échap</kbd></td><td>Ferme le sélecteur d'émojis ou la fenêtre d'horodatage</td></tr>
+          <tr><td><kbd>Échap</kbd></td><td>Ferme le sélecteur d'émojis, la fenêtre d'horodatage ou de lien</td></tr>
         </tbody>
       </table>
 
-      <h2>7. Bon à savoir</h2>
+      <h2>8. Bon à savoir</h2>
       <ul>
         <li><strong>Lignes vides au début ou à la fin</strong> : Discord les supprime à l'envoi (et refuse un message trop long qui commence par des lignes vides). L'appli ne les écrit donc pas à droite, et le compteur compte exactement ce qui part.</li>
         <li><strong>Ligne vide dans une citation</strong> : possible au début ou au milieu d'une citation, tant que du texte cité suit (à gauche : placez le curseur au début d'une ligne citée et appuyez sur <kbd>Entrée</kbd>). Une ligne vide citée en dernière ligne devient une ligne vide ordinaire.</li>
         <li><strong>Sous-texte dans une liste</strong> : Discord ne l'applique pas si une ligne stylée se trouve juste au-dessus ; le bouton est alors grisé. Une ligne vide au-dessus de la liste règle le problème.</li>
-        <li>Ce que l'appli ne reconnaît pas (lien masqué <code>[texte](lien)</code>, émoji de serveur…) est <strong>gardé tel quel</strong> : rien n'est jamais perdu.</li>
+        <li>Ce que l'appli ne reconnaît pas (lien avec une adresse non cliquable, émoji de serveur…) est <strong>gardé tel quel</strong> : rien n'est jamais perdu.</li>
         <li>Les teintes des couleurs à gauche sont très proches de celles de Discord, sans être exactement identiques.</li>
-        <li>Pas encore prévu : le découpage automatique d'un long message en plusieurs messages, les liens masqués, la version téléphone.</li>
+        <li>Pas encore prévu : le découpage automatique d'un long message en plusieurs messages, la version téléphone.</li>
       </ul>
     </main>
   </body>

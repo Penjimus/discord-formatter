@@ -25,7 +25,7 @@ import {
   toggleList,
   toggleQuote,
 } from './editorCommands';
-import { ANSI_FLAG_MARKS, CODE_MARK, type AnsiFlag } from './editorConvert';
+import { ANSI_FLAG_MARKS, CODE_MARK, LINK_MARK, type AnsiFlag } from './editorConvert';
 import { EmojiPicker } from './EmojiPicker';
 
 /** Boutons de mention (§7) : chacun insère son modèle, à compléter dans Discord (S8). */
@@ -81,6 +81,7 @@ function readToolbar(editor: Editor) {
     listKind: (node.attrs.listKind ?? null) as ListKind | null,
     quote: Boolean(node.attrs.quote),
     marks: Object.fromEntries(STYLES.map(({ mark }) => [mark, editor.isActive(mark)])),
+    inLink: editor.isActive(LINK_MARK),
     ansiFlags: Object.fromEntries(ANSI_FLAGS.map(({ flag }) => [flag, editor.isActive(ANSI_FLAG_MARKS[flag])])),
     color: currentAnsiColor(state, 'color'),
     background: currentAnsiColor(state, 'background'),
@@ -214,9 +215,11 @@ interface ToolbarProps {
   editor: Editor;
   /** Ouvre la fenêtre d'horodatage pour en insérer un nouveau. */
   onInsertTimestamp(): void;
+  /** Ouvre la fenêtre de lien (nouveau lien, ou celui sous le curseur). */
+  onInsertLink(): void;
 }
 
-export function Toolbar({ editor, onInsertTimestamp }: ToolbarProps) {
+export function Toolbar({ editor, onInsertTimestamp, onInsertLink }: ToolbarProps) {
   const view = useEditorState({ editor, selector: ({ editor: current }) => readToolbar(current) });
   const option = (name: ToolbarOption) => view.options?.[name];
   const languageState = option('codeLanguage');
@@ -256,6 +259,8 @@ export function Toolbar({ editor, onInsertTimestamp }: ToolbarProps) {
         <EmojiPicker editor={editor} state={option('emoji')} />
         <ToolButton label="🕒 Horodatage" title="Insérer un horodatage (date et heure)" state={option('timestamp')}
           onClick={onInsertTimestamp} />
+        <ToolButton label="🔗 Lien" title="Lien masqué : le texte sélectionné devient cliquable" state={option('link')}
+          active={view.inLink} onClick={onInsertLink} />
       </div>
 
       <div className="toolbar-group" role="group" aria-label="Bloc de code">

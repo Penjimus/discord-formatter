@@ -15,11 +15,13 @@ import {
   type CodeBlock,
   type DiscordDocument,
   type InlineNode,
+  linkOf,
   type ListPosition,
   type Mark,
   type Paragraph,
 } from './document';
 import { mentionSyntax, timestampSyntax } from './elements';
+import { linkEnd, sameLink, type LinkTarget } from './links';
 import { analyzeMessage, escapeText, type MessageContext } from './escape';
 
 /**
@@ -44,7 +46,20 @@ interface Prefix {
 /** Bloc de code avec l'indentation de ses lignes (bloc placé sous une puce). */
 type PlacedCodeBlock = CodeBlock & { readonly indent?: string };
 
-type Atom = InlineNode | PlacedCodeBlock | LineBreak | Prefix;
+/**
+ * Lien masqué : écrit d'un seul tenant. Les styles qui couvrent tout son texte l'entourent (L1) ;
+ * les autres sont écrits dans son texte (L2). Un style à cheval sur son bord est donc refermé au
+ * bord et rouvert dedans (L3).
+ */
+interface LinkAtom {
+  readonly type: 'link';
+  readonly target: LinkTarget;
+  readonly marks: readonly Mark[];
+  /** Les morceaux du texte du lien, sans les styles qui l'entourent. */
+  readonly nodes: readonly InlineNode[];
+}
+
+type Atom = InlineNode | PlacedCodeBlock | LineBreak | Prefix | LinkAtom;
 
 /** Les morceaux du message, et pour chacun le numéro de sa ligne (-1 pour un saut de ligne). */
 interface Layout {
@@ -92,14 +107,21 @@ function moveSpacesOutOfItalic(block: Paragraph): Paragraph {
         return;
       }
       const withoutItalic = node.marks.filter((mark) => mark !== 'italic');
-      const opensHere = !nodes[i - 1]?.marks.includes('italic');
-      const closesHere = !nodes[i + 1]?.marks.includes('italic');
+      // Le bord d'un lien compte comme un bord d'italique : le texte du lien est écrit à part.
+      const continues = (other: InlineNode | undefined) =>
+        other !== undefined && other.marks.includes('italic') && sameLink(linkOf(other), node.link);
+      const opensHere = !continues(nodes[i - 1]);
+      const closesHere = !continues(nodes[i + 1]);
       let body = node.text;
       const leading = opensHere ? /^\s*/u.exec(body)![0] : '';
       body = body.slice(leading.length);
       const trailing = closesHere ? /\s*$/u.exec(body)![0] : '';
       body = body.slice(0, body.length - trailing.length);
-      result.push(text(leading, withoutItalic), text(body, node.marks), text(trailing, withoutItalic));
+      result.push(
+        text(leading, withoutItalic, node.link),
+        text(body, node.marks, node.link),
+        text(trailing, withoutItalic, node.link),
+      );
     });
     const normalized = paragraph(...result).content;
     // Recommencer tant qu'un nouveau bord d'italique est apparu.
@@ -129,9 +151,50 @@ function linePrefix(block: Block, position: ListPosition | 'too-deep' | null, in
   return quote + list + STYLE_PREFIX[block.style];
 }
 
+/** Regroupe les morceaux voisins d'un même lien. */
+function groupLinks(content: readonly InlineNode[]): Atom[] {
+  const atoms: Atom[] = [];
+  for (let i = 0; i < content.length; ) {
+    const target = linkOf(content[i]);
+    if (!target) {
+      atoms.push(content[i]);
+      i++;
+      continue;
+    }
+    let end = i + 1;
+    while (end < content.length && sameLink(linkOf(content[end]), target)) end++;
+    const nodes = content.slice(i, end);
+    const marks = MARK_ORDER.filter((mark) => nodes.every((node) => node.marks.includes(mark)));
+    const inner = nodes.map((node) => ({ ...node, marks: node.marks.filter((mark) => !marks.includes(mark)) }));
+    atoms.push({ type: 'link', target, marks, nodes: inner });
+    i = end;
+  }
+  return atoms;
+}
+
 /** Morceaux de contenu d'un bloc : le texte d'une ligne, ou le bloc de code entier. */
 function blockContent(block: Block, indent: string): readonly Atom[] {
-  return block.type === 'codeBlock' ? [{ ...block, indent }] : block.content;
+  return block.type === 'codeBlock' ? [{ ...block, indent }] : groupLinks(block.content);
+}
+
+/** Pour chaque texte du lien : positions des `]` sans `[` avant eux, à écrire `\]` (L5). */
+function loneClosingBrackets(nodes: readonly InlineNode[]): Map<number, Set<number>> {
+  const result = new Map<number, Set<number>>();
+  let open = false;
+  nodes.forEach((node, k) => {
+    if (node.type !== 'text') return;
+    for (let i = 0; i < node.text.length; i++) {
+      if (node.text[i] === '[') open = true;
+      else if (node.text[i] === ']' && open) open = false;
+      else if (node.text[i] === ']') result.set(k, (result.get(k) ?? new Set()).add(i));
+    }
+  });
+  return result;
+}
+
+/** Écrit un lien : `[`, son texte avec ses propres styles, puis `](adresse)`. */
+function writeLink(atom: LinkAtom, message: MessageContext): string {
+  return `[${writeAtomsWithMarks(atom.nodes, message, loneClosingBrackets(atom.nodes))}${linkEnd(atom.target)}`;
 }
 
 /** Indentation d'un bloc placé sous une puce : celle du texte de la puce, 2 espaces par niveau (§10). */
@@ -367,6 +430,8 @@ function nodeContent(node: Exclude<Atom, LineBreak>): string {
       return timestampSyntax(node);
     case 'prefix':
       return node.text;
+    case 'link':
+      return `[${node.nodes.map(nodeContent).join('')}${linkEnd(node.target)}`;
   }
 }
 
@@ -386,10 +451,12 @@ function writeAtoms(
   atoms: readonly Atom[],
   boundaries: readonly Boundary[],
   message: MessageContext,
+  linkEscapes: ReadonlyMap<number, ReadonlySet<number>> | null,
 ): string[] {
   const isDelimited = (k: number) => boundaries[k].closes.length + boundaries[k].opens.length > 0;
   return atoms.map((atom, k) => {
     if (atom.type === 'break') return '\n';
+    if (atom.type === 'link') return writeLink(atom, message);
     if (atom.type === 'code') return writeCode(atom.code);
     if (atom.type === 'raw') return atom.raw; // Réécrit tel quel (S12).
     if (atom.type === 'mention') return mentionSyntax(atom); // Rien n'est échappé dedans.
@@ -399,18 +466,28 @@ function writeAtoms(
     return escapeText(atom.text, message, {
       // Un marqueur reste interprété derrière des balises ouvrantes (A34, X7, X10)
       // et derrière un autre marqueur (`- -# `, X6).
-      atLineStart: k === 0 || atoms[k - 1].type === 'break' || atoms[k - 1].type === 'prefix',
+      // Le texte d'un lien suit son `[` : jamais en début de ligne.
+      atLineStart: linkEscapes === null && (k === 0 || atoms[k - 1].type === 'break' || atoms[k - 1].type === 'prefix'),
       delimitedBefore: isDelimited(k),
       delimitedAfter: isDelimited(k + 1),
       textAfter: textAfter(atoms, k),
+      inLinkText: linkEscapes !== null,
+      forcedEscapes: linkEscapes?.get(k),
     });
   });
 }
 
-/** Écrit le message : balises, choix du délimiteur d'italique et espaces invisibles (§2.3). */
-function writeAtomsWithMarks(atoms: readonly Atom[], message: MessageContext): string {
+/**
+ * Écrit le message : balises, choix du délimiteur d'italique et espaces invisibles (§2.3).
+ * `linkEscapes` : pour le texte d'un lien, les `]` à échapper (sinon `null`).
+ */
+function writeAtomsWithMarks(
+  atoms: readonly Atom[],
+  message: MessageContext,
+  linkEscapes: ReadonlyMap<number, ReadonlySet<number>> | null = null,
+): string {
   const boundaries = buildBoundaries(atoms);
-  const written = writeAtoms(atoms, boundaries, message);
+  const written = writeAtoms(atoms, boundaries, message, linkEscapes);
   const italic = new Map<Span, ItalicDelimiter>();
 
   const delimiter = (span: Span) =>

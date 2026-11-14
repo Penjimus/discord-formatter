@@ -85,6 +85,12 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S14** — Aller-retour : un texte écrit à gauche, copié à droite, puis recollé à droite donne **exactement le même résultat visuel** à gauche.
 - **S15** — Les messages de référence du dossier `examples/` (messages Discord réels fournis par moi, avec le rendu attendu) sont tous traités correctement.
 
+### Liens masqués (étape 14)
+- **S16** — Je sélectionne du texte, je clique « Lien », je saisis une adresse (et je coche éventuellement « sans aperçu ») → à droite : `[texte](adresse)` ou `[texte](<adresse>)` ; à gauche : le texte s'affiche comme un lien. Sans sélection, la fenêtre demande aussi le texte. Une adresse dont le début n'est pas permis (`docs/discord-rules.md` §4) est refusée avec un message ; un espace dans l'adresse est écrit `%20`.
+- **S17** — Je survole un lien à gauche → une bulle affiche son adresse, avec « Modifier » (adresse, case « sans aperçu », retirer le lien) et « Ouvrir » (dans un nouvel onglet). Le texte du lien se modifie directement dans l'éditeur, avec ses styles. Un émoji, une mention ou un `[` seul placé dans le texte d'un lien en sort : il reste à sa place, non cliquable, et le lien est coupé en deux morceaux de même adresse.
+- **S18** — Je colle à droite un `[texte](adresse)` → à gauche : le lien, modifiable. Une forme de lien non reconnue reste en texte brut (S12).
+- **S19** — Le curseur est dans du code en ligne ou un bloc de code → le bouton « Lien » est grisé.
+
 ## 7. Contraintes techniques
 
 Exprimées en langage simple. Le choix précis des technologies est laissé à Claude Code, qui doit **proposer 2-3 options avec leurs compromis et une recommandation, puis attendre ma décision**.
@@ -133,7 +139,7 @@ Ces fonctions entrent dans le périmètre, **une étape à la fois**, dans l'ord
 ### Décidé
 | Sujet | Décision |
 |---|---|
-| Liens masqués | Version future |
+| Liens masqués | Étape 14 : bouton « Lien », bulle au survol (adresse, Modifier, Ouvrir), case « sans aperçu », protocoles permis selon `docs/discord-rules.md` §4 |
 | Mentions (utilisateur, rôle, salon) | Bouton insérant un modèle, complété sur Discord ; avertissement discret dans l'interface |
 | Émojis | Standards uniquement |
 | Horodatages | Calendrier + choix du style d'affichage |

@@ -25,6 +25,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | I5 (caractère invisible dans un code `:nom:`) | `test-I5.txt` (à ouvrir dans un éditeur de texte simple) |
 | M | Essais libres de l'auteur, sans fichier de départ : leurs identifiants M1 à M6 ont été créés pour ce cahier |
 | X | Messages réels du dossier `examples/` (`NOM.txt`) |
+| L | `tests-liens.md` (un bloc par message) |
 
 ## Sommaire
 
@@ -44,8 +45,9 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [Z](#série-z) | Caractères invisibles | Z1 à Z8 (8) | §2.3, §5, §6, §9, §13 |
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
+| [L](#série-l) | Liens masqués | L1 à L12, dont L8a à L8c (14) | §4, §10, §11 |
 
-**Total : 181 tests** (✅ 90 confirmés, ⚠️ 16 écarts, ℹ️ 75 constats).
+**Total : 195 tests** (✅ 95 confirmés, ⚠️ 16 écarts, ℹ️ 84 constats).
 
 ---
 
@@ -366,6 +368,31 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **X8** | `classic_format_complement` : ``*`…`*``, ``~~`…`~~``, `` `… ~~…~~ ou *…*` ``, ``\|\|`…`\|\|`` | à observer | ℹ️ Le code en ligne prend l'italique, le barré et le spoiler qui l'entourent ; les balises placées dans le code restent visibles, non appliquées | §1, §5 |
 | **X9** | `hello_world` réécrit par l'appli : `**Hello W__o__**__rl**d**__**!**` | même rendu que X5 | ✅ Correct | §1 |
 | **X10** | `citation` réécrit par l'appli : `↵ ~~> … ↵ > … ↵ Date limite : <t:1735689600:F>~~` (ligne vide en premier) | même rendu que X1 | ✅ Bien formaté ; la ligne vide du début n'est **pas affichée** | §3, §13 |
+
+---
+
+## Série L
+
+### Liens masqués
+
+*Source : `tests-liens.md`, envoyés par l'auteur le 14/11/2026 (étape 14). `URL` abrège `https://exemple.com`.*
+
+| Test | Message envoyé | Attendu | Observé | Règle |
+|---|---|---|---|---|
+| **L1** | `**[gras](URL)** ↵ *[…](URL)* ↵ _[…](URL)_ ↵ __[…](URL)__ ↵ ~~[…](URL)~~ ↵ \|\|[…](URL)\|\| ↵ ***__~~[tout](URL)~~__***` | chaque lien cliquable et stylé ; le spoiler cache le lien | ✅ Conforme | §4 |
+| **L2** | `[**gras**](URL)`, `[*…*]`, `[_…_]`, `[__…__]`, `[~~…~~]`, `[\|\|…\|\|]`, ``[`code`]``, `[début **milieu** fin](URL)` | le style s'applique-t-il dans le texte du lien ? | ℹ️ Oui : tous les styles, le spoiler et le code en ligne s'appliquent, le lien reste cliquable | §4 |
+| **L3** | `**avant [lien](URL) après** ↵ **gras [lien** suite](URL) ↵ [lien **suite](URL) gras**` | rendu d'un style à côté du lien ? | ℹ️ Ligne 1 correcte ; lignes 2 et 3 (style qui commence d'un côté du lien et finit de l'autre) mal formatées | §4 |
+| **L4** | `- [puce](URL) ↵   - [sous-puce](URL) ↵ 1. […](URL) ↵ > […](URL) ↵ > - […](URL) ↵ -# […](URL) ↵ > -# […](URL)` | liens cliquables, mise en page respectée | ✅ Conforme | §4, §10 |
+| **L5** | `[a [b] c](URL) ↵ [d \] e](URL) ↵ [f \[ g](URL) ↵ [h ] i](URL)` | où finit le lien ? | ℹ️ Lignes 1 et 2 correctes (crochets appariés, `\]`) ; lignes 3 (`\[` seul) et 4 (`]` seul) mal formées | §4 |
+| **L6** | `[a](URL/a_(b)) ↵ [b](URL/a\)b) ↵ [c](URL/a%29b) ↵ [d](URL/a b) ↵ [e](URL/_x_*y*~~z~~)` | cliquable ? adresse ? | ℹ️ Tous cliquables, symboles gardés dans l'adresse, sauf la ligne d (espace dans l'adresse) | §4 |
+| **L7** | `[a](http://…)`, `[b](exemple.com)`, `[c](www.…)`, `[d](mailto:…)`, `[e](ftp://…)`, `[f](steam://…)`, `[g](tel:+33…)`, `[h](discord://…)` | lesquels sont cliquables ? | ℹ️ Cliquables : `http://`, `mailto:`, `tel:`, `discord://`. Non cliquables : sans protocole, `www.`, `ftp://`, `steam://` | §4 |
+| **L8a** | `[Wikipédia](https://fr.wikipedia.org/wiki/Discord)` | un aperçu apparaît | ✅ Cliquable, avec aperçu | §4 |
+| **L8b** | `[Wikipédia](<https://fr.wikipedia.org/wiki/Discord>)` | cliquable, sans aperçu | ✅ Conforme | §4 |
+| **L8c** | `**[Wikipédia](<https://fr.wikipedia.org/wiki/Discord>)**` | en gras, sans aperçu | ✅ Conforme | §4 |
+| **L9** | `mot[collé](URL)mot ↵ [😀 :star: <t:1735689600:f>](URL) ↵ [https://autre.com](URL) ↵ [](URL) ↵ [ ](URL) ↵ [titre](URL "info")` | rendu de chaque ligne ? | ℹ️ Ligne 1 cliquable ; ligne 6 cliquable, « info » dans une bulle au survol ; lignes 2 à 5 non cliquables, balises visibles | §4 |
+| **L10** | `[a](b) ↵ [a] (URL) ↵ [a]\(URL) ↵ [a] ↵ (URL)` | lesquels restent du texte ? | ℹ️ Aucun lien : tous non cliquables, affichés tels quels | §4, §11 |
+| **L11** | `[😀](URL) ↵ [texte 😀](URL) ↵ [:star:](URL) ↵ [<t:1735689600:f>](URL) ↵ [<@&123>](URL) ↵ [<#123>](URL)` | lequel empêche le lien en L9 ? | ℹ️ Seule la ligne de l'horodatage est un lien ; émoji (seul ou après du texte), `:star:` et mentions empêchent le lien | §4 |
+| **L12** | `[b](URL/a\)b) ↵ [d](URL/a%20b) ↵ [f [ g](URL)` | `\)` gardé ? `%20` cliquable ? `[` seul ? | ℹ️ Lignes 1 et 2 : liens bien formés ; ligne 3 : lien formé sur « g » seulement, « [f » reste visible avant (le lien part du dernier `[`). Adresse ouverte en ligne 1 non relevée | §4 |
 
 ---
 

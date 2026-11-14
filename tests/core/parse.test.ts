@@ -8,6 +8,7 @@ import {
   createDocument,
   heading,
   layoutLine,
+  link,
   mention,
   numberedItem,
   paragraph,
@@ -326,10 +327,12 @@ describe('Échappement relu (§11)', () => {
     );
   });
 
-  it('C16_lien_masque_brut_et_crochet_echappe', () => {
+  // Remplace « C16_lien_masque_brut » (étape 2) : le lien est un élément du document depuis l'étape 14
+  // (accord de l'utilisateur, 14/11/2026).
+  it('C16_lien_masque_lu_et_crochet_echappe', () => {
     expect(parse('[a](https://exemple.com)\n\\[a](https://exemple.com)')).toEqual(
       createDocument(
-        paragraph(raw('[a](https://exemple.com)')),
+        paragraph(text('a', [], link('https://exemple.com'))),
         paragraph(text('[a]('), raw('https://exemple.com'), text(')')),
       ),
     );

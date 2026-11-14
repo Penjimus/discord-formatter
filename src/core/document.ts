@@ -1,5 +1,8 @@
 // Le « document » : la source de vérité unique, indépendante de l'interface.
 import { ESC } from './characters';
+import { linkKeepMask, sameLink, type LinkPiece, type LinkTarget } from './links';
+
+export { link, type LinkTarget } from './links';
 // Les constructeurs refusent tout ce que Discord ne sait pas rendre (docs/discord-rules.md §1, §5, §10).
 
 /** Styles de texte, rangés du plus extérieur au plus intérieur (§2.1). */
@@ -11,6 +14,8 @@ export interface TextNode {
   readonly type: 'text';
   readonly text: string;
   readonly marks: readonly Mark[];
+  /** Lien masqué qui contient ce morceau (§4) ; absent hors d'un lien. */
+  readonly link?: LinkTarget;
 }
 
 /** Code en ligne : son contenu n'est jamais interprété ni échappé. */
@@ -18,6 +23,8 @@ export interface CodeNode {
   readonly type: 'code';
   readonly code: string;
   readonly marks: readonly Mark[];
+  /** Code en ligne dans le texte d'un lien (L2). */
+  readonly link?: LinkTarget;
 }
 
 /**
@@ -58,6 +65,8 @@ export interface TimestampNode {
   readonly seconds: number;
   readonly style: TimestampStyle | null;
   readonly marks: readonly Mark[];
+  /** Horodatage dans le texte d'un lien (L11). */
+  readonly link?: LinkTarget;
 }
 
 export type InlineNode = TextNode | CodeNode | RawNode | MentionNode | TimestampNode;
@@ -161,14 +170,19 @@ function normalizeMarks(marks: readonly Mark[]): Mark[] {
   return MARK_ORDER.filter((mark) => marks.includes(mark));
 }
 
-export function text(content: string, marks: readonly Mark[] = []): TextNode {
+/** Le champ `link`, seulement s'il y a un lien (un morceau sans lien n'a pas ce champ). */
+function linkField(target: LinkTarget | undefined): { link?: LinkTarget } {
+  return target ? { link: { url: target.url, noPreview: target.noPreview } } : {};
+}
+
+export function text(content: string, marks: readonly Mark[] = [], target?: LinkTarget): TextNode {
   if (content.includes('\n')) {
     throw new Error('Un texte ne contient pas de saut de ligne : utiliser un paragraphe par ligne.');
   }
-  return { type: 'text', text: content, marks: normalizeMarks(marks) };
+  return { type: 'text', text: content, marks: normalizeMarks(marks), ...linkField(target) };
 }
 
-export function code(content: string, marks: readonly Mark[] = []): CodeNode {
+export function code(content: string, marks: readonly Mark[] = [], target?: LinkTarget): CodeNode {
   if (content === '' || content.includes('\n')) {
     throw new Error('Un code en ligne ne peut être ni vide ni sur plusieurs lignes.');
   }
@@ -177,7 +191,7 @@ export function code(content: string, marks: readonly Mark[] = []): CodeNode {
     throw new Error('Code en ligne non pris en charge : accent grave en bord ou doublé.');
   }
   // Le code est une entité unique : tous les styles de texte sont permis autour (§5, X8).
-  return { type: 'code', code: content, marks: normalizeMarks(marks) };
+  return { type: 'code', code: content, marks: normalizeMarks(marks), ...linkField(target) };
 }
 
 export function raw(content: string, marks: readonly Mark[] = []): RawNode {
@@ -204,18 +218,70 @@ export function isTemplate(node: MentionNode): boolean {
 }
 
 /** Horodatage (§8) : nombre entier de secondes, positif ou nul ; styles visibles (H3). */
-export function timestamp(seconds: number, style: TimestampStyle | null = null, marks: readonly Mark[] = []): TimestampNode {
+export function timestamp(
+  seconds: number,
+  style: TimestampStyle | null = null,
+  marks: readonly Mark[] = [],
+  target?: LinkTarget,
+): TimestampNode {
   if (!Number.isSafeInteger(seconds) || seconds < 0) {
     throw new Error('Horodatage impossible : un nombre entier de secondes, positif ou nul.');
   }
   if (style !== null && !TIMESTAMP_STYLES.includes(style)) {
     throw new Error(`Style d'horodatage inconnu : ${TIMESTAMP_STYLES.join(', ')}, ou aucun.`);
   }
-  return { type: 'timestamp', seconds, style, marks: normalizeMarks(marks) };
+  return { type: 'timestamp', seconds, style, marks: normalizeMarks(marks), ...linkField(target) };
 }
 
 function sameMarks(a: readonly Mark[], b: readonly Mark[]): boolean {
   return a.length === b.length && a.every((mark, i) => mark === b[i]);
+}
+
+/** Lien du morceau (seuls le texte, le code en ligne et l'horodatage peuvent en avoir un). */
+export function linkOf(node: InlineNode): LinkTarget | undefined {
+  return node.type === 'text' || node.type === 'code' || node.type === 'timestamp' ? node.link : undefined;
+}
+
+/** Le morceau, vu pour les liens (`linkKeepMask`). */
+function linkPiece(node: InlineNode): LinkPiece {
+  switch (node.type) {
+    case 'text':
+      return { text: node.text, kind: 'text', link: node.link };
+    case 'code':
+      return { text: node.code, kind: 'code', link: node.link };
+    case 'timestamp':
+      return { text: '', kind: 'element', link: node.link };
+    default:
+      return { text: '', kind: 'blocker', link: undefined };
+  }
+}
+
+/** Le même morceau, sans lien. */
+function unlinked(node: InlineNode): InlineNode {
+  if (node.type === 'code') return code(node.code, node.marks);
+  if (node.type === 'timestamp') return timestamp(node.seconds, node.style, node.marks);
+  return node;
+}
+
+/**
+ * Retire le lien de ce qui ne peut pas être dans son texte (émoji, `[` seul…) : le lien est coupé
+ * en deux (choix A de l'utilisateur, §4). Un lien vide, blanc ou dont le texte est une adresse disparaît (L9).
+ */
+function settleLinks(content: readonly InlineNode[]): InlineNode[] {
+  if (!content.some((node) => linkOf(node) !== undefined)) return [...content];
+  const masks = linkKeepMask(content.map(linkPiece));
+  return content.flatMap((node, i): InlineNode[] => {
+    const mask = masks[i];
+    if (node.type !== 'text') return [mask[0] ? node : unlinked(node)];
+    const parts: TextNode[] = [];
+    let start = 0;
+    for (let k = 1; k <= node.text.length; k++) {
+      if (k < node.text.length && mask[k] === mask[start]) continue;
+      parts.push(text(node.text.slice(start, k), node.marks, mask[start] ? node.link : undefined));
+      start = k;
+    }
+    return parts;
+  });
 }
 
 /** Retire les textes vides et fusionne les voisins de même nature aux mêmes styles. */
@@ -224,7 +290,8 @@ function mergeContent(content: readonly InlineNode[]): InlineNode[] {
   for (const node of content) {
     if (node.type === 'text' && node.text === '') continue;
     const previous = merged[merged.length - 1];
-    if (previous?.type === 'text' && node.type === 'text' && sameMarks(previous.marks, node.marks)) {
+    if (previous?.type === 'text' && node.type === 'text' && sameMarks(previous.marks, node.marks)
+      && sameLink(previous.link, node.link)) {
       merged[merged.length - 1] = { ...previous, text: previous.text + node.text };
     } else if (previous?.type === 'raw' && node.type === 'raw' && sameMarks(previous.marks, node.marks)) {
       merged[merged.length - 1] = { ...previous, raw: previous.raw + node.raw };
@@ -246,7 +313,7 @@ export interface LineLayout {
 export function layoutLine(layout: LineLayout, ...content: InlineNode[]): Paragraph {
   const quote = layout.quote ?? false;
   const style = layout.style ?? 'normal';
-  const merged = mergeContent(content);
+  const merged = mergeContent(settleLinks(mergeContent(content)));
   let list: ListInfo | null = null;
   if (layout.list) {
     const { kind, level } = layout.list;

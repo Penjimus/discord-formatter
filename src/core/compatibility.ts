@@ -43,6 +43,7 @@ export const TOOLBAR_OPTIONS = [
   'mention',
   'timestamp',
   'emoji',
+  'link',
   'blankLine',
 ] as const;
 export type ToolbarOption = (typeof TOOLBAR_OPTIONS)[number];
@@ -204,6 +205,8 @@ function lineToolbar(blocks: readonly Block[], index: number, line: Paragraph, i
     mention: insideCode,
     timestamp: insideCode,
     emoji: ALLOWED,
+    // Lien permis dans toute ligne (§10, L4) ; pas dans du code (S19).
+    link: insideCode,
     blankLine: line.quote ? greyed('Une ligne vide ordinaire termine la citation.') : ALLOWED,
   } as Toolbar;
 }

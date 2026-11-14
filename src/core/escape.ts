@@ -19,6 +19,13 @@ export interface TextSurroundings {
   readonly delimitedAfter: boolean;
   /** Le texte des morceaux suivants sur la même ligne. */
   readonly textAfter: string;
+  /**
+   * Le morceau est dans le texte d'un lien : un `[` n'y est jamais échappé (`\[` casse le lien, L5),
+   * et les `]` sans `[` sont dans `forcedEscapes` (`\]`, L5).
+   */
+  readonly inLinkText?: boolean;
+  /** Positions à échapper quoi qu'il arrive. */
+  readonly forcedEscapes?: ReadonlySet<number>;
 }
 
 const WORD_CHAR = /[\p{L}\p{N}]/u;
@@ -116,8 +123,8 @@ function mustEscape(
       return atEdge || message.backtickPairPossible;
     case '<': // C15
       return ANGLE_PATTERN.test(textValue.slice(i + 1) + around.textAfter);
-    case '[': // C16
-      return (textValue.slice(i + 1) + around.textAfter).includes('](');
+    case '[': // C16 ; dans le texte d'un lien, chaque `[` a son `]` (L5)
+      return !around.inLinkText && (textValue.slice(i + 1) + around.textAfter).includes('](');
     default:
       return false;
   }
@@ -133,7 +140,8 @@ export function escapeText(
   const emojiClosings = emojiCodeClosings(textValue);
   let result = '';
   for (let i = 0; i < textValue.length; i++) {
-    const escape = i === lineStartIndex || emojiClosings.has(i) || mustEscape(textValue, i, message, around);
+    const escape = i === lineStartIndex || emojiClosings.has(i) || (around.forcedEscapes?.has(i) ?? false)
+      || mustEscape(textValue, i, message, around);
     result += escape ? `\\${textValue[i]}` : textValue[i];
   }
   return result;

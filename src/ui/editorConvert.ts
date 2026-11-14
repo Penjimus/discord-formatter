@@ -12,6 +12,7 @@ import {
   createDocument,
   isPlainAnsiStyle,
   layoutLine,
+  link,
   mention,
   raw,
   text,
@@ -23,6 +24,7 @@ import {
   type DiscordDocument,
   type InlineNode,
   type LineStyle,
+  type LinkTarget,
   type ListKind,
   type Mark,
   type MentionKind,
@@ -67,6 +69,9 @@ export interface CodeBlockAttrs {
 /** Nom du style « code en ligne » dans l'éditeur. */
 export const CODE_MARK = 'code';
 
+/** Nom de la marque « lien masqué » ; ses attributs : `url` et `noPreview` (§4). */
+export const LINK_MARK = 'link';
+
 /** Styles ANSI de l'éditeur (marques permises seulement dans un bloc de code). */
 export const ANSI_FLAG_MARKS = {
   bold: 'ansiBold',
@@ -83,23 +88,24 @@ const TEXT_MARKS: readonly Mark[] = ['spoiler', 'strike', 'underline', 'bold', '
 
 // ---------- Document → éditeur ----------
 
-function marksOf(marks: readonly Mark[], extra: string[] = []): { type: string }[] | undefined {
-  const all = [...marks, ...extra];
-  return all.length > 0 ? all.map((type) => ({ type })) : undefined;
+function marksOf(marks: readonly Mark[], extra: string[] = [], target?: LinkTarget): EditorMark[] | undefined {
+  const all: EditorMark[] = [...marks, ...extra].map((type) => ({ type }));
+  if (target) all.unshift({ type: LINK_MARK, attrs: { url: target.url, noPreview: target.noPreview } });
+  return all.length > 0 ? all : undefined;
 }
 
 function inlineToEditor(node: InlineNode): EditorNode {
   switch (node.type) {
     case 'text':
-      return { type: 'text', text: node.text, marks: marksOf(node.marks) };
+      return { type: 'text', text: node.text, marks: marksOf(node.marks, [], node.link) };
     case 'code':
-      return { type: 'text', text: node.code, marks: marksOf(node.marks, [CODE_MARK]) };
+      return { type: 'text', text: node.code, marks: marksOf(node.marks, [CODE_MARK], node.link) };
     case 'raw':
       return { type: 'raw', attrs: { raw: node.raw }, marks: marksOf(node.marks) };
     case 'mention':
       return { type: 'mention', attrs: { kind: node.kind, id: node.id }, marks: marksOf(node.marks) };
     case 'timestamp':
-      return { type: 'timestamp', attrs: { seconds: node.seconds, style: node.style }, marks: marksOf(node.marks) };
+      return { type: 'timestamp', attrs: { seconds: node.seconds, style: node.style }, marks: marksOf(node.marks, [], node.link) };
   }
 }
 
@@ -152,20 +158,32 @@ function textMarks(names: readonly string[]): Mark[] {
   return TEXT_MARKS.filter((mark) => names.includes(mark));
 }
 
+/** Lien porté par un morceau de l'éditeur ; une adresse refusée est ignorée (le texte reste). */
+export function linkFromMarks(marks: readonly EditorMark[] | undefined): LinkTarget | undefined {
+  const mark = marks?.find((candidate) => candidate.type === LINK_MARK);
+  if (!mark) return undefined;
+  try {
+    return link(String(mark.attrs?.url ?? ''), Boolean(mark.attrs?.noPreview));
+  } catch {
+    return undefined;
+  }
+}
+
 function inlineFromEditor(node: EditorNode): InlineNode | null {
   const names = markNames(node);
   const marks = textMarks(names);
   const attrs = node.attrs ?? {};
+  const target = linkFromMarks(node.marks);
   switch (node.type) {
     case 'text': {
       const content = node.text ?? '';
       if (content === '') return null;
-      if (!names.includes(CODE_MARK)) return text(content, marks);
+      if (!names.includes(CODE_MARK)) return text(content, marks, target);
       // Code impossible (accent grave au bord…) : redevient du texte, styles gardés.
       try {
-        return code(content, marks);
+        return code(content, marks, target);
       } catch {
-        return text(content, marks);
+        return text(content, marks, target);
       }
     }
     case 'raw':
@@ -173,7 +191,7 @@ function inlineFromEditor(node: EditorNode): InlineNode | null {
     case 'mention':
       return mention(attrs.kind as MentionKind, String(attrs.id), marks);
     case 'timestamp':
-      return timestamp(Number(attrs.seconds), (attrs.style ?? null) as TimestampStyle | null, marks);
+      return timestamp(Number(attrs.seconds), (attrs.style ?? null) as TimestampStyle | null, marks, target);
     default:
       return null;
   }

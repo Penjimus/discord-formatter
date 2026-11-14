@@ -243,15 +243,42 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 
 ---
 
-## 4. Liens (prévus pour une version future)
+## 4. Liens
 
 | Syntaxe | Effet | Statut |
 |---|---|---|
 | `[Texte](https://exemple.com)` | Lien masqué : le texte est cliquable, l'adresse est cachée. Fonctionne dans un message d'utilisateur | Testé (C16) |
+| `[Texte](<https://exemple.com>)` | Lien masqué **sans aperçu** ; un style autour s'applique | Testé (L8a, L8b, L8c) |
 | `<https://exemple.com>` | Lien affiché sans aperçu (embed) | Documenté |
 | `https://exemple.com/_a_` | Adresse écrite telle quelle : devient un lien, les symboles qu'elle contient ne sont **pas** interprétés | Testé (C21) |
 | `**https://exemple.com**` | Un style autour d'une adresse s'applique au lien | Testé (C22) |
 | Fin d'une adresse : elle s'arrête au premier espace ou `<`, sans le signe de ponctuation final (`.`, `,`, `:`, `;`, `"`, `'`, `)`, `]`) | Documenté |
+
+### Lien masqué : styles, placement, contenu
+
+| Point | Résultat | Statut |
+|---|---|---|
+| Styles **autour** du lien (gras, italique `*` et `_`, souligné, barré, spoiler, combinés) | ✓ appliqués au lien ; le spoiler le cache | Testé (L1) |
+| Styles **dans** le texte du lien (mêmes styles, spoiler, code en ligne, partie du texte seulement) | ✓ appliqués, le lien reste cliquable | Testé (L2) |
+| Style qui commence d'un côté du lien et finit de l'autre (`**a [b** c](…)`) | ✗ mal formaté | Testé (L3) |
+| Style qui entoure le lien et du texte autour (`**a [b](…) c**`) | ✓ | Testé (L3) |
+| Lien dans une puce, une sous-puce, un élément numéroté, une citation, une puce citée, un sous-texte, un sous-texte cité | ✓ | Testé (L4) |
+| Lien dans un titre, dans un spoiler | ✓ | Testé (D1, D5) |
+| Lien collé à un mot (`mot[a](…)mot`) | ✓ | Testé (L9) |
+| Crochets dans le texte : appariés (`[a [b] c]`) ou `]` échappé (`\]`) | ✓ | Testé (L5) |
+| Crochets dans le texte : `]` seul non échappé | ✗ mal formé | Testé (L5) |
+| Crochets dans le texte : `[` seul, avec ou sans antislash | ✗ le lien ne part que du dernier `[` : le texte avant reste visible, hors du lien | Testé (L5, L12) |
+| Texte vide (`[]`), réduit à un espace, ou qui est lui-même une adresse | ✗ pas de lien, balises visibles | Testé (L9) |
+| Horodatage dans le texte du lien | ✓ | Testé (L11) |
+| Émoji (seul ou après du texte), `:nom:`, mention de rôle ou de salon dans le texte du lien | ✗ pas de lien, balises visibles | Testé (L9, L11) ; mention d'utilisateur : généralisé |
+| Titre après l'adresse (`[a](… "info")`) | ✓ cliquable, « info » en bulle au survol | Testé (L9) |
+| Adresse avec parenthèses appariées, `\)`, `%29`, `_`, `*`, `~~` | ✓ cliquable, symboles gardés dans l'adresse | Testé (L6) |
+| Adresse contenant un espace | ✗ pas de lien | Testé (L6) |
+| Espace écrit `%20` dans l'adresse | ✓ cliquable | Testé (L12) |
+| *Convention* : dans une adresse écrite par l'appli, un espace devient `%20` et une parenthèse fermante non appariée `%29` (jamais `\)`, dont l'adresse ouverte n'a pas été relevée) | — | Testé (L6, L12) |
+| Protocoles cliquables : `https://`, `http://`, `mailto:`, `tel:`, `discord://` | ✓ | Testé (C16, L7) |
+| Adresse sans protocole (`exemple.com`), `www.…`, `ftp://`, `steam://` | ✗ pas cliquable | Testé (L7) |
+| Formes approchées : `[a](b)`, `[a] (…)`, `[a]\(…)`, `[a]` puis `(…)` à la ligne | texte ordinaire, aucun lien | Testé (L10) |
 
 ---
 
@@ -563,6 +590,7 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Liste | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Citation (`>`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
 | Spoiler (`\|\|`) | ✓ | — | ✓ | ✓ | ✓ | ✗ |
+| Texte d'un lien masqué (émoji aussi ✗, L11) | ✓ (L2) | ✓ (L2) | ✓ (L11) | ✗ (L9) | ✗ (L11) | ✗ |
 | Code en ligne | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Bloc de code avec langage | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Bloc `ansi` | ✗ (sauf gras, souligné, italique et barré ANSI, E15) | ✗ | ✗ | ✗ | ✗ | ✓ |
@@ -613,7 +641,7 @@ Quand un texte ordinaire contient un symbole que Discord interpréterait, l'appl
 | `1.` | `1.sans espace` reste littéral ; `1\. pas une liste` s'affiche en texte ; **`2020. une année` devient une liste** | **oui** : tout nombre suivi de `. ` en début de ligne | Testé (C13) |
 | `>` | `>sans espace` reste littéral ; `\> pas une citation` s'affiche en texte | **oui** si suivi d'un espace en début de ligne | Testé (C14) |
 | `<` | `a < b > c` et `<texte>` restent littéraux ; `\<@&123>` reste littéral | non, sauf motif de mention, d'émoji ou d'horodatage | Testé (C15) |
-| `[` | `[a](url)` devient un lien ; `\[a](url)` reste littéral | **oui** pour un crochet suivi d'une parenthèse (version future) | Testé (C16) |
+| `[` | `[a](url)` devient un lien ; `\[a](url)` reste littéral | **oui** pour un crochet suivi plus loin de `](` (convention : un peu trop, les formes approchées restent littérales, L10) | Testé (C16, L10) |
 | `\` | `\a` s'affiche tel quel avec l'antislash ; `\\` s'affiche `\` ; `\_` s'affiche `_` | **oui** : un antislash littéral est toujours écrit `\\` | Testé (C17) |
 | `\` + autre symbole | `\! \: \é \( \)` s'affiche « ! : é ( ) » : l'antislash disparaît | (lecture) | Testé (C19) |
 | `\` + n'importe quel caractère autre qu'une lettre non accentuée, un chiffre ou un espace | l'antislash disparaît (généralisation de C17 et C19) | (lecture) | Documenté |
@@ -680,3 +708,5 @@ Dans un bloc de code, rien n'est échappé.
 17. ~~Sauts de ligne au début ou à la fin d'un message~~ : sans objet, l'appli ne les écrit plus (J5, §13). Espaces au bord du message : comptés tels quels (§12).
 18. ~~Codes ANSI étendus~~ : tranché (E16, 14/11/2026), `90` à `97`, `100` à `107`, `38;5;N` et `48;5;N` sont tous appliqués (§6).
 19. ~~`:\*` écrit par l'appli pour un `:*` tapé comme texte~~ : tranché (I6), l'antislash empêche la conversion.
+20. ~~Lien dont le texte contient un émoji, un `:nom:`, un horodatage ou une mention~~ : tranché (L11), seul l'horodatage est permis.
+21. ~~`%20` et `[` seul dans un lien~~ : tranchés (L12). Reste (non bloquant) : `\)` est-il gardé dans l'adresse ouverte ? L'appli ne l'écrit pas (`%29`).

@@ -231,3 +231,19 @@ button:disabled:hover { background: var(--panel); }
 .char-counter.is-over .char-counter-count { color: #c0262d; font-weight: 600; }
 .char-counter.is-over .char-counter-count strong { color: #c0262d; }
 .char-counter.is-over .char-counter-fill { background: #da373c; }
+
+/* Liens masqués (étape 14) */
+.visual-editor .editor-link { color: #006ce7; text-decoration: underline; text-underline-offset: 2px; cursor: text; }
+.link-bubble {
+  position: fixed; z-index: 30; display: flex; align-items: center; gap: 6px; max-width: 420px;
+  padding: 4px 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); font-size: 0.85rem;
+}
+.link-bubble-url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #006ce7; min-width: 0; }
+.link-bubble-note { color: var(--muted); font-size: 0.8em; white-space: nowrap; }
+.link-bubble .style-button { padding: 2px 8px; flex: none; }
+.link-fields { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.link-fields label { display: flex; flex-direction: column; gap: 2px; font-size: 0.85em; }
+.link-fields input[type="text"] { font: inherit; padding: 3px 6px; min-width: 22em; }
+.link-fields .link-no-preview { flex-direction: row; align-items: center; gap: 6px; }
+.link-remove { margin-right: auto; }
