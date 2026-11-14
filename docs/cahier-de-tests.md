@@ -26,6 +26,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | M | Essais libres de l'auteur, sans fichier de départ : leurs identifiants M1 à M6 ont été créés pour ce cahier |
 | X | Messages réels du dossier `examples/` (`NOM.txt`) |
 | L | `tests-liens.md` (un bloc par message) |
+| N | `tests-decoupage.md` (un bloc par message) et `N4-ansi-coupe.txt` (à ouvrir dans un éditeur de texte simple) |
 
 ## Sommaire
 
@@ -46,8 +47,9 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 | [L](#série-l) | Liens masqués | L1 à L12, dont L8a à L8c (14) | §4, §10, §11 |
+| [N](#série-n) | Découpage en plusieurs messages | N1 à N7 (7) | §1, §3, §5, §6, §12, §13 |
 
-**Total : 195 tests** (✅ 95 confirmés, ⚠️ 16 écarts, ℹ️ 84 constats).
+**Total : 202 tests** (✅ 100 confirmés, ⚠️ 16 écarts, ℹ️ 86 constats).
 
 ---
 
@@ -393,6 +395,22 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **L10** | `[a](b) ↵ [a] (URL) ↵ [a]\(URL) ↵ [a] ↵ (URL)` | lesquels restent du texte ? | ℹ️ Aucun lien : tous non cliquables, affichés tels quels | §4, §11 |
 | **L11** | `[😀](URL) ↵ [texte 😀](URL) ↵ [:star:](URL) ↵ [<t:1735689600:f>](URL) ↵ [<@&123>](URL) ↵ [<#123>](URL)` | lequel empêche le lien en L9 ? | ℹ️ Seule la ligne de l'horodatage est un lien ; émoji (seul ou après du texte), `:star:` et mentions empêchent le lien | §4 |
 | **L12** | `[b](URL/a\)b) ↵ [d](URL/a%20b) ↵ [f [ g](URL)` | `\)` gardé ? `%20` cliquable ? `[` seul ? | ℹ️ Lignes 1 et 2 : liens bien formés ; ligne 3 : lien formé sur « g » seulement, « [f » reste visible avant (le lien part du dernier `[`). Adresse ouverte en ligne 1 non relevée | §4 |
+
+## Série N
+
+### Découpage en plusieurs messages
+
+*Source : `tests-decoupage.md` et `N4-ansi-coupe.txt` (étape 15a). N1 : essai de l'auteur, rapporté le 14/11/2026.*
+
+| Test | Message envoyé | Attendu | Observé | Règle |
+|---|---|---|---|---|
+| **N1** | message commençant par `3. c ↵ 4. d ↵ …` | la liste commence à 3 ? | ✅ Numérotation à partir de 3, puis 4, 5, 6… | §3 |
+| **N2** | a : `  - sous-élément x ↵   - sous-élément y ↵ - élément suivant` ; b : `  2. sous-élément deux ↵   3. sous-élément trois ↵ 3. élément trois` | message qui commence par une sous-liste : sous-puce, puce normale ou texte ? | ℹ️ Le premier élément est affiché au **premier niveau** ; le deuxième reste en sous-niveau (sous le premier) ; le dernier au premier niveau. Même chose pour la liste numérotée (14/11/2026) | §3, §12 |
+| **N3** | a : ```` ```js ↵ const a = 1; ↵ ``` ```` ; b : ```` ```js ↵ const b = 2; ↵ ``` ```` | deux blocs colorés normaux | ✅ Conforme | §5, §12 |
+| **N4** | a et b : ```` ```ansi ↵ <ESC>[1;31;44m… <ESC>[0m ↵ ``` ```` | les deux messages en gras rouge sur fond bleu | ✅ Conforme | §6, §12 |
+| **N5** | a : `> première partie… ↵ > deuxième ligne` ; b : `> troisième ligne ↵ > fin…` | deux citations normales | ✅ Conforme | §3, §12 |
+| **N6** | a : `\|\|**début du secret**\|\|` ; b : `\|\|**fin du secret**\|\|` | un spoiler par message, en gras | ✅ Conforme | §1, §12 |
+| **N7** | `   trois espaces avant ce texte` | espaces du début visibles ou retirés ? | ℹ️ Les espaces au début du message sont **retirés** | §12, §13 |
 
 ---
 

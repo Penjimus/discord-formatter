@@ -189,7 +189,8 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Un sous-niveau peut avoir un type différent de son parent (puce sous un numéro, ou l'inverse) | permis | Testé |
 | **Une sous-liste recommence sous chaque nouveau parent** : `1. a ↵   1. x ↵ 2. b ↵   1. y` affiche y avec le numéro 1 | | Testé (G5) |
 | **À un même niveau, tous les éléments prennent le type du premier** (puce ou numéro). Une ligne `1. ` placée après une puce du même niveau s'affiche comme puce, et inversement | | Testé (D3) |
-| Numérotation : le premier numéro donne le départ, les suivants s'incrémentent. `1. 1. 1.` s'affiche 1-2-3 ; `3. 7. 2.` s'affiche 3-4-5 | | Testé (G1, G2) |
+| Numérotation : le premier numéro donne le départ, les suivants s'incrémentent. `1. 1. 1.` s'affiche 1-2-3 ; `3. 7. 2.` s'affiche 3-4-5 ; un message qui commence par `3.` numérote à partir de 3 | | Testé (G1, G2, N1) |
+| Une sous-liste en tout début de message, sans parent : son premier élément s'affiche au premier niveau, les suivants restent en sous-niveau | | Testé (N2) |
 | Citation à l'intérieur d'une puce | permis (sur mobile, la puce n'apparaît pas devant la citation, mais le message reste lisible) | Testé (D14) |
 | **Bloc de code à l'intérieur d'une puce** : sur la ligne qui suit la puce, chaque ligne du bloc (ouverture, contenu, fermeture) indentée de 2 espaces ; le langage est permis et sans effet sur le placement (D13, G9, G10) | permis | Testé (D13, G9, G10) |
 | **Une ligne vide dans un bloc placé dans une puce casse le bloc** (G6, G11) ; un bloc ouvert sur la ligne même de la puce (`- ```js`) n'est pas un bloc (G7) | | Testé (G6, G7, G11) |
@@ -668,6 +669,25 @@ Dans un bloc de code, rien n'est échappé.
 | `<ESC>` compte pour **1** caractère (K9 : 1999 + 1 = accepté ; K10 : 2000 + 1 = refusé). Un code ANSI complet comme `<ESC>[1;31m` compte donc pour 7 caractères | Testé |
 | Les balises (`**`, ```` ``` ````, etc.) sont comptées comme du texte ordinaire | Documenté |
 | Le caractère invisible `U+200B` compte pour 1 caractère | Documenté (UTF-16) |
+
+### Découpage en plusieurs messages (étape 15a)
+
+| Point | Statut |
+|---|---|
+| Un message qui commence par une liste numérotée `3.` numérote à partir de 3 | Testé (N1) |
+| Un message qui commence par une sous-liste (`  - x`) sans parent : le premier élément s'affiche au **premier niveau**, les suivants de même indentation restent en sous-niveau (sous le premier) ; puces et numéros pareil | Testé (N2) |
+| Un bloc de code (même langage), un passage ANSI (balise rouverte au début du bloc), une citation, un spoiler stylé, refermés puis rouverts sur deux messages : chacun s'affiche correctement seul | Testé (N3 à N6) |
+| Les espaces au **début** d'un message sont retirés à l'envoi | Testé (N7) |
+| Les espaces à la **fin** d'un message | À tester (invisibles dans tous les cas) |
+
+*Conventions de découpage* (étape 15a, `src/core/split.ts`) :
+- Chaque message est un morceau du document écrit à part : styles, spoilers, citations, blocs (même langage) et couleurs ANSI sont refermés puis rouverts d'eux-mêmes ; la longueur est mesurée sur le message écrit, balises comprises.
+- Ordre de préférence des coupes : au bord d'une ligne vide ou d'un bloc de code, puis entre deux lignes, puis juste avant un sous-élément de liste ou un bloc placé dans une puce (N2, option A, choix de l'auteur). Dans une ligne trop longue : entre deux phrases, entre deux mots, entre deux mots d'un lien, au caractère près (jamais au milieu d'un émoji), et en tout dernier recours dans un morceau brut. Dans un bloc trop long : entre deux lignes, puis au caractère près (choix 2A). À préférence égale, la coupe la plus loin qui tient.
+- L'espace d'une coupe entre deux mots n'est écrit dans aucun des deux messages (N7, accord de l'auteur).
+- Liste coupée : la numérotation reprend (N1). Sous-liste coupée de force : ses éléments remontent au niveau libre dans le message suivant (N2). Bloc de puce en tête de message : écrit hors de la liste.
+- Ligne coupée en deux : la suite garde sa mise en page (puce, numéro, titre, citation). Un élément numéroté coupé montre donc son numéro dans les deux messages.
+- Un lien coupé devient deux liens de même adresse ; un lien dont même un seul caractère ne tiendrait pas devient du texte simple (choix 1A).
+- Lignes vides au bord d'un message : retirées (J5) ; ligne citée vide en fin de message : retirée (G28, G30) ; ligne vide au bord d'un morceau de bloc de code : retirée (F4).
 
 ---
 

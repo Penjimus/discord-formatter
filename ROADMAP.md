@@ -230,7 +230,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 **Tests** : les nouveaux tests du cahier, plus C16, C21 et C22.
 **Validation** : l'utilisateur insère des liens (simples, stylés, dans une liste, dans une citation), colle le résultat dans Discord et compare.
 
-### [ ] Étape 15a : Découpage en plusieurs messages (cœur)
+### [x] Étape 15a : Découpage en plusieurs messages (cœur)
 
 **Objectif** : une fonction `split` qui coupe un document trop long en plusieurs messages Discord valides, chacun sous la limite choisie (2000 ou 4000).
 
@@ -507,6 +507,14 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 14 | Test `C16_lien_masque_brut` (étape 2) remplacé par `C16_lien_masque_lu_et_crochet_echappe` | Prévu par la ROADMAP ; accord de l'utilisateur |
 | 2026-11-14 | 14 | Étape validée par l'utilisateur | — |
 | 2026-11-14 | 14 | Interface : bouton « 🔗 Lien » ; avec le curseur dans un lien, il ouvre la modification de ce lien ; la frappe juste après un lien ne le prolonge pas ; « Ouvrir » ouvre un nouvel onglet ; lien à gauche en bleu souligné | Décidé par Claude |
+| 2026-11-14 | 15a | Élément plus long que la limite à lui seul : coupé au caractère près (jamais au milieu d'un émoji) ; un lien coupé devient deux liens de même adresse ; une adresse seule plus longue que la limite : le lien devient du texte simple (1A) | Choix de l'utilisateur |
+| 2026-11-14 | 15a | Coupe à l'intérieur d'un bloc de code permise seulement si le bloc ne tient pas seul dans un message ; refermé puis rouvert avec le même langage, entre deux lignes si possible (2A) | Choix de l'utilisateur |
+| 2026-11-14 | 15a | N1 : un message qui commence par `3.` numérote à partir de 3 ; la liste coupée reprend sa numérotation. Test retiré de la série N à passer | Essai de l'utilisateur |
+| 2026-11-14 | 15a | Scénarios S20 à S24 écrits dans `SPEC.md` §6 ; série N (N2 à N7) préparée dans `docs/tests-discord/tests-decoupage.md` et `N4-ansi-coupe.txt` | Proposé par Claude ; à valider |
+| 2026-11-14 | 15a | Série N passée (cahier : 202 tests). N2 : sous-liste en tête de message décalée par Discord → option A (couper avant un élément de premier niveau ; si forcé, la sous-liste remonte d'un niveau). N7 : espaces du début retirés → l'espace d'une coupe entre mots n'est écrit nulle part | Résultats et choix de l'utilisateur |
+| 2026-11-14 | 15a | `split(document, limite)` dans `src/core/split.ts` : coupe le document, chaque morceau écrit par `serialize` ; à préférence égale, la coupe la plus loin qui tient (même si un message reste court) | Décidé par Claude |
+| 2026-11-14 | 15a | Ligne coupée : la suite garde puce, numéro, titre ou citation (un numéro peut apparaître dans les deux messages) ; bloc de puce en tête de message écrit hors de la liste ; ligne citée vide en fin de message retirée ; morceau brut coupé en tout dernier recours ; coupe entre deux mots d'un lien avant la coupe au caractère près | Décidé par Claude |
+| 2026-11-14 | 15a | Étape validée par l'utilisateur : V1 à V7 de `docs/tests-discord/validation-etape-15a.txt` collés dans Discord (spoiler en gras, liste et sous-listes, bloc `js`, ANSI, citation, lien, exemples à la vraie limite 2000), tous corrects | — |
 
 ---
 

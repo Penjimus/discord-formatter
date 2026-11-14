@@ -1,0 +1,15 @@
+N4 : passage colore (gras rouge sur fond bleu) coupe en deux messages.
+Attendu : les deux messages s affichent en gras rouge sur fond bleu, sans symbole visible.
+Copie seulement les lignes entre les traits, un message a la fois.
+
+----- message a -----
+```ansi
+[1;31;44mdebut du passage colore,[0m
+```
+----- fin du message a -----
+
+----- message b -----
+```ansi
+[1;31;44msuite du passage colore[0m
+```
+----- fin du message b -----

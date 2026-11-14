@@ -91,6 +91,13 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S18** — Je colle à droite un `[texte](adresse)` → à gauche : le lien, modifiable. Une forme de lien non reconnue reste en texte brut (S12).
 - **S19** — Le curseur est dans du code en ligne ou un bloc de code → le bouton « Lien » est grisé.
 
+### Découpage en plusieurs messages (étape 15a : cœur ; affichage à l'étape 15b)
+- **S20** — Mon texte dépasse la limite choisie (2000 ou 4000) → il est découpé en plusieurs messages, chacun sous la limite, **balises ajoutées comprises**. La coupe est la plus naturelle possible : entre blocs, puis entre lignes, puis entre phrases, puis entre mots.
+- **S21** — Un style, un spoiler, une citation, un bloc de code ou un passage ANSI à cheval sur une coupe est refermé à la fin du message et rouvert au début du suivant (un bloc garde son langage). Chaque message s'affiche correctement seul, sans ligne vide au début ni à la fin.
+- **S22** — Une liste numérotée coupée continue sa numérotation dans le message suivant (il commence par exemple par `3.`).
+- **S23** — Un élément plus long que la limite à lui seul est coupé quand même : un mot ou une ligne de code au caractère près, sans jamais couper un émoji en deux ; un bloc de code trop long entre deux lignes si possible ; un lien en deux liens de même adresse. Un lien dont l'adresse seule dépasse la limite devient du texte simple.
+- **S24** — Les messages relus et mis bout à bout redonnent mon texte d'origine : **rien n'est perdu**.
+
 ## 7. Contraintes techniques
 
 Exprimées en langage simple. Le choix précis des technologies est laissé à Claude Code, qui doit **proposer 2-3 options avec leurs compromis et une recommandation, puis attendre ma décision**.

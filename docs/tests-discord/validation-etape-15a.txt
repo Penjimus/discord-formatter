@@ -1,0 +1,374 @@
+==================== V1 : phrases en gras et spoiler ====================
+Limite simulée : 70. Texte d'origine (118 caractères) :
+----- origine -----
+||**Première phrase du secret. Deuxième phrase, un peu plus longue que la première. Troisième et dernière phrase !**||
+----- fin de l'origine -----
+
+----- message 1 sur 3 (34 caractères) -----
+||**Première phrase du secret.**||
+----- fin du message 1 -----
+
+----- message 2 sur 3 (60 caractères) -----
+||**Deuxième phrase, un peu plus longue que la première.**||
+----- fin du message 2 -----
+
+----- message 3 sur 3 (38 caractères) -----
+||**Troisième et dernière phrase !**||
+----- fin du message 3 -----
+
+==================== V2 : liste numérotée et sous-liste ====================
+Limite simulée : 90. Texte d'origine (171 caractères) :
+----- origine -----
+1. Préparer le salon
+  - choisir le nom
+  - régler les droits
+2. Inviter les membres
+  - envoyer le lien
+  - accueillir chacun
+  - présenter les règles
+3. Lancer la partie
+----- fin de l'origine -----
+
+----- message 1 sur 3 (61 caractères) -----
+1. Préparer le salon
+  - choisir le nom
+  - régler les droits
+----- fin du message 1 -----
+
+----- message 2 sur 3 (89 caractères) -----
+2. Inviter les membres
+  - envoyer le lien
+  - accueillir chacun
+  - présenter les règles
+----- fin du message 2 -----
+
+----- message 3 sur 3 (19 caractères) -----
+3. Lancer la partie
+----- fin du message 3 -----
+
+==================== V3 : bloc de code js ====================
+Limite simulée : 80. Texte d'origine (133 caractères) :
+----- origine -----
+```js
+function bonjour(nom) {
+  const message = "Bonjour " + nom;
+  console.log(message);
+  return message;
+}
+bonjour("Discord");
+```
+----- fin de l'origine -----
+
+----- message 1 sur 2 (69 caractères) -----
+```js
+function bonjour(nom) {
+  const message = "Bonjour " + nom;
+```
+----- fin du message 1 -----
+
+----- message 2 sur 2 (73 caractères) -----
+```js
+  console.log(message);
+  return message;
+}
+bonjour("Discord");
+```
+----- fin du message 2 -----
+
+==================== V4 : passage ANSI ====================
+Limite simulée : 60. Texte d'origine (98 caractères) :
+----- origine -----
+```ansi
+[1;31mLigne rouge en gras
+encore rouge[0m
+[44;32mvert sur fond bleu
+fin du vert[0m
+```
+----- fin de l'origine -----
+
+----- message 1 sur 2 (55 caractères) -----
+```ansi
+[1;31mLigne rouge en gras
+encore rouge[0m
+```
+----- fin du message 1 -----
+
+----- message 2 sur 2 (54 caractères) -----
+```ansi
+[44;32mvert sur fond bleu
+fin du vert[0m
+```
+----- fin du message 2 -----
+
+==================== V5 : citation ====================
+Limite simulée : 70. Texte d'origine (112 caractères) :
+----- origine -----
+> Une citation qui commence ici,
+> continue sur une deuxième ligne,
+> puis une troisième,
+> et se termine enfin.
+----- fin de l'origine -----
+
+----- message 1 sur 2 (67 caractères) -----
+> Une citation qui commence ici,
+> continue sur une deuxième ligne,
+----- fin du message 1 -----
+
+----- message 2 sur 2 (44 caractères) -----
+> puis une troisième,
+> et se termine enfin.
+----- fin du message 2 -----
+
+==================== V6 : lien et texte ====================
+Limite simulée : 80. Texte d'origine (125 caractères) :
+----- origine -----
+Lisez la page [Discord sur Wikipédia](<https://fr.wikipedia.org/wiki/Discord>) avant la réunion de demain soir, merci à tous.
+----- fin de l'origine -----
+
+----- message 1 sur 2 (78 caractères) -----
+Lisez la page [Discord sur Wikipédia](<https://fr.wikipedia.org/wiki/Discord>)
+----- fin du message 1 -----
+
+----- message 2 sur 2 (46 caractères) -----
+avant la réunion de demain soir, merci à tous.
+----- fin du message 2 -----
+
+==================== V7 : tous les exemples de examples/, deux fois de suite (vraie limite) ====================
+Limite simulée : 2000. Texte d'origine (3726 caractères) :
+----- origine -----
+# Ordre du jour de la réunion
+~~- Validation du budget prévisionnel
+- Point sur le projet en cours~~
+- \-# Note : merci d'arriver à l'heure
+
+# Ordre du jour de la réunion
+- Validation du budget prévisionnel
+- Point sur le projet en cours
+- -# Note : merci d'arriver à l'heure
+
+*Membres de la cellule :​*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+\*Membres de la cellule :*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+~~> Ceci est une citation officielle
+> répartie sur plusieurs lignes.
+Date limite : <t:1735689600:F>~~
+
+*`Peut être que ce message est en italique ????`*
+~~`Cette partie là est barrée`~~
+`Là par contre, ~~Ce n'est absolument pas barré~~ ou en *italique*`
+||`Spoiler ! il ne faut pas lire ce code`||
+
+Une superbe liste de **couleurs** :
+
+- rouge
+- vert
+- bleu
+
+Sont mes *:star: préférées*:star: 
+
+
+|| ~~On peut aussi faire comme ça :~~
+```ansi
+[30m30 couleur[0m
+[31m31 couleur[0m
+[32m32 couleur[0m
+[33m33 couleur[0m
+[34m34 couleur[0m
+[4;35m35 couleur[0m
+[1;47;36m36 couleur[0m
+[3;37m37 couleur[0m
+```||
+
+**Hello W__o__**__rl**d**__**!**
+
+# Ordre du jour de la réunion
+~~- Validation du budget prévisionnel
+- Point sur le projet en cours~~
+- \-# Note : merci d'arriver à l'heure
+
+# Ordre du jour de la réunion
+- Validation du budget prévisionnel
+- Point sur le projet en cours
+- -# Note : merci d'arriver à l'heure
+
+*Membres de la cellule :​*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+\*Membres de la cellule :*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+~~> Ceci est une citation officielle
+> répartie sur plusieurs lignes.
+Date limite : <t:1735689600:F>~~
+
+*`Peut être que ce message est en italique ????`*
+~~`Cette partie là est barrée`~~
+`Là par contre, ~~Ce n'est absolument pas barré~~ ou en *italique*`
+||`Spoiler ! il ne faut pas lire ce code`||
+
+Une superbe liste de **couleurs** :
+
+- rouge
+- vert
+- bleu
+
+Sont mes *:star: préférées*:star: 
+
+
+|| ~~On peut aussi faire comme ça :~~
+```ansi
+[30m30 couleur[0m
+[31m31 couleur[0m
+[32m32 couleur[0m
+[33m33 couleur[0m
+[34m34 couleur[0m
+[4;35m35 couleur[0m
+[1;47;36m36 couleur[0m
+[3;37m37 couleur[0m
+```||
+
+**Hello W__o__**__rl**d**__**!**
+----- fin de l'origine -----
+
+----- message 1 sur 2 (1862 caractères) -----
+# Ordre du jour de la réunion
+~~- Validation du budget prévisionnel
+- Point sur le projet en cours~~
+- \-# Note : merci d'arriver à l'heure
+
+# Ordre du jour de la réunion
+- Validation du budget prévisionnel
+- Point sur le projet en cours
+- -# Note : merci d'arriver à l'heure
+
+*Membres de la cellule :​*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+\*Membres de la cellule :*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+~~> Ceci est une citation officielle
+> répartie sur plusieurs lignes.
+Date limite : <t:1735689600:F>~~
+
+*`Peut être que ce message est en italique ????`*
+~~`Cette partie là est barrée`~~
+`Là par contre, ~~Ce n'est absolument pas barré~~ ou en *italique*`
+||`Spoiler ! il ne faut pas lire ce code`||
+
+Une superbe liste de **couleurs** :
+
+- rouge
+- vert
+- bleu
+
+Sont mes *:star: préférées*:star: 
+
+
+|| ~~On peut aussi faire comme ça :~~
+```ansi
+[30m30 couleur[0m
+[31m31 couleur[0m
+[32m32 couleur[0m
+[33m33 couleur[0m
+[34m34 couleur[0m
+[4;35m35 couleur[0m
+[1;47;36m36 couleur[0m
+[3;37m37 couleur[0m
+```||
+
+**Hello W__o__**__rl**d**__**!**
+----- fin du message 1 -----
+
+----- message 2 sur 2 (1862 caractères) -----
+# Ordre du jour de la réunion
+~~- Validation du budget prévisionnel
+- Point sur le projet en cours~~
+- \-# Note : merci d'arriver à l'heure
+
+# Ordre du jour de la réunion
+- Validation du budget prévisionnel
+- Point sur le projet en cours
+- -# Note : merci d'arriver à l'heure
+
+*Membres de la cellule :​*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+\*Membres de la cellule :*
+```ansi
+[1mVolaldur Thaoreus :[0m [38;2;255;218;6mApprenti-Justiciar[0m
+[1mFalcarion Thaoreus :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mLorindolo D'Automnia :[0m [38;2;191;163;0mAgent[0m, [3mAncre son identité civile à Blancherive[0m, Enquête sur La Braise
+[1mAelion Vanyarel :[0m [38;2;174;148;0mSoldat[0m, [3mAncre son identité civile à Vendeaume[0m
+```
+
+~~> Ceci est une citation officielle
+> répartie sur plusieurs lignes.
+Date limite : <t:1735689600:F>~~
+
+*`Peut être que ce message est en italique ????`*
+~~`Cette partie là est barrée`~~
+`Là par contre, ~~Ce n'est absolument pas barré~~ ou en *italique*`
+||`Spoiler ! il ne faut pas lire ce code`||
+
+Une superbe liste de **couleurs** :
+
+- rouge
+- vert
+- bleu
+
+Sont mes *:star: préférées*:star: 
+
+
+|| ~~On peut aussi faire comme ça :~~
+```ansi
+[30m30 couleur[0m
+[31m31 couleur[0m
+[32m32 couleur[0m
+[33m33 couleur[0m
+[34m34 couleur[0m
+[4;35m35 couleur[0m
+[1;47;36m36 couleur[0m
+[3;37m37 couleur[0m
+```||
+
+**Hello W__o__**__rl**d**__**!**
+----- fin du message 2 -----
