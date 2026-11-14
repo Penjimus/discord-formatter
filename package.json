@@ -18,6 +18,7 @@
     "@tiptap/pm": "^3.34.0",
     "@tiptap/react": "^3.34.0",
     "emojibase-data": "^18.0.0",
+    "highlight.js": "^11.12.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

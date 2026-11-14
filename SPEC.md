@@ -39,7 +39,7 @@ La **syntaxe exacte, les combinaisons autorisées et les incompatibilités** de 
 
 **Structure** : titres, sous-texte, citation simple, sur une ou plusieurs lignes, sans imbrication (Discord ne supporte pas les citations imbriquées), listes à puces et numérotées, **listes à plusieurs niveaux** (limites précises dans `docs/discord-rules.md`).
 
-**Blocs de code** : Un champ texte (vide par défaut) permet de spécifier le langage. Si le langage est vide et qu'une couleur est ajouté, le bloc est converti en bloc ANSI. Si un langage est spécifié, il n'est pas possible de colorer le texte.
+**Blocs de code** : Un champ texte (vide par défaut) permet de spécifier le langage. Si le langage est vide et qu'une couleur est ajouté, le bloc est converti en bloc ANSI. Si un langage est spécifié, il n'est pas possible de colorer le texte. Dans l'éditeur de gauche, un bloc avec un langage est affiché avec la **coloration syntaxique** de ce langage, comme Discord (Highlight.js) ; le texte envoyé à Discord n'en est pas modifié (ajouté le 14/11/2026, étape 12b).
 
 **Couleurs ANSI** : couleur du texte, couleur de fond, et styles autorisés dans ce mode. L'appli doit produire un texte qui se colle correctement dans Discord (voir la note sur le caractère invisible dans `docs/discord-rules.md`).
 

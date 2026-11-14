@@ -109,6 +109,38 @@ button:disabled:hover { background: var(--panel); }
 /* Bloc ansi : fond sombre, comme Discord sur ordinateur (thème sombre). */
 .code-block-ansi { background: #2b2d31; color: #dbdee1; }
 .code-block-ansi .code-block-language { color: #949ba4; }
+
+/* Coloration syntaxique (étape 12b) : teintes proches de Discord sur fond sombre, à vérifier à l'œil. */
+.code-block-syntax .hljs-keyword,
+.code-block-syntax .hljs-selector-tag,
+.code-block-syntax .hljs-doctag { color: #f47067; }
+.code-block-syntax .hljs-literal,
+.code-block-syntax .hljs-number,
+.code-block-syntax .hljs-symbol,
+.code-block-syntax .hljs-bullet { color: #6cb6ff; }
+.code-block-syntax .hljs-string,
+.code-block-syntax .hljs-regexp,
+.code-block-syntax .hljs-addition { color: #96d0ff; }
+.code-block-syntax .hljs-title,
+.code-block-syntax .hljs-section,
+.code-block-syntax .hljs-selector-id,
+.code-block-syntax .hljs-selector-class { color: #dcbdfb; }
+.code-block-syntax .hljs-built_in,
+.code-block-syntax .hljs-type,
+.code-block-syntax .hljs-class,
+.code-block-syntax .hljs-variable,
+.code-block-syntax .hljs-template-variable { color: #f69d50; }
+.code-block-syntax .hljs-attr,
+.code-block-syntax .hljs-attribute,
+.code-block-syntax .hljs-property,
+.code-block-syntax .hljs-meta,
+.code-block-syntax .hljs-name,
+.code-block-syntax .hljs-tag { color: #8ddb8c; }
+.code-block-syntax .hljs-comment,
+.code-block-syntax .hljs-quote { color: #768390; font-style: italic; }
+.code-block-syntax .hljs-deletion { color: #ff938a; }
+.code-block-syntax .hljs-emphasis { font-style: italic; }
+.code-block-syntax .hljs-strong { font-weight: bold; }
 .ansi-bold { font-weight: 700; }
 .ansi-italic { font-style: italic; }
 .ansi-underline { text-decoration: underline; }

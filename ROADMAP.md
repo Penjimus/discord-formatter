@@ -184,6 +184,18 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 **Validation** : l'utilisateur fournit de nouveaux messages inédits et vérifie.
 
+### [x] Étape 12b : Coloration syntaxique des blocs de code
+
+**Objectif** : à gauche, un bloc de code avec un langage (`js`, `py`…) est coloré comme dans Discord.
+
+- Bibliothèque **Highlight.js**, celle de Discord (`docs/discord-rules.md` §5) ; chaque langage chargé seulement quand il est utilisé.
+- Langage inconnu : pas de couleur (F1) ; nom insensible à la casse (F2) ; bloc `ansi` et bloc sans langage inchangés.
+- Coloration d'affichage seulement : le document et le texte de droite ne changent pas.
+- Teintes proches de celles de Discord, à vérifier à l'œil (écart de teinte accepté, comme pour l'ANSI).
+
+**Scénarios** : S3 (bloc avec langage), S6.
+**Validation** : l'utilisateur crée des blocs `js`, `py`, `JS`, un langage inconnu, puis compare à l'œil avec Discord.
+
 ### [ ] Étape 13 : Finitions et mise en ligne
 
 **Objectif** : une version prête à être utilisée.
@@ -395,6 +407,10 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 12 | Généralisé : titre, citation ou bloc stylés au-dessus comptent comme ligne stylée ; puce en sous-texte rendue invalide à gauche (ligne vide supprimée…) redevient une puce normale | Décidé par Claude, prudence ; non testé |
 | 2026-11-14 | 12 | Test `ODJ` ligne 4 réactivé ; tests X7 écrits ce jour ajustés (« -# » en texte au lieu de brut) avant validation | Conséquence du choix de lecture ci-dessus |
 | 2026-11-14 | 12 | Étape validée par l'utilisateur (ODJ collé, sous-texte grisé, puces barrées + sous-texte dans Discord, réécriture `\-# `) ; pas de nouveaux exemples, les 8 actuels suffisent | — |
+| 2026-11-14 | 12b | Nouvelle étape : coloration syntaxique des blocs de code à gauche, avec Highlight.js (option A) ; SPEC §4 complété | Demande de l'utilisateur |
+| 2026-11-14 | 12b | Dépendance `highlight.js` 11 (tous les langages, fichier à part chargé au premier bloc avec un langage, 1A) ; fond sombre (2A) ; version et teintes de Discord non exactes : accepté | Choix de l'utilisateur |
+| 2026-11-14 | 12b | Fond sombre pour tout bloc avec un langage, connu ou non ; bloc sans langage inchangé (fond clair) ; palette de teintes choisie par Claude (À tester, à l'œil) | Décidé par Claude |
+| 2026-11-14 | 12b | Étape validée par l'utilisateur (blocs `JS`, `js`, `py`, `css`, langage inconnu, `ansi`, comparaison avec Discord) | — |
 
 ---
 

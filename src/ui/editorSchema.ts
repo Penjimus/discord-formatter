@@ -4,9 +4,11 @@ import { Extension, Mark, Node } from '@tiptap/core';
 import { splitBlockAs } from '@tiptap/pm/commands';
 import { gapCursor } from '@tiptap/pm/gapcursor';
 import { history, redo, undo } from '@tiptap/pm/history';
-import { Plugin } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view';
 import type { Node as PmNode } from '@tiptap/pm/model';
+import type { HLJSApi } from 'highlight.js';
+import { highlightRanges, loadHighlighter } from './syntaxHighlight';
 import { analyzeLists, type TimestampStyle } from '../core/document';
 import { timestampPreview } from '../core/timestampPreview';
 import { loadedEmojiIndex } from './emojiLibrary';
@@ -134,6 +136,8 @@ const CodeBlockNode = Node.create({
     if (attrs.quote) classes.push('line-quote');
     if (attrs.inBullet) classes.push('code-block-in-bullet');
     if (attrs.language.toLowerCase() === 'ansi') classes.push('code-block-ansi');
+    // Bloc avec un langage : fond sombre, comme dans Discord (étape 12b, choix 2A).
+    else if (attrs.language !== '') classes.push('code-block-ansi', 'code-block-syntax');
     const language = attrs.language !== '' ? attrs.language : 'bloc de code';
     return ['div', { class: classes.join(' '), spellcheck: 'false' },
       ['div', { class: 'code-block-language', contenteditable: 'false' }, language],
@@ -309,6 +313,68 @@ const LineBehaviour = Extension.create({
   },
 });
 
+const syntaxHighlightKey = new PluginKey<DecorationSet>('syntaxHighlight');
+/** Highlight.js, une fois chargé (au premier bloc avec un langage). */
+let highlighter: HLJSApi | null = null;
+
+function needsHighlighter(doc: PmNode): boolean {
+  let found = false;
+  doc.descendants((node) => {
+    const language = node.type.name === 'codeBlock' ? (node.attrs as CodeBlockAttrs).language : '';
+    if (language !== '' && language.toLowerCase() !== 'ansi') found = true;
+    return !found;
+  });
+  return found;
+}
+
+/** Couleurs du langage de chaque bloc de code (affichage seulement, étape 12b). */
+function syntaxDecorations(doc: PmNode): DecorationSet {
+  if (!highlighter) return DecorationSet.empty;
+  const hljs = highlighter;
+  const decorations: Decoration[] = [];
+  doc.descendants((node, pos) => {
+    if (node.type.name !== 'codeBlock') return true;
+    const start = pos + 1;
+    for (const range of highlightRanges(hljs, node.textContent, (node.attrs as CodeBlockAttrs).language)) {
+      decorations.push(Decoration.inline(start + range.from, start + range.to, { class: range.className }));
+    }
+    return false;
+  });
+  return DecorationSet.create(doc, decorations);
+}
+
+/** Coloration syntaxique : Highlight.js chargé au premier bloc avec un langage, puis recoloration à chaque frappe. */
+const SyntaxHighlight = Extension.create({
+  name: 'syntaxHighlight',
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: syntaxHighlightKey,
+        state: {
+          init: (_, state) => syntaxDecorations(state.doc),
+          apply: (tr, old) => (tr.docChanged || tr.getMeta(syntaxHighlightKey) ? syntaxDecorations(tr.doc) : old),
+        },
+        props: {
+          decorations(state) {
+            return this.getState(state);
+          },
+        },
+        view(editorView) {
+          const check = (view: EditorView) => {
+            if (highlighter || !needsHighlighter(view.state.doc)) return;
+            void loadHighlighter().then((loaded) => {
+              highlighter = loaded;
+              if (!view.isDestroyed) view.dispatch(view.state.tr.setMeta(syntaxHighlightKey, true));
+            });
+          };
+          check(editorView);
+          return { update: check };
+        },
+      }),
+    ];
+  },
+});
+
 export const EDITOR_EXTENSIONS = [
   DocumentNode,
   TextNode,
@@ -321,4 +387,5 @@ export const EDITOR_EXTENSIONS = [
   CodeBlockShortcuts,
   LineBehaviour,
   MentionSuggest,
+  SyntaxHighlight,
 ];
