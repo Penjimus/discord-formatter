@@ -107,15 +107,24 @@ Une étape n'est terminée que si :
 3. Aucune fonctionnalité hors de ce document n'a été ajoutée.
 4. Tout ce que Claude a décidé seul est signalé dans un compte rendu en français simple.
 
-## 9. Hors périmètre (première version)
+## 9. Deuxième version et hors périmètre
 
-À ne **pas** implémenter maintenant, mais à ne pas rendre impossible :
+### Prévu pour la deuxième version (`ROADMAP.md`, partie 3)
 
-- **Découpage en plusieurs messages** quand le texte dépasse la limite choisie (2000 ou 4000). Futur comportement : proposer une coupe cohérente (entre blocs, paragraphes, puis phrases), et **refermer puis rouvrir les balises** (gras, bloc de code, ANSI, citation, etc.) qui se trouveraient à cheval sur une coupure, pour que chaque message soit bien formaté, utilisable seul et sous la limite, balises ajoutées comprises.
-- **Liens masqués** `[texte](url)` : prévus pour une version future.
+Ces fonctions entrent dans le périmètre, **une étape à la fois**, dans l'ordre de la ROADMAP. Leurs scénarios (S16, S17…) sont ajoutés en §6 au début de chaque étape.
+
+- **Liens masqués** `[texte](url)`.
+- **Découpage en plusieurs messages** quand le texte dépasse la limite choisie (2000 ou 4000) : proposer une coupe cohérente (entre blocs, paragraphes, puis phrases), et **refermer puis rouvrir les balises** (gras, bloc de code, ANSI, citation, etc.) qui se trouveraient à cheval sur une coupure, pour que chaque message soit bien formaté, utilisable seul et sous la limite, balises ajoutées comprises.
+- **Sauvegarde de brouillons**, dans le navigateur seulement.
+- **Aperçu « façon Discord »** (thème sombre, etc.).
+
+### Hors périmètre
+
+À ne **pas** implémenter, mais à ne pas rendre impossible :
+
+- Mise en ligne : reportée, possible à tout moment sur demande.
 - Émojis personnalisés de serveur (si collés dans le texte, ils sont conservés tels quels, comme toute syntaxe non reconnue).
-- Sauvegarde de brouillons, comptes, partage en ligne.
-- Aperçu « fac-similé de Discord » (thème sombre, avatar, etc.).
+- Comptes, partage en ligne.
 - Version mobile.
 - Envoi direct vers Discord (webhooks, bots).
 

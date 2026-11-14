@@ -209,13 +209,77 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 
 ---
 
-## Après la première version (hors périmètre actuel)
+## Partie 3 : la deuxième version
+
+Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, tests, validation, commit). En plus :
+
+- Dans chaque étape, **le cœur passe avant l'interface** : les fonctions de `src/core` et leurs tests d'abord, l'interface ensuite.
+- Une étape qui demande des règles Discord nouvelles **commence par une série de tests à passer dans Discord**. Les messages de test sont proposés par Claude Code, les résultats entrent dans `docs/cahier-de-tests.md` puis dans `docs/discord-rules.md`, et le code ne vient qu'après.
+- Les scénarios de l'étape (S16, S17…) sont écrits dans `SPEC.md` §6 au début de l'étape, puis validés par l'utilisateur.
+- Les points encore ouverts de `docs/discord-rules.md` §14 ne sont testés que si une étape en a besoin.
+
+### [ ] Étape 14 : Liens masqués
+
+**Objectif** : écrire et lire des liens `[texte](adresse)`, et les insérer depuis la barre d'outils.
+
+- Règles de départ : `docs/discord-rules.md` §4 (C16, C21, C22), colonne « Lien » de la matrice §10, échappement de `[` en §11.
+- **Tests Discord d'abord**, pour les cas non couverts : styles autour du lien et à l'intérieur de son texte, lien dans un spoiler, une puce, une citation, un sous-texte, crochets ou parenthèses dans le texte ou dans l'adresse, lien `<adresse>` sans aperçu.
+- Cœur : le lien devient un élément du document (il était conservé en morceau brut, étape 2) ; lecture, écriture, aller-retour, grisage (étape 6) ; une forme non testée reste brute (S12).
+- Interface : bouton « Lien » avec un champ « adresse ». À gauche, le lien est affiché comme du texte cliquable et modifiable. Le comportement exact est à proposer à l'utilisateur pendant l'étape.
+
+**Tests** : les nouveaux tests du cahier, plus C16, C21 et C22.
+**Validation** : l'utilisateur insère des liens (simples, stylés, dans une liste, dans une citation), colle le résultat dans Discord et compare.
+
+### [ ] Étape 15a : Découpage en plusieurs messages (cœur)
+
+**Objectif** : une fonction `split` qui coupe un document trop long en plusieurs messages Discord valides, chacun sous la limite choisie (2000 ou 4000).
+
+- Coupe la plus naturelle possible : entre blocs, puis entre paragraphes (lignes), puis entre phrases, puis entre mots en dernier recours.
+- **Refermer puis rouvrir** à chaque coupe ce qui est à cheval : styles de texte, spoiler, bloc de code (même langage), couleurs ANSI, citation. Les **balises ajoutées comptent** dans la limite.
+- Chaque message est utilisable seul, et les lignes vides du début et de la fin sont retirées (J5).
+- **Tests Discord d'abord** : liste numérotée reprise dans le message suivant (`3.` en premier élément), sous-liste en début de message, bloc de code ou passage ANSI coupé en deux, citation coupée, spoiler coupé.
+- Questions à trancher pendant l'étape : que faire d'un élément plus long que la limite à lui seul (adresse, mot, ligne de code) ? Une coupe peut-elle tomber à l'intérieur d'un bloc de code ?
+
+**Tests** : nouveaux tests du cahier ; chaque message produit est relu avec `parse` et ne dépasse pas la limite ; l'ensemble des messages relus redonne le document d'origine.
+**Validation** : tableau « texte → messages » ; l'utilisateur colle chaque message dans Discord, l'un après l'autre.
+
+### [ ] Étape 15b : Découpage dans l'interface
+
+**Objectif** : voir et copier les messages découpés.
+
+- Proposé seulement quand le texte dépasse la limite (étape 11). Il ne modifie jamais le texte de droite.
+- Chaque message est affiché avec son compteur et son propre bouton « Copier ».
+- La présentation (panneau, fenêtre, onglets) est à proposer à l'utilisateur pendant l'étape.
+
+**Validation** : l'utilisateur colle un long texte, découpe, copie chaque message dans Discord et vérifie que rien n'est perdu ni cassé.
+
+### [ ] Étape 16 : Brouillons
+
+**Objectif** : ne plus perdre son texte en fermant la page.
+
+- Sauvegarde **dans le navigateur seulement** (rien ne quitte l'ordinateur, `SPEC.md` §7).
+- Questions à trancher pendant l'étape : un seul brouillon ou plusieurs (avec un nom) ? sauvegarde automatique ou par bouton ? La limite 2000 / 4000 est-elle aussi gardée ? (étape 11 : « non mémorisée »)
+
+**Validation** : l'utilisateur écrit, ferme la page, la rouvre et retrouve son texte.
+
+### [ ] Étape 17 : Aperçu façon Discord
+
+**Objectif** : voir le message comme Discord l'affichera, avant de le copier.
+
+- Rendu en lecture seule du texte de droite, sur fond sombre, d'après `docs/discord-rules.md` ; il reprend les teintes ANSI (§6) et la coloration des blocs (étape 12b), avec le même écart de teinte accepté.
+- Questions à trancher pendant l'étape : troisième panneau ou bascule ? nom et avatar fictifs ? aperçu de chaque message découpé (étape 15) ?
+- C'est un **affichage** : le document et le texte de droite ne changent pas.
+
+**Validation** : l'utilisateur compare l'aperçu et Discord sur les exemples de `examples/`.
+
+## Toujours hors périmètre
 
 À ne pas commencer sans accord, mais à ne pas rendre impossible :
 
-- **Découpage en plusieurs messages** : coupe cohérente, balises refermées puis rouvertes à chaque frontière, balises ajoutées comprises dans la limite.
-- **Liens masqués** `[texte](url)`.
-- Aperçu façon Discord, sauvegarde de brouillons, version mobile.
+- **Mise en ligne** : reportée (étape 13, choix 2C). Elle peut être faite à tout moment, sur demande (GitHub Pages, dépôt public nécessaire).
+- Version mobile.
+- Comptes, partage en ligne, envoi direct vers Discord (webhooks, bots).
+- Émojis personnalisés de serveur (conservés tels quels s'ils sont collés).
 
 ---
 
@@ -423,6 +487,9 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 13 | G30 (capture de l'auteur) : `>` seul au milieu d'une citation = ligne citée vide ; G3 marqué contredit, test G3 remplacé par G30. Ligne citée vide permise partout dans une citation si du texte cité suit (plusieurs de suite : généralisé ; dernière ligne : ligne vide ordinaire). Écrite `> ` en première ligne, `>` au milieu ; `>` et `> ` lus pareil ; une ligne de texte réduite à `>` est échappée `\>` | G30 et accord de l'utilisateur ; formes d'écriture et généralisation décidées par Claude |
 | 2026-11-14 | 13 | Tests remplacés : « sous-texte cité refusé / grisé » → G29 ; X10 et « puce laissée vide » sans ligne vide au bord ; aller-retour des exemples comparé sans lignes vides au bord | Accord de l'utilisateur (G3 exclu) |
 | 2026-11-14 | 13 | Étape validée par l'utilisateur (citations G28 et G30, sous-texte cité, smileys, lignes vides au bord, guide, scénarios S1 à S15). Première version terminée ; mise en ligne reportée | — |
+| 2026-11-14 | — | Partie 3 (deuxième version) : liens masqués, découpage (cœur puis interface), brouillons, aperçu façon Discord. Restent hors périmètre : mise en ligne (possible sur demande), mobile, comptes, partage, envoi direct, émojis personnalisés. `SPEC.md` §9 mis à jour | Choix de l'utilisateur |
+| 2026-11-14 | — | Ordre : du plus simple au plus gros (liens, découpage, brouillons, aperçu) ; points ouverts de `docs/discord-rules.md` §14 laissés tels quels, testés seulement si une étape en a besoin | Choix de l'utilisateur |
+| 2026-11-14 | — | Contenu des étapes 14 à 17 (tests Discord d'abord, cœur avant interface, scénarios S16+ écrits au début de l'étape, questions à trancher) | Proposé par Claude ; à valider étape par étape |
 
 ---
 
