@@ -276,6 +276,44 @@ Choix faits (1A, 2A, 3A) : un seul brouillon, enregistré automatiquement (texte
 
 Choix faits : aperçu sous les deux panneaux, sur toute la largeur (panneaux un peu moins hauts, la page défile) ; nom « Vous », rond coloré et heure ; messages découpés affichés l'un sous l'autre. Scénarios S31 à S34 (`SPEC.md` §6). Cœur : `src/core/preview.ts` ; affichage : `src/ui/DiscordPreview.tsx`.
 
+---
+
+## Partie 4 : l'appli en anglais, puis en ligne
+
+Mêmes règles que la partie 3 (une étape = une session, plan d'abord, scénarios écrits dans `SPEC.md` §6 au début de l'étape, tests, validation, commit).
+
+### [ ] Étape 18 : Interface en anglais (français toujours disponible)
+
+**Objectif** : utiliser l'appli en anglais ou en français, au choix.
+
+- Tous les textes de l'interface dans les deux langues : boutons, bulles d'aide, fenêtres, avertissements, compteur, messages découpés, aperçu, brouillon, guide d'utilisation.
+- Un moyen de changer de langue, visible dans l'en-tête.
+- Le **texte produit pour Discord ne change pas** selon la langue (même document, même `serialize`) ; seuls les textes de l'interface changent.
+- Les textes de l'interface sont regroupés en un seul endroit, avec un test automatique qui vérifie qu'aucun texte ne manque dans l'une des deux langues.
+- Questions à trancher pendant l'étape :
+  - langue au premier lancement : celle du navigateur, ou l'anglais ? Le choix est-il mémorisé (comme la limite, étape 16) ?
+  - modèles de mention (`ID_UTILISATEUR`, `ID_ROLE`, `ID_SALON`) : traduits en anglais ? Ils entrent dans le texte produit et dans la lecture (`docs/discord-rules.md` §7) ;
+  - horodatages : aperçu à gauche et dans l'aperçu façon Discord dans la langue de l'interface ? (Discord les affiche dans la langue de chaque lecteur, §8) ;
+  - sélecteur d'émojis : noms et recherche en anglais (emojibase existe en anglais) ;
+  - guide : une page par langue, ou une page qui suit la langue choisie ?
+  - outil de traduction : fichiers de textes écrits par l'appli, ou une bibliothèque (nouvelle dépendance à présenter) ?
+- Mettre à jour `CLAUDE.md` (« interface en français ») et `SPEC.md` §7.
+
+**Validation** : l'utilisateur passe d'une langue à l'autre et parcourt toute l'appli (barre d'outils, fenêtres, compteur, découpage, aperçu, guide) : plus aucun texte de l'autre langue, et le texte de droite reste identique.
+
+### [ ] Étape 19 : Mise en ligne sur GitHub Pages
+
+**Objectif** : l'appli accessible à une adresse publique, gratuite, sans serveur.
+
+- Prérequis : l'utilisateur rend le dépôt `Penjimus/discord-formatter` public **après** l'étape 18.
+- **Avant de rendre le dépôt public** : vérifier ce qui deviendra visible (messages réels de `examples/`, cahier de tests, historique git) ; l'utilisateur décide de ce qui reste.
+- Réglages de construction pour l'adresse de GitHub Pages (`…github.io/discord-formatter/`) : l'appli, le guide, les émojis et la coloration des blocs (fichiers chargés à la demande) doivent fonctionner en ligne.
+- Questions à trancher pendant l'étape : mise à jour du site automatique à chaque envoi sur GitHub (GitHub Actions), ou à la demande ? Un fichier `README` de présentation sur GitHub ?
+- Explications simples pour l'utilisateur : adresse du site, comment le mettre à jour, ce qui reste sur l'ordinateur de chaque visiteur (brouillon dans son navigateur, rien n'est envoyé ailleurs, `SPEC.md` §7).
+- Mettre à jour `CLAUDE.md` (« Commandes », mise en ligne).
+
+**Validation** : l'utilisateur ouvre l'adresse publique, écrit, copie vers Discord, ferme et rouvre la page (brouillon retrouvé), change de langue et ouvre le guide.
+
 ## Mises à jour possibles plus tard
 
 À ne faire que si le point pose un vrai problème à l'usage :
@@ -287,7 +325,6 @@ Choix faits : aperçu sous les deux panneaux, sur toute la largeur (panneaux un 
 
 À ne pas commencer sans accord, mais à ne pas rendre impossible :
 
-- **Mise en ligne** : reportée (étape 13, choix 2C). Elle peut être faite à tout moment, sur demande (GitHub Pages, dépôt public nécessaire).
 - Version mobile.
 - Comptes, partage en ligne, envoi direct vers Discord (webhooks, bots).
 - Émojis personnalisés de serveur (conservés tels quels s'ils sont collés).
@@ -543,6 +580,8 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 17 | Cadres des messages découpés réduits à leur en-tête ; un clic en déroule un et réduit le message complet ; un clic sur le message complet revient. Scénario S35 | Demande de l'utilisateur (gagner de la place) |
 | 2026-11-14 | 17 | Un seul message déroulé à la fois ; second clic sur un message déroulé = retour au message complet ; « Copier » et avertissement visibles cadre réduit ; compteur gardé sous le message complet réduit ; titre « Message complet » quand il y a découpage ; texte déroulé qui défile dans son cadre (tous les titres restent visibles) | Décidé par Claude |
 | 2026-11-14 | 17 | Étape validée par l'utilisateur (aperçu comparé à Discord, messages découpés réductibles) | — |
+| 2026-11-14 | — | Partie 4 : interface en anglais avec le français toujours disponible (étape 18), puis mise en ligne sur GitHub Pages (étape 19), dépôt rendu public par l'utilisateur après l'étape 18. La mise en ligne quitte « Toujours hors périmètre » ; `SPEC.md` §7 et §9 mis à jour | Choix de l'utilisateur |
+| 2026-11-14 | — | Contenu des étapes 18 et 19 (questions à trancher, vérification de ce qui devient public avant d'ouvrir le dépôt) | Proposé par Claude ; à valider étape par étape |
 
 ---
 

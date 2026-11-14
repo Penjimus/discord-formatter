@@ -126,7 +126,7 @@ Exprimées en langage simple. Le choix précis des technologies est laissé à C
 - **Une seule structure de données interne** (le « document ») est la source de vérité. Les deux panneaux en sont deux vues : le panneau gauche l'affiche visuellement, le panneau droit le convertit en texte Discord. Aucune conversion directe gauche ↔ droite.
 - Le cœur du formatage (lire un texte Discord, produire un texte Discord, vérifier la validité) est **indépendant de l'interface** et couvert par des tests automatiques tirés de `docs/discord-rules.md`.
 - Le modèle de document doit **permettre le découpage futur en plusieurs messages** (section 9) sans être refait.
-- Interface en **français**.
+- Interface en **français** ; en anglais aussi à partir de l'étape 18 (§9), le français restant disponible.
 - Utilisable sur ordinateur en priorité ; le mobile n'est pas un objectif de la première version.
 
 ## 8. Critères d'acceptation globaux
@@ -148,11 +148,17 @@ Ces fonctions entrent dans le périmètre, **une étape à la fois**, dans l'ord
 - **Sauvegarde de brouillons**, dans le navigateur seulement.
 - **Aperçu « façon Discord »** (thème sombre, etc.).
 
+### Prévu ensuite (`ROADMAP.md`, partie 4)
+
+Même fonctionnement : une étape à la fois, scénarios ajoutés en §6 au début de chaque étape.
+
+- **Interface en anglais**, le français restant disponible (étape 18). Le texte produit pour Discord ne dépend pas de la langue de l'interface.
+- **Mise en ligne sur GitHub Pages** (étape 19), après que j'aurai rendu le dépôt public.
+
 ### Hors périmètre
 
 À ne **pas** implémenter, mais à ne pas rendre impossible :
 
-- Mise en ligne : reportée, possible à tout moment sur demande.
 - Émojis personnalisés de serveur (si collés dans le texte, ils sont conservés tels quels, comme toute syntaxe non reconnue).
 - Comptes, partage en ligne.
 - Version mobile.
