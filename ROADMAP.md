@@ -196,7 +196,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Scénarios** : S3 (bloc avec langage), S6.
 **Validation** : l'utilisateur crée des blocs `js`, `py`, `JS`, un langage inconnu, puis compare à l'œil avec Discord.
 
-### [ ] Étape 13 : Finitions et mise en ligne
+### [x] Étape 13 : Finitions et mise en ligne
 
 **Objectif** : une version prête à être utilisée.
 
@@ -204,6 +204,8 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 - Petit guide d'utilisation en français (une page).
 - Mise en ligne gratuite (si l'utilisateur la veut), avec explications simples.
 - Mise à jour finale de `CLAUDE.md` et de ce fichier.
+
+*Notes (14/11/2026)* : guide = page `guide.html`, ouverte par le lien « Guide d'utilisation » en haut de l'appli (1A). Pas de mise en ligne pour l'instant (2C). Constats G28, G29, I7, J5 pris en compte avant la revue.
 
 ---
 
@@ -411,6 +413,16 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 12b | Dépendance `highlight.js` 11 (tous les langages, fichier à part chargé au premier bloc avec un langage, 1A) ; fond sombre (2A) ; version et teintes de Discord non exactes : accepté | Choix de l'utilisateur |
 | 2026-11-14 | 12b | Fond sombre pour tout bloc avec un langage, connu ou non ; bloc sans langage inchangé (fond clair) ; palette de teintes choisie par Claude (À tester, à l'œil) | Décidé par Claude |
 | 2026-11-14 | 12b | Étape validée par l'utilisateur (blocs `JS`, `js`, `py`, `css`, langage inconnu, `ansi`, comparaison avec Discord) | — |
+| 2026-11-14 | 13 | Guide : page `guide.html` du site, lien « Guide d'utilisation » dans l'en-tête (1A) ; pas de mise en ligne pour l'instant (2C) | Choix de l'utilisateur |
+| 2026-11-14 | 13 | Tests G28, G29, I7, J5 ajoutés au cahier (180 tests) ; X10 marqué contradictoire avec J5, gardé. Palette ANSI actuelle jugée suffisante (§14 point 8 clos) ; combinatoire des lignes vides en citation non poursuivie | Résultats et décisions de l'utilisateur |
+| 2026-11-14 | 13 | Sous-texte permis dans une citation (G29), lu et écrit `> -# ` ; aussi dans une liste citée (`> - -# `) | G29 ; liste citée : généralisé par Claude |
+| 2026-11-14 | 13 | Ligne `> ` vide permise seulement en première ligne d'une citation suivie d'une ligne citée non vide (G28) ; ailleurs brute à la lecture, ligne vide à gauche. Constructeur à part (`emptyQuoteLine`) : citer une ligne vide reste refusé, le test G3 est inchangé | G28 ; G3 laissé de côté à la demande de l'utilisateur ; constructeur décidé par Claude |
+| 2026-11-14 | 13 | Émoticônes `:)` `:(` `:D` `:P` `;)` `<3` `:o` : non protégées, gardées brutes à la lecture, affichées en émoji à gauche ; tapées à gauche, elles deviennent une pastille émoji dès qu'un espace suit ou que le curseur quitte la fin de ligne. Seule la forme testée (entourée d'espaces, hors code) est reconnue ; `:*` collé s'affiche aussi 😗 | Choix de l'utilisateur (alignement sur I7) ; forme reconnue, moment de conversion et 😗 décidés par Claude |
+| 2026-11-14 | 13 | Lignes vides du début et de la fin retirées à l'écriture (J5) | Choix de l'utilisateur |
+| 2026-11-14 | 13 | J5 précisé : lignes vides du début et de la fin supprimées à l'envoi ; message trop long refusé s'il commence par des lignes vides. X10 n'est plus contradictoire. Convention inchangée (non écrites), guide corrigé | Précision de l'utilisateur |
+| 2026-11-14 | 13 | G30 (capture de l'auteur) : `>` seul au milieu d'une citation = ligne citée vide ; G3 marqué contredit, test G3 remplacé par G30. Ligne citée vide permise partout dans une citation si du texte cité suit (plusieurs de suite : généralisé ; dernière ligne : ligne vide ordinaire). Écrite `> ` en première ligne, `>` au milieu ; `>` et `> ` lus pareil ; une ligne de texte réduite à `>` est échappée `\>` | G30 et accord de l'utilisateur ; formes d'écriture et généralisation décidées par Claude |
+| 2026-11-14 | 13 | Tests remplacés : « sous-texte cité refusé / grisé » → G29 ; X10 et « puce laissée vide » sans ligne vide au bord ; aller-retour des exemples comparé sans lignes vides au bord | Accord de l'utilisateur (G3 exclu) |
+| 2026-11-14 | 13 | Étape validée par l'utilisateur (citations G28 et G30, sous-texte cité, smileys, lignes vides au bord, guide, scénarios S1 à S15). Première version terminée ; mise en ligne reportée | — |
 
 ---
 

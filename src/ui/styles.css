@@ -21,6 +21,7 @@ body { margin: 0; background: var(--bg); }
 .app { display: flex; flex-direction: column; height: 100vh; padding: 16px; gap: 12px; }
 .app-header h1 { margin: 0; font-size: 1.4rem; }
 .app-header p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+.app-header a { color: var(--accent); margin-left: 8px; }
 
 .panels { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 

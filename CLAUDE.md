@@ -96,13 +96,15 @@ L'appli manipule des caractères **invisibles** : `U+001B` (ESC, pour l'ANSI) et
 - `src/ui/` : interface React.
 - `tests/core/` : tests automatiques du cœur (`*.test.ts`), nommés d'après les ID du cahier.
 - `docs/tests-discord/` : messages de test d'origine à coller dans Discord.
+- `guide.html` : guide d'utilisation (une page, en français), construit avec l'appli ; lien dans l'en-tête. À tenir à jour quand une fonction ou un raccourci change.
 
 ## Commandes
 
 - Lancer l'appli en local : `npm run dev` (ouvre le navigateur sur http://localhost:5173)
 - Lancer les tests : `npm test`
 - Vérification du code (lint) : `npm run lint` (contrôle des types TypeScript)
-- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`)
+- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`, deux pages : l'appli et le guide)
+- Mise en ligne : pas encore faite (choix de l'utilisateur, étape 13). GitHub Pages reste possible (dépôt `Penjimus/discord-formatter`, dépôt public nécessaire).
 
 ## Tests
 

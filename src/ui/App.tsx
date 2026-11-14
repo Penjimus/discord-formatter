@@ -82,7 +82,10 @@ export function App() {
     <div className="app">
       <header className="app-header">
         <h1>Discord Formatter</h1>
-        <p>Écrivez à gauche ou collez un message à droite : les deux côtés restent synchronisés.</p>
+        <p>
+          Écrivez à gauche ou collez un message à droite : les deux côtés restent synchronisés.{' '}
+          <a href="guide.html" target="_blank" rel="noreferrer">Guide d'utilisation</a>
+        </p>
       </header>
       <main className="panels">
         {visualPanel}

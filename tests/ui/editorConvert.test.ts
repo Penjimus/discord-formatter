@@ -68,8 +68,8 @@ describe('Éditeur → document : réparation vers une forme valide', () => {
     expect(serialize(editorToDocument(doc(line({}, t('bonjour', 'bold')))))).toBe('**bonjour**');
   });
 
-  it('puce laissée vide après Entrée : ligne vide', () => {
-    expect(serialize(editorToDocument(doc(line(bullet, t('a')), line(bullet))))).toBe('- a\n');
+  it('puce laissée vide après Entrée : ligne vide, retirée en fin de message (J5)', () => {
+    expect(serialize(editorToDocument(doc(line(bullet, t('a')), line(bullet))))).toBe('- a');
   });
 
   it('élément numéroté ajouté par Entrée : numéro suivant', () => {

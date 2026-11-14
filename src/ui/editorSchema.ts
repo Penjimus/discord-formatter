@@ -12,6 +12,7 @@ import { highlightRanges, loadHighlighter } from './syntaxHighlight';
 import { analyzeLists, type TimestampStyle } from '../core/document';
 import { timestampPreview } from '../core/timestampPreview';
 import { loadedEmojiIndex } from './emojiLibrary';
+import { EMOTICON_EMOJIS, findEmoticons } from '../core/emoticons';
 import { MentionSuggest } from './mentionSuggest';
 import { cssColor } from './ansiPalette';
 import { changeListLevel, codeBlockBackspace, codeBlockEnter, toggleAnsiFlag } from './editorCommands';
@@ -92,10 +93,10 @@ function timestampText(attrs: Record<string, unknown>): string {
   return `<t:${String(attrs.seconds)}${style}>`;
 }
 
-// Un code `:nom:` collé (gardé brut par le cœur, §9) s'affiche en émoji si son nom est connu.
+// Un code `:nom:` ou une émoticône (gardés bruts par le cœur, §9) s'affichent en émoji si connus.
 const RawNode = chip('raw', (attrs) => {
   const content = String(attrs.raw);
-  const emoji = loadedEmojiIndex()?.emojiForCode(content) ?? null;
+  const emoji = EMOTICON_EMOJIS[content] ?? loadedEmojiIndex()?.emojiForCode(content) ?? null;
   return emoji ? { label: emoji, title: content, extraClass: 'chip-emoji' } : { label: content };
 }, ['raw']);
 const MentionNode = chip('mention', (attrs) => {
@@ -313,6 +314,50 @@ const LineBehaviour = Extension.create({
   },
 });
 
+/**
+ * Émoticône tapée à gauche (`:)`, `<3`…) : Discord la convertira en émoji (I7). Dès qu'elle est
+ * suivie d'un espace, ou que le curseur la quitte en fin de ligne, elle devient une pastille
+ * affichée en émoji (même texte à droite). Rien dans le code.
+ */
+const EmoticonDisplay = Extension.create({
+  name: 'emoticonDisplay',
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction(transactions, _old, state) {
+          if (!transactions.some((tr) => tr.docChanged || tr.selectionSet)) return null;
+          const rawType = state.schema.nodes.raw;
+          const found: { from: number; to: number; emoticon: string; node: PmNode }[] = [];
+          state.doc.descendants((block, blockPos) => {
+            if (block.type.name !== 'line') return false;
+            block.forEach((child, offset) => {
+              if (!child.isText || child.marks.some((mark) => mark.type.name === CODE_MARK)) return;
+              const textValue = child.text ?? '';
+              const start = blockPos + 1 + offset;
+              const atBlockEnd = offset + child.nodeSize === block.content.size;
+              for (const { index, emoticon } of findEmoticons(textValue)) {
+                const from = start + index;
+                const to = from + emoticon.length;
+                // En fin de ligne, on attend que le curseur parte (« :D » peut devenir « :Do »).
+                const atEnd = index + emoticon.length === textValue.length;
+                if (atEnd && (!atBlockEnd || state.selection.empty && state.selection.from === to)) continue;
+                found.push({ from, to, emoticon, node: child });
+              }
+            });
+            return false;
+          });
+          if (found.length === 0) return null;
+          const tr = state.tr;
+          for (const { from, to, emoticon, node } of found.reverse()) {
+            tr.replaceWith(from, to, rawType.create({ raw: emoticon }, null, node.marks));
+          }
+          return tr;
+        },
+      }),
+    ];
+  },
+});
+
 const syntaxHighlightKey = new PluginKey<DecorationSet>('syntaxHighlight');
 /** Highlight.js, une fois chargé (au premier bloc avec un langage). */
 let highlighter: HLJSApi | null = null;
@@ -387,5 +432,6 @@ export const EDITOR_EXTENSIONS = [
   CodeBlockShortcuts,
   LineBehaviour,
   MentionSuggest,
+  EmoticonDisplay,
   SyntaxHighlight,
 ];

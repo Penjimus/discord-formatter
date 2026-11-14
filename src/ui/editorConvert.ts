@@ -5,6 +5,8 @@ import {
   ansiStyle,
   blockInBulletProblem,
   subtextBulletProblem,
+  emptyQuoteLine,
+  emptyQuoteLineProblem,
   code,
   codeBlock,
   createDocument,
@@ -185,14 +187,15 @@ function lineFromEditor(node: EditorNode, placeholder: boolean): Paragraph {
     ? { kind: attrs.listKind, level: Math.max(1, attrs.listLevel ?? 1), start: attrs.listStart ?? null }
     : undefined;
   const layout = { quote: attrs.quote ?? false, list, style: attrs.lineStyle ?? 'normal' };
-  // Une ligne mise en page laissée vide (après Entrée) s'écrit comme une ligne vide.
+  // Une ligne mise en page laissée vide (après Entrée) s'écrit comme une ligne vide ; citée, elle
+  // reste citée (`> `, G28) si elle est bien placée, vu par `repairEmptyQuoteLines`.
   // Pour l'analyse (barre d'outils, puces affichées), elle reçoit un contenu provisoire.
-  if (content.length === 0 && !placeholder) return layoutLine({});
+  if (content.length === 0 && !placeholder) return layout.quote ? emptyQuoteLine() : layoutLine({});
   if (content.length === 0) content.push(text('x'));
   try {
     return layoutLine(layout, ...content);
   } catch {
-    // Combinaison refusée (titre dans une puce, sous-texte cité) : la mise en forme de ligne est retirée.
+    // Combinaison refusée (titre dans une puce) : la mise en forme de ligne est retirée.
     return layoutLine({ ...layout, style: 'normal' }, ...content);
   }
 }
@@ -329,6 +332,15 @@ function repairSubtextBullets(blocks: readonly Block[]): Block[] {
   return repaired;
 }
 
+/** Ligne citée vide sans texte cité après elle (G28, G30) : elle devient une ligne vide. */
+function repairEmptyQuoteLines(blocks: readonly Block[]): Block[] {
+  const repaired = [...blocks];
+  repaired.forEach((_, i) => {
+    if (emptyQuoteLineProblem(repaired, i) !== null) repaired[i] = layoutLine({});
+  });
+  return repaired;
+}
+
 function isEmptyLine(block: Block): boolean {
   return block.type === 'paragraph' && block.content.length === 0;
 }
@@ -346,7 +358,7 @@ export function editorToDocument(root: EditorNode): DiscordDocument {
   }
   // L'éditeur garde toujours au moins une ligne : seule et vide, c'est un message vide.
   if (blocks.length === 1 && isEmptyLine(blocks[0])) return createDocument();
-  return createDocument(...repairSubtextBullets(repairLists(blocks)));
+  return createDocument(...repairEmptyQuoteLines(repairSubtextBullets(repairLists(blocks))));
 }
 
 /**

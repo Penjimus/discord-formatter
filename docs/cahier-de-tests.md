@@ -36,16 +36,16 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | [D](#série-d) | Matrice de compatibilité | D1 à D15 (15) | §3, §5, §10 |
 | [E](#série-e) | Couleurs ANSI | E1 à E16, dont E14a à E14g (22) | §3, §6, §10 |
 | [F](#série-f) | Blocs de code | F1 à F5 (5) | §5 |
-| [G](#série-g) | Listes et citations | G1 à G27 (27) | §3, §5 |
+| [G](#série-g) | Listes et citations | G1 à G30 (30) | §3, §5 |
 | [H](#série-h) | Horodatages | H1 à H3 (3) | §1, §8 |
-| [I](#série-i) | Mentions et émojis | I1 à I6 (6) | §1, §7, §9, §11 |
-| [J](#série-j) | Lignes vides | J1 à J4 (4) | §13 |
+| [I](#série-i) | Mentions et émojis | I1 à I7 (7) | §1, §7, §9, §11 |
+| [J](#série-j) | Lignes vides | J1 à J5 (5) | §13 |
 | [K](#série-k) | Longueur et comptage | K1 à K10 (10) | §9, §12 |
 | [Z](#série-z) | Caractères invisibles | Z1 à Z8 (8) | §2.3, §5, §6, §9, §13 |
 | [M](#série-m) | Essais complémentaires (mentions et citation vide) | M1 à M7 (7) | §1, §3, §7 |
 | [X](#série-x) | Constats tirés des exemples réels | X1 à X10 (10) | §1, §3, §6, §9, §10 |
 
-**Total : 176 tests** (✅ 90 confirmés, ⚠️ 16 écarts, ℹ️ 70 constats).
+**Total : 181 tests** (✅ 90 confirmés, ⚠️ 16 écarts, ℹ️ 75 constats).
 
 ---
 
@@ -223,7 +223,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 |---|---|---|---|---|
 | **G1** | `1. a ↵ 1. b ↵ 1. c` | numérotation : affichée 1-2-3 ou 1-1-1 ? | ℹ️ Affiché 1, 2, 3 | §3 (listes) |
 | **G2** | `3. a ↵ 7. b ↵ 2. c` | numérotation avec numéros désordonnés : affichés tels quels ou recalculés ? | ℹ️ Affiché 3, 4, 5 (le premier numéro donne le départ) | §3 (listes) |
-| **G3** | `> a ↵ > ↵ > b` | ligne « > » seule : la citation continue-t-elle ? | ℹ️ La citation ne continue pas : le caractère `>` seul est visible | §3 (citations) |
+| **G3** | `> a ↵ > ↵ > b` | ligne « > » seule : la citation continue-t-elle ? | ℹ️ La citation ne continue pas : le caractère `>` seul est visible. *Contredit par G30* (14/11/2026), qui fait foi | §3 (citations) |
 | **G4** | `> a ↵ b` | texte juste après une citation d'une ligne : sort-il de la citation ? | ℹ️ Le texte « b » est en dehors de la citation | §3 (citations) |
 | **G5** | `1. a ↵   1. x ↵ 2. b ↵   1. y` | sous-listes sous deux parents : y numéroté 1 ou 2 ? | ℹ️ y s'affiche avec le numéro 1 : chaque sous-liste repart de son propre numéro (testé le 13/11/2026) | §3 (listes) |
 | **G6** | ```` - puce ↵   ```js ↵   ligne 1 ↵  ↵   ligne 3 ↵   ``` ↵ - puce suivante ```` | bloc avec langage et ligne vide, indenté sous une puce | ⚠️ Pas de bloc de code : le texte reste dans la puce (« puce```js »…), la ligne vide apparaît ; « puce suivante » reste une puce. Contredit D13 (sans langage ni ligne vide) | §3 (listes), §5 |
@@ -248,6 +248,9 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **G25** | `a ↵ - -# c` | texte ordinaire, sans balise, au-dessus | ℹ️ Correct : sous-texte appliqué | §3 (listes) |
 | **G26** | `a ↵ - b ↵ - -# c` | texte ordinaire, puis une puce normale | ℹ️ Correct : sous-texte appliqué | §3 (listes) |
 | **G27** | `> a ↵ - -# c` | citation au-dessus | ℹ️ Correct : sous-texte appliqué | §3 (listes) |
+| **G28** | `> ↵ > dddd` (première ligne : chevron et espace seuls) | ligne vide en début de citation ? | ℹ️ La première ligne s'affiche vide, « dddd » est cité (14/11/2026) | §3 (citations) |
+| **G29** | `> -# x` | sous-texte dans une citation ? | ℹ️ Le sous-texte s'applique dans la citation (14/11/2026) | §3 (titres) |
+| **G30** | `> dzd ↵ > czd ↵ > ↵ > DZq` | ligne « > » seule au milieu d'une citation | ℹ️ Ligne vide citée entre « czd » et « DZq », la citation continue (capture de l'auteur, 14/11/2026). Contredit G3 | §3 (citations) |
 
 ## Série H
 
@@ -275,6 +278,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **I4** | `\:star: ↵ :star\: ↵ \:star\:` | quelle forme empêche la conversion de `:star:` en émoji ? | ⚠️ Ligne 1 : l'étoile ⭐, sans antislash visible (correction de l'auteur ; première lecture « `\` puis ⭐ » erronée). Lignes 2 et 3 : pas d'émoji, affichent « :star: », antislashs invisibles (deuxième relecture de l'auteur ; la première, « antislashs visibles », était erronée). L'antislash échappe un code `:nom:` s'il est placé devant le **dernier** deux-points | §9, §11 |
 | **I5** | `test-I5.txt` : `A : :<U+200B>star: ↵ B : :star<U+200B>: ↵ C : *Membres :<U+200B>*` | l'espace invisible empêche-t-il la conversion en émoji ? « Membres : » en italique ? | ✅ A et B : « :star: » sans étoile, aucun caractère parasite visible. C : « Membres : » en italique | §9 |
 | **I6** | `Bisous :\* !` | l'antislash empêche-t-il la conversion de `:*` en 😗 ? | ✅ Affiche « Bisous :* ! », sans émoji ni antislash visible | §9, §11 |
+| **I7** | `a :) b :( c :D d :P e ;) f <3 g :o` (collé) | les émoticônes sont-elles converties ? | ℹ️ Toutes converties : « a 🙂 b 🙁 c 😄 d 😛 e 😉 f ❤️ g 😮 » (14/11/2026) | §9 |
 
 ## Série J
 
@@ -288,6 +292,7 @@ C'est la pièce justificative des règles : quand `discord-rules.md` indique « 
 | **J2** | `ligne 1 ↵  ↵  ↵  ↵ ligne 5` | lignes vides ordinaires : réduites ? (colle le message tel quel, 3 lignes vides) | ⚠️ Les lignes vides **ne sont pas réduites** : les trois lignes vides apparaissent | §13 |
 | **J3** | `_ _` | message composé uniquement de « _ _ » : accepté ? | ✅ Message accepté | §13 |
 | **J4** | `** **` | message composé uniquement de « ** ** » : accepté ? | ✅ Message accepté | §13 |
+| **J5** | message commençant par des lignes vides ; message finissant par des lignes vides | lignes vides au bord : supprimées ? | ℹ️ Supprimées à l'envoi, au début comme à la fin. Message **trop long** : refusé s'il commence par des lignes vides ; les lignes vides de fin ne bloquent pas (14/11/2026, précisé par l'auteur) | §13 |
 
 ## Série K
 

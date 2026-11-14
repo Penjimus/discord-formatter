@@ -8,6 +8,8 @@ import {
   ansiBlock,
   ansiStyle,
   blockInBulletProblem,
+  emptyQuoteLine,
+  emptyQuoteLineProblem,
   isStyledOutsideBullet,
   listLevelBefore,
   code,
@@ -33,6 +35,7 @@ import {
   type Mark,
 } from './document';
 import { EMOJI_CODE } from './escape';
+import { emoticonAt } from './emoticons';
 
 type PieceKind = 'text' | 'code' | 'raw' | 'marker' | 'element';
 
@@ -103,7 +106,8 @@ const MASKED_LINK = /^\[[^\]\n]*\]\([^)\s]+\)/;
 /** Adresse : jusqu'au premier espace ou `<`, sans ponctuation finale (C21, §4). */
 const URL = /^https?:\/\/[^\s<]+[^<.,:;"')\]\s]/;
 /** Débuts de ligne : titre, sous-texte, puce, liste numérotée, citation. */
-const LINE_MARKER = /^[ \t]*(?:#+ |-# |[-*] |\d+\. |>+ )/;
+/** `>` seul sur sa ligne : ligne citée vide (G30). */
+const LINE_MARKER = /^[ \t]*(?:#+ |-# |[-*] |\d+\. |>+ |>(?=\n|$))/;
 /** Marqueur de liste : indentation en espaces, puis `-`, `*` ou un numéro (sans zéro inutile). */
 const LIST_MARKER = /^( *)(?:[-*]|(0|[1-9]\d{0,8})\.) $/;
 const HEADING_MARKER = /^(#{1,3}) $/;
@@ -328,6 +332,14 @@ function parseRange(source: string, marks: readonly Mark[], linePrefix: string |
       continue;
     }
 
+    // Émoticône collée (`:)`, `<3`…) : convertie par Discord (I7), elle reste brute.
+    const emoticon = emoticonAt(source, i);
+    if (emoticon) {
+      push('raw', emoticon);
+      i += emoticon.length;
+      continue;
+    }
+
     const rawMatch =
       CODE_BLOCK.exec(rest) ??
       ANGLE.exec(rest) ??
@@ -453,7 +465,7 @@ function interpretLine(line: RawLine): { block: Block; listMarker: number } {
     const value = marker.value;
     const listMatch = LIST_MARKER.exec(value);
     const headingMatch = HEADING_MARKER.exec(value);
-    if (value === '> ' && used === 0) {
+    if ((value === '> ' || value === '>') && used === 0) {
       quote = true;
     } else if (listMatch && !list && style === 'normal') {
       const indent = listMatch[1].length;
@@ -466,7 +478,7 @@ function interpretLine(line: RawLine): { block: Block; listMarker: number } {
       listMarker = used;
     } else if (headingMatch && !list && style === 'normal') {
       style = `heading${headingMatch[1].length as 1 | 2 | 3}`;
-    } else if (value === '-# ' && style === 'normal' && !quote) {
+    } else if (value === '-# ' && style === 'normal') {
       style = 'subtext';
     } else {
       break;
@@ -476,6 +488,8 @@ function interpretLine(line: RawLine): { block: Block; listMarker: number } {
   const rawMarkers = line.markers.slice(used).map((m, j) =>
     line.visibleSubtextMarker && j === 0 ? text(m.value, m.marks) : raw(m.value, m.marks));
   const content = dropBoundaryZeroWidthSpaces([...rawMarkers, ...line.nodes]);
+  // Ligne `> ` seule : ligne citée vide (G28), sa place est vérifiée par `toBlocks`.
+  if (quote && !list && style === 'normal' && content.length === 0) return { block: emptyQuoteLine(), listMarker };
   try {
     return { block: layoutLine({ quote, list, style }, ...content), listMarker };
   } catch {
@@ -546,6 +560,12 @@ function toBlocks(lines: RawLine[]): Block[] {
       (block, i) => block.type === 'codeBlock' && block.inBullet && (blockInBulletProblem(normalized, i) !== null
         || lines[i].blockIndent !== 2 * (listLevelBefore(normalized, i) ?? 0)),
     );
+    // Ligne citée vide sans texte cité après elle (G28, G30) : brute.
+    const emptyQuote = normalized.findIndex((_, i) => emptyQuoteLineProblem(normalized, i) !== null);
+    if (emptyQuote !== -1) {
+      lines[emptyQuote].keepRawFrom = 0;
+      continue;
+    }
     if (misplaced === -1) return normalized;
     lines.splice(misplaced, 1, ...rawLines(lines[misplaced].blockSource!));
   }

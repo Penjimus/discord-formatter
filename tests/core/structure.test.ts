@@ -7,6 +7,7 @@ import {
   bulletItem,
   codeBlock,
   createDocument,
+  emptyQuoteLine,
   heading,
   layoutLine,
   MAX_LIST_LEVEL,
@@ -170,11 +171,11 @@ describe('Citations (D4, D11, D12, G3, G4)', () => {
     expect(parse('> a\nb')).toEqual(message);
   });
 
-  it('G3_chevron_seul_affiche_tel_quel', () => {
+  it('G30_chevron_seul_au_milieu_ligne_citee_vide (remplace G3, contredit)', () => {
     expect(() => quoted(paragraph())).toThrow();
-    expect(parse('> a\n>\n> b')).toEqual(
-      doc(quoted(paragraph(text('a'))), paragraph(text('>')), quoted(paragraph(text('b')))),
-    );
+    const message = doc(quoted(paragraph(text('a'))), emptyQuoteLine(), quoted(paragraph(text('b'))));
+    expect(parse('> a\n>\n> b')).toEqual(message);
+    expect(serialize(message)).toBe('> a\n>\n> b');
   });
 
   it('D11_liste_dans_une_citation', () => {
@@ -197,9 +198,8 @@ describe('Citations (D4, D11, D12, G3, G4)', () => {
     expect(parse('>>> a')).toEqual(doc(paragraph(raw('>>> '), text('a'))));
   });
 
-  it('sous-texte dans une citation (non testé) : refusé, brut à la lecture', () => {
-    expect(() => quoted(subtext(text('x')))).toThrow();
-    expect(parse('> -# x')).toEqual(doc(quoted(paragraph(raw('-# '), text('x')))));
+  it('G29_sous_texte_dans_une_citation', () => {
+    expect(parse('> -# x')).toEqual(doc(quoted(subtext(text('x')))));
   });
 
   it('entrer ou sortir d’une citation interrompt la liste', () => {
@@ -448,7 +448,8 @@ describe('Styles autour des blocs et sur plusieurs lignes (§2.4, X1, X2, X7, X1
       quoted(paragraph(text('b', ['strike']))),
       paragraph(text('c', ['strike'])),
     );
-    expect(serialize(message)).toBe('\n~~> a\n> b\nc~~');
+    // J5 : la ligne vide du début n'est plus écrite.
+    expect(serialize(message)).toBe('~~> a\n> b\nc~~');
     expect(parse('\n~~> a\n> b\nc~~')).toEqual(message);
   });
 

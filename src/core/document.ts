@@ -262,13 +262,19 @@ export function layoutLine(layout: LineLayout, ...content: InlineNode[]): Paragr
   if (list && style.startsWith('heading')) {
     throw new Error('Un titre ne peut pas être dans une puce (D14).');
   }
-  if (quote && style === 'subtext') {
-    throw new Error('Sous-texte dans une citation : non testé dans Discord.');
-  }
+  // Sous-texte dans une citation : permis (G29). Ligne citée vide : voir `emptyQuoteLine` (G28).
   if ((quote || list || style !== 'normal') && merged.length === 0) {
     throw new Error('Une citation, une puce, un titre ou un sous-texte ne peut pas être vide.');
   }
   return { type: 'paragraph', quote, list, style, content: merged };
+}
+
+/**
+ * Ligne citée vide (`> ` ou `>`) : seulement dans une citation que du texte cité suit,
+ * vérifié par `createDocument` (G28, G30). `quoted(paragraph())` reste refusé.
+ */
+export function emptyQuoteLine(): Paragraph {
+  return { type: 'paragraph', quote: true, list: null, style: 'normal', content: [] };
 }
 
 /** Ligne normale. */
@@ -497,7 +503,7 @@ export function quoted<T extends Block>(block: T): T {
 export function createDocument(...blocks: Block[]): DiscordDocument {
   checkBlocksInBullets(blocks);
   blocks.forEach((_, i) => {
-    const problem = subtextBulletProblem(blocks, i);
+    const problem = subtextBulletProblem(blocks, i) ?? emptyQuoteLineProblem(blocks, i);
     if (problem) throw new Error(problem);
   });
   const positions = analyzeLists(blocks);
@@ -539,6 +545,30 @@ export function blockInBulletProblem(blocks: readonly Block[], index: number): s
   return afterBullet ? null : 'Un bloc placé dans une puce suit une puce, pas un élément numéroté (D13).';
 }
 
+/** Ligne vide ordinaire (sans citation). Une ligne citée vide (`> `, G28) n'en est pas une. */
+export function isBlankLine(block: Block): boolean {
+  return block.type === 'paragraph' && !block.quote && block.content.length === 0;
+}
+
+/** Ligne citée vide (`> `). */
+export function isEmptyQuoteLine(block: Block | undefined): boolean {
+  return block?.type === 'paragraph' && block.quote && block.content.length === 0;
+}
+
+/**
+ * Raison pour laquelle le bloc `index` (ligne citée vide) ne serait pas rendu, ou `null`.
+ * Une ligne citée vide s'affiche vide en première ligne (G28) ou au milieu (G30) d'une citation,
+ * si du texte cité la suit. Plusieurs de suite : généralisé. En dernière ligne : non retenu.
+ */
+export function emptyQuoteLineProblem(blocks: readonly Block[], index: number): string | null {
+  if (!isEmptyQuoteLine(blocks[index])) return null;
+  let next = index + 1;
+  while (isEmptyQuoteLine(blocks[next])) next++;
+  return blocks[next]?.quote
+    ? null
+    : 'Une ligne vide dans une citation doit être suivie de texte cité (G28, G30).';
+}
+
 /** Bloc qui porte un style hors du texte d'une puce : ligne sans puce stylée, bloc de code entouré d'un style. */
 export function isStyledOutsideBullet(block: Block): boolean {
   if (block.type === 'codeBlock') return block.marks.length > 0;
@@ -555,7 +585,7 @@ export function subtextBulletProblem(blocks: readonly Block[], index: number): s
   if (block?.type !== 'paragraph' || block.list === null || block.style !== 'subtext') return null;
   for (let i = index - 1; i >= 0; i--) {
     const previous = blocks[i];
-    if (previous.type === 'paragraph' && previous.content.length === 0) return null; // Ligne vide (G21).
+    if (isBlankLine(previous)) return null; // Ligne vide (G21).
     if (isStyledOutsideBullet(previous)) {
       return 'Discord n\'applique pas le sous-texte dans une puce placée sous une ligne stylée : '
         + 'ajoutez une ligne vide au-dessus de la liste (X7).';

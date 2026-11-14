@@ -6,6 +6,8 @@ import {
   code,
   codeBlock,
   createDocument,
+  emptyQuoteLine,
+  isEmptyQuoteLine,
   layoutLine,
   mention,
   raw,
@@ -38,6 +40,7 @@ function rebuildInline(node: InlineNode): InlineNode {
 }
 
 function rebuildBlock(block: Block): Block {
+  if (isEmptyQuoteLine(block)) return emptyQuoteLine();
   if (block.type === 'paragraph') {
     const list = block.list ? { kind: block.list.kind, level: block.list.level, start: block.list.start } : undefined;
     return layoutLine({ quote: block.quote, list, style: block.style }, ...block.content.map(rebuildInline));

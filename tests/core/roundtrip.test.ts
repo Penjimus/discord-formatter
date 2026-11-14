@@ -6,6 +6,7 @@ import {
   paragraph,
   raw,
   text,
+  type Block,
   type DiscordDocument,
 } from '../../src/core/document';
 import { parse } from '../../src/core/parse';
@@ -91,9 +92,18 @@ describe('Aller-retour document → texte → document (S14)', () => {
 });
 
 /** Lire, écrire, puis relire redonne le même document : le rendu est stable. */
+/** Lignes vides du début et de la fin retirées : Discord ne les affiche pas (J5). */
+function withoutEdgeBlankLines(message: DiscordDocument): DiscordDocument {
+  const blocks = [...message.blocks];
+  const blank = (b: Block | undefined) => b?.type === 'paragraph' && !b.quote && b.content.length === 0;
+  while (blank(blocks[0])) blocks.shift();
+  while (blank(blocks.at(-1))) blocks.pop();
+  return { blocks };
+}
+
 function expectStable(message: string): void {
   const first = parse(message);
-  expect(parse(serialize(first))).toEqual(first);
+  expect(parse(serialize(first))).toEqual(withoutEdgeBlankLines(first));
 }
 
 describe('Aller-retour texte → document → texte (S14)', () => {

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guide d'utilisation : Discord Formatter</title>
+    <style>
+      :root {
+        --bg: #f2f3f5;
+        --panel: #ffffff;
+        --border: #d4d7dc;
+        --text: #2e3338;
+        --muted: #5c6370;
+        --accent: #5865f2;
+        --code-bg: #f0f1f3;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: var(--text);
+      }
+      body { margin: 0; background: var(--bg); line-height: 1.55; }
+      main {
+        max-width: 820px; margin: 24px auto; padding: 24px 32px;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+      }
+      h1 { margin-top: 0; font-size: 1.6rem; }
+      h2 { margin-top: 2em; font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+      p.intro { color: var(--muted); }
+      code, kbd {
+        background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+        padding: 0 4px; font-family: Consolas, 'Courier New', monospace; font-size: 0.9em;
+      }
+      table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+      th, td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+      th { background: var(--code-bg); }
+      a { color: var(--accent); }
+      li { margin: 4px 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Guide d'utilisation</h1>
+      <p class="intro">
+        Discord Formatter vous aide à préparer un message Discord bien mis en forme. Vous écrivez à gauche comme dans un
+        traitement de texte ; à droite apparaît le texte prêt à coller dans Discord. Tout se passe dans votre navigateur :
+        vos messages ne sont envoyés nulle part.
+      </p>
+      <p><a href="./">← Revenir à l'appli</a></p>
+
+      <h2>1. Les deux panneaux</h2>
+      <ul>
+        <li><strong>À gauche, l'éditeur</strong> : vous voyez le message presque comme dans Discord (gras, titres, listes, couleurs…).</li>
+        <li><strong>À droite, le message Discord</strong> : le texte avec ses symboles (<code>**</code>, <code>&gt;</code>, <code>```</code>…). C'est lui que vous copiez.</li>
+        <li>Les deux côtés restent synchronisés : modifiez l'un, l'autre se met à jour. Vous pouvez aussi <strong>coller à droite</strong> un message Discord existant pour le retravailler à gauche.</li>
+        <li>Le bouton <strong>Copier</strong>, en haut à droite, copie le message complet ; collez-le ensuite dans Discord.</li>
+      </ul>
+
+      <h2>2. Mettre en forme le texte</h2>
+      <ul>
+        <li>Sélectionnez du texte, puis cliquez sur <strong>Gras</strong>, <strong>Italique</strong>, <strong>Souligné</strong>, <strong>Barré</strong>, <strong>Spoiler</strong> ou <strong>Code</strong>. Les styles se cumulent.</li>
+        <li><strong>T1, T2, T3</strong> : titres de trois tailles. <strong>Sous-texte</strong> : petit texte gris.</li>
+        <li><strong>• Liste</strong> et <strong>1. Liste</strong> : listes à puces ou numérotées. <kbd>Tab</kbd> et <kbd>Maj</kbd>+<kbd>Tab</kbd> changent le niveau (11 niveaux au plus).</li>
+        <li><strong>Citation</strong> : la ligne est citée, avec la barre grise de Discord.</li>
+        <li>Un bouton <strong>grisé</strong> est une option impossible à cet endroit dans Discord ; survolez-le pour savoir pourquoi.</li>
+      </ul>
+
+      <h2>3. Blocs de code et couleurs</h2>
+      <ul>
+        <li><strong>Bloc de code</strong> insère un bloc. Dans le champ <strong>Langage</strong>, tapez ou choisissez un langage (<code>js</code>, <code>py</code>…) : le bloc est coloré comme dans Discord.</li>
+        <li>Pour colorer vous-même du texte, laissez le langage vide (ou choisissez <code>ansi</code>), sélectionnez du texte dans le bloc et cliquez sur une couleur de <strong>Texte</strong> ou de <strong>Fond</strong>, ou sur Gras, Italique, Souligné, Barré de la ligne <strong>ANSI</strong>.</li>
+        <li>Les couleurs ne s'affichent que sur Discord ordinateur : sur téléphone, le texte apparaît sans couleur.</li>
+      </ul>
+
+      <h2>4. Mentions, émojis, horodatages</h2>
+      <ul>
+        <li><strong>@ Utilisateur</strong>, <strong>@ Rôle</strong>, <strong># Salon</strong> insèrent un modèle (par exemple <code>&lt;@ID_UTILISATEUR&gt;</code>). Vous pouvez aussi taper <kbd>@</kbd> ou <kbd>#</kbd> à gauche. Un avertissement rappelle de remplacer le modèle par le vrai identifiant dans Discord.</li>
+        <li><strong>Émoji</strong> ouvre le sélecteur ; la recherche marche en français et avec les codes anglais (<code>:star:</code>).</li>
+        <li><strong>Horodatage</strong> : choisissez une date, une heure et un style ; chaque lecteur verra l'heure dans son propre fuseau. Cliquez sur un horodatage à gauche pour le modifier.</li>
+        <li>Les smileys <code>:)</code> <code>:(</code> <code>:D</code> <code>:P</code> <code>;)</code> <code>&lt;3</code> <code>:o</code>, entourés d'espaces, sont changés en émojis par Discord. L'éditeur les montre donc déjà en émoji (🙂 🙁 😄 😛 😉 ❤️ 😮).</li>
+      </ul>
+
+      <h2>5. Le compteur</h2>
+      <ul>
+        <li>Sous le panneau de droite, le compteur indique la longueur du message et ce qu'il reste. Les boutons <strong>2000</strong> et <strong>4000</strong> choisissent la limite (4000 avec Nitro).</li>
+        <li>Au-delà de la limite, la barre devient rouge, mais rien n'est coupé : vous continuez à écrire librement.</li>
+        <li>Le compte suit celui de Discord : un émoji compte souvent pour 2, un drapeau pour 4, et les symboles de mise en forme comptent aussi.</li>
+      </ul>
+
+      <h2>6. Raccourcis clavier</h2>
+      <p>Sur Mac, remplacez <kbd>Ctrl</kbd> par <kbd>Cmd</kbd>.</p>
+      <table>
+        <thead><tr><th>Raccourci</th><th>Effet (éditeur de gauche)</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>I</kbd> / <kbd>U</kbd></td><td>Gras / italique / souligné (dans un bloc de code : version ANSI)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>S</kbd></td><td>Barré</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Code en ligne</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd>, <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Annuler, rétablir (aussi à droite)</td></tr>
+          <tr><td><kbd>Entrée</kbd></td><td>Nouvelle ligne avec la même mise en page (citation, liste, titre)</td></tr>
+          <tr><td><kbd>Entrée</kbd> sur une ligne vide mise en page</td><td>Retire une couche de mise en page (liste, puis titre, puis citation)</td></tr>
+          <tr><td><kbd>Tab</kbd> / <kbd>Maj</kbd>+<kbd>Tab</kbd></td><td>Niveau de liste + / −, avec les sous-éléments</td></tr>
+          <tr><td><kbd>Retour arrière</kbd> sur une puce vide</td><td>Quitte la liste</td></tr>
+          <tr><td><kbd>Entrée</kbd> sur une ligne vide à la fin d'un bloc de code</td><td>Sort du bloc</td></tr>
+          <tr><td><kbd>@</kbd> ou <kbd>#</kbd></td><td>Propositions de mention ; flèches, <kbd>Entrée</kbd> ou <kbd>Tab</kbd> pour choisir, <kbd>Échap</kbd> ou <kbd>Espace</kbd> pour fermer</td></tr>
+          <tr><td><kbd>Échap</kbd></td><td>Ferme le sélecteur d'émojis ou la fenêtre d'horodatage</td></tr>
+        </tbody>
+      </table>
+
+      <h2>7. Bon à savoir</h2>
+      <ul>
+        <li><strong>Lignes vides au début ou à la fin</strong> : Discord les supprime à l'envoi (et refuse un message trop long qui commence par des lignes vides). L'appli ne les écrit donc pas à droite, et le compteur compte exactement ce qui part.</li>
+        <li><strong>Ligne vide dans une citation</strong> : possible au début ou au milieu d'une citation, tant que du texte cité suit (à gauche : placez le curseur au début d'une ligne citée et appuyez sur <kbd>Entrée</kbd>). Une ligne vide citée en dernière ligne devient une ligne vide ordinaire.</li>
+        <li><strong>Sous-texte dans une liste</strong> : Discord ne l'applique pas si une ligne stylée se trouve juste au-dessus ; le bouton est alors grisé. Une ligne vide au-dessus de la liste règle le problème.</li>
+        <li>Ce que l'appli ne reconnaît pas (lien masqué <code>[texte](lien)</code>, émoji de serveur…) est <strong>gardé tel quel</strong> : rien n'est jamais perdu.</li>
+        <li>Les teintes des couleurs à gauche sont très proches de celles de Discord, sans être exactement identiques.</li>
+        <li>Pas encore prévu : le découpage automatique d'un long message en plusieurs messages, les liens masqués, la version téléphone.</li>
+      </ul>
+    </main>
+  </body>
+</html>

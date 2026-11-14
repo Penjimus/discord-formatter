@@ -204,7 +204,7 @@ function lineToolbar(blocks: readonly Block[], index: number, line: Paragraph, i
     mention: insideCode,
     timestamp: insideCode,
     emoji: ALLOWED,
-    blankLine: line.quote ? greyed('Une ligne vide ne continue pas une citation (G3).') : ALLOWED,
+    blankLine: line.quote ? greyed('Une ligne vide ordinaire termine la citation.') : ALLOWED,
   } as Toolbar;
 }
 

@@ -173,6 +173,7 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Sous-texte à l'intérieur d'une puce (`- -# texte`) | permis, `-#` invisible (mais voir l'exception X7 dans « Listes ») | Testé (X6) |
 | Mention à l'intérieur d'un titre | permis, la taille du texte de la mention s'adapte au titre | Testé |
 | Titre à l'intérieur d'une citation | permis | Testé (D12) |
+| Sous-texte à l'intérieur d'une citation (`> -# texte`) | permis, le sous-texte s'applique | Testé (G29) |
 | Un style ouvert sur une ligne continue sur une ligne de titre qui suit : `**a ↵ # b**` donne « a » en gras et « b » en titre gras | Généralisé (réponse de l'auteur, 13/11/2026) |
 | Balise ouvrante placée **avant** le marqueur : `**# x**` donne un titre en gras ; `~~- a` une puce barrée ; `~~> a` une citation barrée. Le marqueur reste donc interprété derrière des balises ouvrantes (et doit alors être échappé s'il est du texte) | Testé (A34, X7, X10) |
 
@@ -226,8 +227,10 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | Citation sur plusieurs lignes : `> ` au début de chaque ligne | Testé (D4) |
 | Un texte placé sur la ligne juste après une citation d'une ligne sort de la citation | Testé (G4) |
 | Bloc de code, liste et titre à l'intérieur d'une citation : permis | Testé (D10, D11, D12) |
-| **Une ligne `>` seule s'affiche telle quelle (le `>` est visible)** : elle ne peut pas servir de ligne vide dans une citation | Testé (G3) |
-| Façon d'écrire une ligne vide dans une citation (essais : `> _ _`, `> ` + caractère invisible) | À tester |
+| *Ancien constat* : une ligne `>` seule s'affichait telle quelle (le `>` visible) et coupait la citation. **Contredit par G30**, qui fait foi (décision de l'auteur, 14/11/2026) | Testé (G3, contredit) |
+| **Ligne vide en première ligne d'une citation** : `> ` (chevron, espace, rien d'autre) suivi d'une ligne citée avec du texte (`> ↵ > dddd`) s'affiche comme une ligne vide, la citation suit | Testé (G28) |
+| **Ligne vide au milieu d'une citation** : `>` seul entre deux lignes citées (`> dzd ↵ > czd ↵ > ↵ > DZq`) s'affiche comme une ligne vide citée | Testé (G30) |
+| Plusieurs lignes citées vides de suite, suivies de texte cité : permises. Ligne citée vide en **dernière** ligne d'une citation : non retenue (écrite comme ligne vide ordinaire). `> ` et `>` lus de la même façon | Généralisé (décision de Claude, 14/11/2026 ; combinatoire non poursuivie, décision de l'auteur) |
 | Mention à l'intérieur d'une citation : permis | Testé |
 | Un message composé uniquement de `> ` est refusé (message vide) | Testé |
 | Citation imbriquée : non supportée par Discord | Documenté |
@@ -235,6 +238,8 @@ L'espace après le `#` est obligatoire. Le symbole doit être en début de ligne
 | `>>> texte` : tout ce qui suit est cité. **Non généré par l'appli** | Documenté |
 
 *Convention* : si un message collé contient `>>>`, il est conservé en texte brut.
+
+*Convention* (étape 13) : une ligne citée vide est écrite `> ` en première ligne d'une citation (forme G28) et `>` au milieu (forme G30). Une ligne de texte réduite à `>` est échappée (`\>`), pour ne pas devenir une ligne citée vide.
 
 ---
 
@@ -526,9 +531,12 @@ Une valeur de 3 caractères par émoji, notée plus tôt, était erronée.
 | Antislash devant le **dernier** deux-points (`:star\:` ou `\:star\:`) : pas d'émoji, affiche « :star: », antislashs invisibles | Testé (I4, relu par l'auteur) |
 | Un espace invisible `U+200B` dans le code (`:<U+200B>star:` ou `:star<U+200B>:`) empêche la conversion ; rien de parasite n'est visible | Testé (I5) |
 | **L'émoticône `:*` est convertie en émoji 😗.** Conséquence : un italique qui se termine par « : » (`*texte :*`) est cassé, le `*` de fermeture est avalé | Testé (X4) |
-| Autres émoticônes converties (`:)`, `:(`, `:D`, `:P`, `;)`, `<3`…) : lesquelles ? | À tester |
+| **Autres émoticônes converties**, texte collé compris : `:)` 🙂, `:(` 🙁, `:D` 😄, `:P` 😛, `;)` 😉, `<3` ❤️, `:o` 😮 (chacune entourée d'espaces dans le test) | Testé (I7) |
+| Émoticône collée à un mot (`Merci:)`), autres émoticônes, émoticône dans du code | À tester |
 | Cette conversion dépend-elle d'une option de Discord (« convertir automatiquement les émoticônes », paramètres Texte et images) ? | À tester |
-| La conversion a-t-elle lieu aussi quand le texte est **collé** (et non tapé) ? | À tester |
+| La conversion a lieu aussi quand le texte est **collé** (et non tapé) | Testé (I7) |
+
+*Convention* (décidée par l'auteur le 14/11/2026, alignement sur I7) : les sept émoticônes de I7 ne sont pas protégées. Le texte de droite les garde telles quelles, et l'éditeur de gauche les **affiche en émoji**, comme Discord le fera. Seule la forme testée est reconnue : émoticône entourée d'espaces ou de bords de ligne, hors code. `:*` garde son traitement propre (ci-dessous).
 
 *Convention* (décidée par l'auteur le 13/11/2026) pour les codes `:nom:` :
 - **Forme visée** : deux-points, puis lettres, chiffres, `_`, `+` ou `-`, puis deux-points, **sauf les nombres seuls** (« 12:30:45 » n'est pas un code, décision de l'auteur). Exceptions connues : `:100:` et `:1234:` sont des émojis, ils comptent.
@@ -574,6 +582,7 @@ Légende : ✓ permis, ✗ impossible, ? à tester. Les cases sont **testées** 
 | Titre, liste ou citation dans un spoiler, balise ouverte avant le marqueur (`\|\|# titre ↵ - puce ↵ > citation\|\|`) : tout est formé et caché sous un seul spoiler | ✓ | Testé (D15) |
 | Spoiler autour d'un bloc de code (y compris `ansi`) : tout le bloc est caché | ✓ | Testé (X2) |
 | Sous-texte dans une puce | ✓ | Testé (X6) |
+| Sous-texte dans une citation | ✓ | Testé (G29) |
 | Barré autour d'une citation ou de puces | ✓ | Testé (X1, X7) |
 | Styles de texte autour d'un code en ligne ou d'un bloc de code (§5, « entité unique ») | ✓ | Généralisé (A14, A15, X2, X8) |
 | Code en ligne dans un titre, un sous-texte, une puce ou une citation | ✓ | Généralisé |
@@ -641,8 +650,10 @@ Dans un bloc de code, rien n'est échappé.
 | Ligne vide visible | `_ _` (tiret bas, espace, tiret bas) sur une ligne seule | Testé (J1, J3) |
 | Message composé uniquement de `_ _` ou de `** **` | Accepté par Discord | Testé (J3, J4) |
 | **Lignes vides ordinaires** | **Conservées** : trois lignes vides consécutives apparaissent toutes. `_ _` n'est donc pas nécessaire pour sauter des lignes au milieu d'un message | Testé (J2) |
-| Ligne vide au **début** d'un message | Non affichée | Testé (X10) |
-| Lignes vides à la fin d'un message | Peut-être supprimées | À tester |
+| Lignes vides au **début** d'un message | **Supprimées** à l'envoi (X10, J5). Exception : un message **trop long** qui commence par des lignes vides est refusé | Testé (X10, J5) |
+| Lignes vides à la **fin** d'un message | Supprimées à l'envoi ; elles ne bloquent pas l'envoi d'un message trop long | Testé (J5) |
+
+*Convention* (décidée par l'auteur le 14/11/2026) : le texte de droite ne **commence** ni ne **finit** jamais par des lignes vides ; l'appli les retire à l'écriture. Même rendu dans Discord, et le compteur compte exactement ce qui part.
 | Caractère Braille vide `⠀` (U+2800) | Donne une ligne vide visible entre deux lignes (Z5) ; un message composé uniquement de ce caractère est accepté (Z6) | Testé |
 | Ligne horizontale | Non supportée (`---` ne fonctionne pas). On utilise des caractères Unicode : `▬▬▬▬▬▬▬▬` ou `────────` | Documenté |
 
@@ -652,20 +663,20 @@ Dans un bloc de code, rien n'est échappé.
 
 1. ~~Confirmer E13~~ : tranché (E15), `9`, `91` et `38;5;196` sont appliqués.
 2. ~~Italique `_` collé à une lettre d'un seul côté ; code en ligne sur deux lignes~~ : tranchés (A30, A32, A33). Gras après « : » tranché (A35, sans problème). La forme `*texte :<U+200B>*` s'affiche bien en italique (I5).
-3. Écrire une ligne vide dans une citation (`> _ _`, `> ` + caractère invisible `U+200B` ou Braille).
-4. Lignes vides au début ou à la fin d'un message ; lignes vides au milieu d'un bloc de code.
+3. ~~Écrire une ligne vide dans une citation~~ : tranché (G28, G30), permise en première ligne et au milieu d'une citation ; G3 contredit.
+4. ~~Lignes vides au début ou à la fin d'un message~~ : tranché (J5), voir §13. Lignes vides au milieu d'un bloc : gardées (convention §3).
 5. ~~Mention dans un sous-texte (`-#`) ; styles sur un horodatage~~ : tranchés (M7, H3).
 6. ~~Titre, liste ou citation dans un spoiler~~ : tranché (D15), permis.
 7. ~~Le bouton « Copier » conserve-t-il `<ESC>` et `U+200B` ?~~ : tranché (Z7), oui. Un message ANSI copié **depuis** Discord garde aussi `<ESC>` (Z8).
-8. **Palette exacte des couleurs ANSI** : relever les couleurs réellement rendues par Discord (captures d'écran des tests E1 et E2, thème sombre et thème clair), pour que l'éditeur de gauche reproduise fidèlement le rendu. Les noms de teintes ci-dessus sont indicatifs. Palette provisoire en place depuis l'étape 9 (§6) ; un écart de teinte est accepté par l'auteur.
-9. **Émoticônes converties en émojis** (§9) : liste des émoticônes concernées, rôle de l'option de Discord, cas du texte collé.
+8. ~~Palette exacte des couleurs ANSI~~ : close (14/11/2026), la palette provisoire de l'étape 9 (§6) est jugée assez proche par l'auteur.
+9. ~~Émoticônes converties en émojis~~ : tranché (I7), sept émoticônes converties, texte collé compris. Restent (non bloquants) : rôle de l'option de Discord, émoticône collée à un mot.
 10. ~~Italique ANSI (code `3`)~~ : tranché le 13/11/2026, l'italique est appliqué (E7 corrigé, §6).
 11. ~~Anomalie X7~~ : tranchée (G12 à G27), règle et conventions en §3, « Listes ». Cas généralisés (titre, citation, bloc stylé au-dessus) non testés.
 12. ~~Bloc de code dans une puce~~ : tranché (G9 à G11), c'est la ligne vide qui casse le bloc. Sous-puces : généralisé (décision de l'auteur). Reste : bloc sous un élément numéroté, dans une liste citée.
 13. ~~Sous-listes sous deux parents différents~~ : tranché (G5), chaque sous-liste repart de son propre numéro.
-14. Sous-texte dans une citation (`> -# x`) et citation dans une puce écrite par l'appli (`- > x`).
+14. ~~Sous-texte dans une citation (`> -# x`)~~ : tranché (G29), permis. Reste : citation dans une puce écrite par l'appli (`- > x`).
 15. ~~E14~~ : passé le 13/11/2026 (`0` dans une balise, fond au choix, `ANSI`, citation, puce, suite d’un bloc dans une puce).
 16. ~~Échapper un code `:nom:`~~ : tranché (I4, I5, convention §9). `:star\:` et `\:star\:` affichent « :star: » (I4 relu). Plus de contradiction avec C19 ; `\:` suivi d'autre chose qu'un code `:nom:` reste lu comme en C19.
-17. Espaces et sauts de ligne au début ou à la fin d'un message : Discord les retire-t-il avant de compter ? En attendant, le compteur de l'appli les compte tels quels (§12).
+17. ~~Sauts de ligne au début ou à la fin d'un message~~ : sans objet, l'appli ne les écrit plus (J5, §13). Espaces au bord du message : comptés tels quels (§12).
 18. ~~Codes ANSI étendus~~ : tranché (E16, 14/11/2026), `90` à `97`, `100` à `107`, `38;5;N` et `48;5;N` sont tous appliqués (§6).
 19. ~~`:\*` écrit par l'appli pour un `:*` tapé comme texte~~ : tranché (I6), l'antislash empêche la conversion.

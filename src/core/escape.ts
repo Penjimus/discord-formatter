@@ -24,7 +24,8 @@ export interface TextSurroundings {
 const WORD_CHAR = /[\p{L}\p{N}]/u;
 const SPACE = /\s/u;
 /** Débuts de ligne interprétés par Discord : titre, sous-texte, puce, liste numérotée, citation. */
-const LINE_START_MARKER = /^(\s*)(?:(#+ )|(-# )|(- )|(\d+)\. |(>+ ))/u;
+/** `>` seul sur sa ligne : ligne citée vide (G30), échappé aussi. */
+const LINE_START_MARKER = /^(\s*)(?:(#+ )|(-# )|(- )|(\d+)\. |(>+ |>$))/u;
 /** Débuts de mention, d'émoji personnalisé, d'horodatage, de commande ou de lien après un `<`. */
 const ANGLE_PATTERN = /^(?:@|#|:|a:|t:|\/|id:|https?:)/u;
 

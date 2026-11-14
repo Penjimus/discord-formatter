@@ -2,6 +2,8 @@
 import { ESC, ZERO_WIDTH_SPACE } from './characters';
 import {
   analyzeLists,
+  isBlankLine,
+  isEmptyQuoteLine,
   ansiCodes,
   listLevelBefore,
   isPlainAnsiStyle,
@@ -139,10 +141,6 @@ function bulletIndent(blocks: readonly Block[], index: number): string {
   return '  '.repeat(listLevelBefore(blocks, index) ?? 1);
 }
 
-function isBlankLine(block: Block): boolean {
-  return block.type === 'paragraph' && block.content.length === 0;
-}
-
 /** Pour chaque bloc : fait-il partie d'un groupe de lignes (entre deux lignes vides) qui contient une puce en sous-texte ? */
 function inSubtextGroups(blocks: readonly Block[]): boolean[] {
   const result = blocks.map(() => false);
@@ -156,6 +154,18 @@ function inSubtextGroups(blocks: readonly Block[]): boolean[] {
     start = i + 1;
   }
   return result;
+}
+
+/**
+ * Retire les lignes vides du début et de la fin du message : Discord refuse un message qui
+ * commence par des lignes vides et supprime celles de la fin (J5, §13).
+ */
+function withoutEdgeBlankLines(blocks: readonly Block[]): readonly Block[] {
+  let start = 0;
+  let end = blocks.length;
+  while (start < end && isBlankLine(blocks[start])) start++;
+  while (end > start && isBlankLine(blocks[end - 1])) end--;
+  return blocks.slice(start, end);
 }
 
 /** Met tout le message à plat : marqueur et morceaux de chaque ligne, séparés par des sauts de ligne. */
@@ -180,7 +190,9 @@ function toLayout(blocks: readonly Block[]): Layout {
       atoms.push({ type: 'break', marks });
       lineOf.push(-1);
     }
-    const prefix = linePrefix(block, positions[i], indents[i]);
+    // Ligne citée vide : `> ` en première ligne (G28), `>` au milieu d'une citation (G30).
+    const middleEmptyQuote = isEmptyQuoteLine(block) && blocks[i - 1]?.quote;
+    const prefix = middleEmptyQuote ? '>' : linePrefix(block, positions[i], indents[i]);
     prefixed.push(prefix !== '');
     if (prefix) {
       atoms.push({ type: 'prefix', text: prefix, marks: [] });
@@ -469,7 +481,7 @@ function writeAtomsWithMarks(atoms: readonly Atom[], message: MessageContext): s
 
 /** Document → texte Discord. Une ligne par paragraphe ; un style peut continuer sur la ligne suivante. */
 export function serialize(message: DiscordDocument): string {
-  const blocks = message.blocks.map((block) =>
+  const blocks = withoutEdgeBlankLines(message.blocks).map((block) =>
     block.type === 'paragraph' ? moveSpacesOutOfItalic(block) : block,
   );
   const context = analyzeMessage({ ...message, blocks });

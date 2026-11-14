@@ -94,9 +94,9 @@ describe('Matrice §10 : contenants de texte', () => {
     expectGreyed(message, { block: 0 }, ANSI_OPTIONS);
   });
 
-  it('sous-texte dans une citation : non testé, grisé', () => {
-    expectGreyed(doc(quoted(paragraph(text('a')))), { block: 0 }, ['subtext']);
-    expectGreyed(doc(subtext(text('a'))), { block: 0 }, ['quote']);
+  it('G29_sous_texte_dans_une_citation_permis', () => {
+    expectEnabled(doc(quoted(paragraph(text('a')))), { block: 0 }, ['subtext']);
+    expectEnabled(doc(subtext(text('a'))), { block: 0 }, ['quote']);
   });
 
   it('G3_citation : pas de ligne vide dans une citation', () => {
