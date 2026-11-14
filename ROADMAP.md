@@ -301,7 +301,7 @@ Mêmes règles que la partie 3 (une étape = une session, plan d'abord, scénari
 
 **Validation** : l'utilisateur passe d'une langue à l'autre et parcourt toute l'appli (barre d'outils, fenêtres, compteur, découpage, aperçu, guide) : plus aucun texte de l'autre langue, et le texte de droite reste identique.
 
-### [ ] Étape 19 : Mise en ligne sur GitHub Pages
+### [x] Étape 19 : Mise en ligne sur GitHub Pages
 
 **Objectif** : l'appli accessible à une adresse publique, gratuite, sans serveur.
 
@@ -313,6 +313,8 @@ Mêmes règles que la partie 3 (une étape = une session, plan d'abord, scénari
 - Mettre à jour `CLAUDE.md` (« Commandes », mise en ligne).
 
 **Validation** : l'utilisateur ouvre l'adresse publique, écrit, copie vers Discord, ferme et rouvre la page (brouillon retrouvé), change de langue et ouvre le guide.
+
+Choix faits (1A, 2A, 3A) : dépôt public tel quel, mise à jour automatique après les tests (`.github/workflows/pages.yml`), `README.md` en français et en anglais ; licence PolyForm Noncommercial 1.0.0 au nom de Benjamin Moro (`LICENSE.md`). Site : https://penjimus.github.io/discord-formatter/. Scénarios S40 à S43 (`SPEC.md` §6). Émojis chargés dès l'ouverture de la page (demande de l'utilisateur).
 
 ## Mises à jour possibles plus tard
 
@@ -595,6 +597,8 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 19 | Licence PolyForm Noncommercial 1.0.0 (réutilisable, non commerciale), au nom de Benjamin Moro, dans `LICENSE.md` (texte officiel, version 1.0.0) | Choix de l'utilisateur |
 | 2026-11-14 | 19 | Adresse de base `/discord-formatter/` pour la version construite et `npm run preview` seulement ; `npm run dev` reste sur http://localhost:5173/ ; configuration « site-verif » ajoutée à `.claude/launch.json` | Décidé par Claude : rien ne change pour l'usage local |
 | 2026-11-14 | 19 | Mise en ligne par GitHub Actions (`.github/workflows/pages.yml`), Node « LTS », aussi lançable à la main depuis l'onglet Actions | Décidé par Claude |
+| 2026-11-14 | 19 | Émojis chargés dès l'ouverture de la page ; une pastille `:nom:` déjà affichée se redessine en émoji quand ils sont chargés (le premier `:star:` collé restait en texte) | Demande de l'utilisateur ; correction de la cause décidée par Claude |
+| 2026-11-14 | 19 | Étape validée par l'utilisateur (site public ouvert, écriture, copie vers Discord, brouillon retrouvé, langue, guide) | — |
 
 ---
 
