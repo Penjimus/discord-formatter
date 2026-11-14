@@ -1,6 +1,9 @@
 // Fenêtre de lien masqué (S16, S17) : adresse, case « sans aperçu », et texte quand rien n'est sélectionné.
 import { useEffect, useRef, useState } from 'react';
 import { LINK_PROTOCOLS, link, linkEnd, type LinkTarget } from '../core/links';
+import { reasonOf } from '../core/reasons';
+import { reasonText, useTexts } from './i18n/language';
+import type { Texts } from './i18n/fr';
 
 /** Ce que la fenêtre modifie : un nouveau lien, ou un lien existant (son étendue). */
 export interface LinkDialogTarget {
@@ -21,12 +24,12 @@ interface Props {
 }
 
 /** Adresse vérifiée par le cœur, ou le message d'erreur. */
-function checkAddress(url: string, noPreview: boolean): LinkTarget | string {
-  if (url.trim() === '') return 'Saisissez une adresse.';
+function checkAddress(url: string, noPreview: boolean, texts: Texts): LinkTarget | string {
+  if (url.trim() === '') return texts.linkDialog.enterAddress;
   try {
     return link(url, noPreview);
   } catch (error) {
-    return error instanceof Error ? error.message : 'Adresse impossible.';
+    return reasonText(texts, reasonOf(error));
   }
 }
 
@@ -35,22 +38,24 @@ export function LinkDialog({ target, onConfirm, onRemove, onCancel }: Props) {
   const [noPreview, setNoPreview] = useState(target.noPreview);
   const [label, setLabel] = useState(target.label);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const texts = useTexts();
+  const t = texts.linkDialog;
   const editing = target.range !== null;
 
   useEffect(() => {
     dialogRef.current?.showModal();
   }, []);
 
-  const checked = checkAddress(url, noPreview);
+  const checked = checkAddress(url, noPreview, texts);
   const labelMissing = target.askText && label.trim() === '';
   const valid = typeof checked !== 'string' && !labelMissing;
-  const preview = typeof checked === 'string' ? '—' : `[${label || 'texte'}${linkEnd(checked)}`;
+  const preview = typeof checked === 'string' ? '—' : `[${label || t.defaultText}${linkEnd(checked)}`;
 
   return (
     <dialog
       ref={dialogRef}
       className="timestamp-dialog link-dialog"
-      aria-label="Lien"
+      aria-label={t.ariaLabel}
       onCancel={(event) => {
         event.preventDefault();
         onCancel();
@@ -63,19 +68,19 @@ export function LinkDialog({ target, onConfirm, onRemove, onCancel }: Props) {
           if (typeof checked !== 'string' && !labelMissing) onConfirm(checked, target.askText ? label : null);
         }}
       >
-        <h3>{editing ? 'Modifier le lien' : 'Insérer un lien'}</h3>
+        <h3>{editing ? t.editTitle : t.insertTitle}</h3>
         <p className="timestamp-help">
-          Le texte sera cliquable dans Discord, l'adresse cachée. Débuts permis : {LINK_PROTOCOLS.join(', ')}.
+          {t.help(LINK_PROTOCOLS.join(', '))}
         </p>
         <div className="link-fields">
           {target.askText && (
             <label>
-              Texte du lien
+              {t.linkText}
               <input type="text" value={label} required autoFocus onChange={(event) => setLabel(event.target.value)} />
             </label>
           )}
           <label>
-            Adresse
+            {t.address}
             <input
               type="text"
               value={url}
@@ -88,18 +93,18 @@ export function LinkDialog({ target, onConfirm, onRemove, onCancel }: Props) {
           </label>
           <label className="link-no-preview">
             <input type="checkbox" checked={noPreview} onChange={(event) => setNoPreview(event.target.checked)} />
-            Sans aperçu (pas de carte sous le message)
+            {t.noPreview}
           </label>
         </div>
         {url.trim() !== '' && typeof checked === 'string' && <p className="timestamp-error" role="alert">{checked}</p>}
-        <p className="timestamp-syntax">Texte Discord : <code>{preview}</code></p>
+        <p className="timestamp-syntax">{t.discordText} <code>{preview}</code></p>
         <div className="timestamp-actions">
           {editing && (
-            <button type="button" className="style-button link-remove" onClick={onRemove}>Retirer le lien</button>
+            <button type="button" className="style-button link-remove" onClick={onRemove}>{t.remove}</button>
           )}
-          <button type="button" className="style-button" onClick={onCancel}>Annuler</button>
+          <button type="button" className="style-button" onClick={onCancel}>{t.cancel}</button>
           <button type="submit" className="style-button is-primary" disabled={!valid}>
-            {editing ? 'Modifier' : 'Insérer'}
+            {editing ? t.edit : t.insert}
           </button>
         </div>
       </form>

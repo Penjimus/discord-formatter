@@ -1,8 +1,8 @@
 // Application : les deux panneaux, vues du même document (CLAUDE.md, « Principe central »).
 // Gauche → document → texte de droite ; droite → document → gauche. Aucune conversion directe.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createDocument, type DiscordDocument, type MentionKind } from '../core/document';
-import { unfilledTemplates } from '../core/elements';
+import { createDocument, type DiscordDocument } from '../core/document';
+import { foundTemplateWords } from '../core/elements';
 import { checkLength, type MessageLimit } from '../core/length';
 import { parse } from '../core/parse';
 import { serialize } from '../core/serialize';
@@ -17,6 +17,7 @@ import { TemplateWarning } from './TemplateWarning';
 import { VisualPanel, type VisualHandle } from './VisualPanel';
 import { loadDraft, saveDraft } from './draftStorage';
 import type { Draft } from '../core/draft';
+import { LANGUAGES, TEXTS, setLanguage, useLanguage, useTexts } from './i18n/language';
 
 function sameDocument(a: DiscordDocument, b: DiscordDocument): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
@@ -33,7 +34,7 @@ export function App() {
   const documentRef = useRef<DiscordDocument>(initialDocument);
   const visualRef = useRef<VisualHandle | null>(null);
   const textRef = useRef<DiscordTextHandle | null>(null);
-  const [templates, setTemplates] = useState<MentionKind[]>(() => unfilledTemplates(initialDraft.text));
+  const [templates, setTemplates] = useState<string[]>(() => foundTemplateWords(initialDraft.text));
   // Texte de droite (pour le compteur) et limite choisie, repris du brouillon.
   const [discordText, setDiscordText] = useState(initialDraft.text);
   const [limit, setLimit] = useState<MessageLimit>(initialDraft.limit);
@@ -41,6 +42,8 @@ export function App() {
   // Aperçu façon Discord sous les panneaux (S31) ; affiché à chaque ouverture, non mémorisé.
   const [previewShown, setPreviewShown] = useState(true);
 
+  const texts = useTexts();
+  const language = useLanguage();
   // Les émojis chargés : les codes `:nom:` déjà affichés à gauche sont redessinés en émoji.
   useEffect(() => onEmojiIndexLoaded(() => visualRef.current?.showDocument(documentRef.current)), []);
   // Un brouillon qui contient un code `:nom:` : les émojis sont chargés pour l'afficher à gauche.
@@ -64,8 +67,8 @@ export function App() {
   // Le texte de droite a changé (d'un côté ou de l'autre) : mise à jour de l'avertissement.
   const textChanged = useCallback((text: string) => {
     setDiscordText(text);
-    const kinds = unfilledTemplates(text);
-    setTemplates((old) => (old.join() === kinds.join() ? old : kinds));
+    const words = foundTemplateWords(text);
+    setTemplates((old) => (old.join() === words.join() ? old : words));
   }, []);
 
   // L'utilisateur écrit à gauche : le document change, le texte de droite est réécrit.
@@ -124,11 +127,22 @@ export function App() {
   return (
     <div className={`app${previewShown ? '' : ' preview-hidden'}`}>
       <header className="app-header">
-        <h1>Discord Formatter</h1>
-        <p>
-          Écrivez à gauche ou collez un message à droite : les deux côtés restent synchronisés.{' '}
-          <a href="guide.html" target="_blank" rel="noreferrer">Guide d'utilisation</a>
-        </p>
+        <div>
+          <h1>Discord Formatter</h1>
+          <p>
+            {texts.app.tagline}{' '}
+            <a href={texts.app.guidePage} target="_blank" rel="noreferrer">{texts.app.guide}</a>
+          </p>
+        </div>
+        <span className="language-switch" role="group" aria-label={texts.app.languageGroup}>
+          {LANGUAGES.map((choice) => (
+            <button key={choice} type="button" lang={choice} aria-pressed={choice === language}
+              className={choice === language ? 'is-active' : undefined}
+              title={TEXTS[choice].app.languageTitle} onClick={() => setLanguage(choice)}>
+              {choice.toUpperCase()}
+            </button>
+          ))}
+        </span>
       </header>
       <main className="panels">
         {visualPanel}
@@ -138,7 +152,7 @@ export function App() {
             onHeaderClick={messages ? () => setOpenedSplit(null) : undefined}
             notice={<>
               <CharacterCounter text={discordText} limit={limit} onLimitChange={setLimit} draftSaved={draftSaved} />
-              <TemplateWarning kinds={templates} />
+              <TemplateWarning words={templates} />
             </>} />
           {messages && <SplitMessages messages={messages} limit={limit}
             expanded={expandedSplit} onHeaderClick={toggleSplit} />}

@@ -4,10 +4,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  // Deux pages : l'appli et le guide d'utilisation.
+  // Trois pages : l'appli et le guide d'utilisation (français, anglais).
   build: {
     rollupOptions: {
-      input: { main: 'index.html', guide: 'guide.html' },
+      input: { main: 'index.html', guide: 'guide.html', guideEn: 'guide-en.html' },
     },
   },
   test: {

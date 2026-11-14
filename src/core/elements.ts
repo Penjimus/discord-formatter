@@ -1,5 +1,6 @@
 // Mentions et horodatages : syntaxe Discord, conversion de date, modèles à compléter (docs/discord-rules.md §7, §8).
-import { MENTION_TEMPLATES, type MentionKind, type MentionNode, type TimestampNode } from './document';
+import { RuleError } from './reasons';
+import { LEGACY_MENTION_TEMPLATES, MENTION_TEMPLATES, type MentionKind, type MentionNode, type TimestampNode } from './document';
 
 const MENTION_PREFIX: Readonly<Record<MentionKind, string>> = { user: '@', role: '@&', channel: '#' };
 
@@ -16,8 +17,8 @@ export function timestampSyntax(node: TimestampNode): string {
 /** Date → nombre de secondes depuis le 1er janvier 1970 UTC, arrondi vers le bas (jamais des millisecondes, H2). */
 export function dateToTimestamp(date: Date): number {
   const milliseconds = date.getTime();
-  if (Number.isNaN(milliseconds)) throw new Error('Date impossible.');
-  if (milliseconds < 0) throw new Error('Date antérieure à 1970 : non prise en charge.');
+  if (Number.isNaN(milliseconds)) throw new RuleError('dateInvalid', 'Date impossible.');
+  if (milliseconds < 0) throw new RuleError('dateBefore1970', 'Date antérieure à 1970 : non prise en charge.');
   return Math.floor(milliseconds / 1000);
 }
 
@@ -27,6 +28,18 @@ export function dateToTimestamp(date: Date): number {
  */
 export function unfilledTemplates(discordText: string): MentionKind[] {
   return (Object.keys(MENTION_TEMPLATES) as MentionKind[]).filter((kind) =>
-    discordText.includes(MENTION_TEMPLATES[kind]),
+    templateWords(kind).some((word) => discordText.includes(word)),
   );
+}
+
+/** Modèles (actuels ou anciens) présents dans le texte, pour les nommer dans l'avertissement. */
+export function foundTemplateWords(discordText: string): string[] {
+  return (Object.keys(MENTION_TEMPLATES) as MentionKind[])
+    .flatMap(templateWords)
+    .filter((word) => discordText.includes(word));
+}
+
+function templateWords(kind: MentionKind): string[] {
+  const legacy = LEGACY_MENTION_TEMPLATES[kind];
+  return legacy === undefined ? [MENTION_TEMPLATES[kind]] : [MENTION_TEMPLATES[kind], legacy];
 }

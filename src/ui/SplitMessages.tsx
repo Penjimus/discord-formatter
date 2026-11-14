@@ -2,11 +2,12 @@
 // compteur et son bouton « Copier ». Simple affichage : le texte de droite n'est jamais modifié.
 import { useEffect, useState } from 'react';
 import { ESC, ZERO_WIDTH_SPACE } from '../core/characters';
-import { unfilledTemplates } from '../core/elements';
+import { foundTemplateWords } from '../core/elements';
 import { discordLength } from '../core/length';
 import { TemplateWarning } from './TemplateWarning';
 import { copyText } from './clipboard';
-import { formatNumber } from './CharacterCounter';
+import { formatNumber, useTexts } from './i18n/language';
+import type { Texts } from './i18n/fr';
 import { headerToggle } from './DiscordTextPanel';
 
 interface Props {
@@ -18,16 +19,16 @@ interface Props {
   onHeaderClick(index: number): void;
 }
 
-const INVISIBLE_NAMES: Record<string, string> = {
-  [ESC]: 'Caractère ESC (couleurs ANSI)',
-  [ZERO_WIDTH_SPACE]: 'Espace invisible (U+200B)',
-};
+function invisibleNames(texts: Texts): Record<string, string> {
+  return { [ESC]: texts.split.invisibleEsc, [ZERO_WIDTH_SPACE]: texts.split.invisibleSpace };
+}
 
 /** Montre les caractères invisibles par un point rouge, comme le panneau droit ; la copie reste intacte. */
-function showInvisibles(message: string): React.ReactNode[] {
+function showInvisibles(message: string, texts: Texts): React.ReactNode[] {
+  const names = invisibleNames(texts);
   return message.split(new RegExp(`([${ESC}${ZERO_WIDTH_SPACE}])`)).map((part, i) =>
-    INVISIBLE_NAMES[part]
-      ? <span key={i} className="invisible-char" title={INVISIBLE_NAMES[part]}>•</span>
+    names[part]
+      ? <span key={i} className="invisible-char" title={names[part]}>•</span>
       : part,
   );
 }
@@ -36,6 +37,8 @@ type CopyState = 'done' | 'failed';
 
 export function SplitMessages({ messages, limit, expanded, onHeaderClick }: Props) {
   // État de copie de chaque message, effacé à chaque modification du texte ou de la limite.
+  const texts = useTexts();
+  const t = texts.split;
   const [copied, setCopied] = useState<Record<number, CopyState>>({});
   useEffect(() => setCopied({}), [messages]);
 
@@ -45,10 +48,9 @@ export function SplitMessages({ messages, limit, expanded, onHeaderClick }: Prop
   }
 
   return (
-    <section className={`split-messages${expanded === null ? '' : ' has-expanded'}`} aria-label="Messages découpés">
+    <section className={`split-messages${expanded === null ? '' : ' has-expanded'}`} aria-label={t.ariaLabel}>
       <p className="split-intro">
-        Votre texte dépasse la limite : il est découpé en <strong>{messages.length} messages</strong>.
-        Copiez-les et envoyez-les dans l'ordre. Cliquez sur un titre pour voir le message.
+        {t.introBefore}<strong>{t.introCount(messages.length)}</strong>{t.introAfter}
       </p>
       {messages.map((message, index) => {
         const state = copied[index];
@@ -59,18 +61,18 @@ export function SplitMessages({ messages, limit, expanded, onHeaderClick }: Prop
               aria-expanded={open}>
               <h3>
                 <span className="toggle-arrow" aria-hidden="true">{open ? '▾' : '▸'}</span>
-                Message {index + 1} / {messages.length}
+                {t.title(index + 1, messages.length)}
               </h3>
               <span className="split-message-count">
-                {formatNumber(discordLength(message))} / {formatNumber(limit)}
+                {formatNumber(texts, discordLength(message))} / {formatNumber(texts, limit)}
               </span>
               <button type="button" className={`copy-button${state === 'done' ? ' is-copied' : ''}`}
                 onClick={() => void copy(index)}>
-                {state === 'done' ? '✓ Copié' : state === 'failed' ? 'Copie impossible' : 'Copier'}
+                {state === 'done' ? t.copied : state === 'failed' ? t.copyFailed : t.copy}
               </button>
             </header>
-            {open && <pre className="split-message-text">{showInvisibles(message)}</pre>}
-            <TemplateWarning kinds={unfilledTemplates(message)} />
+            {open && <pre className="split-message-text">{showInvisibles(message, texts)}</pre>}
+            <TemplateWarning words={foundTemplateWords(message)} />
           </article>
         );
       })}

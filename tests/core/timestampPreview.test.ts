@@ -40,3 +40,32 @@ describe('Le fuseau horaire du lecteur est utilisé', () => {
     expect(timestampPreview(NEW_YEAR_2025, 'F', { timeZone: 'America/Montreal' })).toBe('mardi 31 décembre 2024 19:00');
   });
 });
+
+describe('Étape 18 : aperçu en anglais (S38, formes À tester, §8)', () => {
+  const cases: [string | null, string][] = [
+    [null, 'January 1, 2025 1:00 AM'],
+    ['t', '1:00 AM'],
+    ['T', '1:00:00 AM'],
+    ['d', '1/1/2025'],
+    ['D', 'January 1, 2025'],
+    ['f', 'January 1, 2025 1:00 AM'],
+    ['F', 'Wednesday, January 1, 2025 1:00 AM'],
+    ['s', '1/1/2025, 1:00 AM'],
+    ['S', '1/1/2025, 1:00:00 AM'],
+  ];
+  for (const [style, expected] of cases) {
+    it(`style ${style ?? 'aucun'} → ${expected}`, () => {
+      expect(timestampPreview(NEW_YEAR_2025, style as never, { timeZone: PARIS, language: 'en' })).toBe(expected);
+    });
+  }
+
+  it('temps relatif en anglais', () => {
+    const now = new Date(NEW_YEAR_2025 * 1000);
+    expect(timestampPreview(NEW_YEAR_2025 + 61 * 24 * 3600, 'R', { now, language: 'en' })).toBe('in 2 months');
+    expect(timestampPreview(NEW_YEAR_2025 - 5 * 60, 'R', { now, language: 'en' })).toBe('5 minutes ago');
+  });
+
+  it('après-midi en anglais : 12 heures', () => {
+    expect(timestampPreview(NEW_YEAR_2025 + 15 * 3600, 't', { timeZone: PARIS, language: 'en' })).toBe('4:00 PM');
+  });
+});

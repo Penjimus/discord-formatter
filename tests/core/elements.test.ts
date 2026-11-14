@@ -17,7 +17,7 @@ import {
   TIMESTAMP_STYLES,
   type DiscordDocument,
 } from '../../src/core/document';
-import { dateToTimestamp, unfilledTemplates } from '../../src/core/elements';
+import { dateToTimestamp, foundTemplateWords, unfilledTemplates } from '../../src/core/elements';
 import { parse } from '../../src/core/parse';
 import { serialize } from '../../src/core/serialize';
 
@@ -117,10 +117,21 @@ describe('Horodatages (§8, série H)', () => {
 });
 
 describe('Mentions (§7, séries I et M)', () => {
-  it('I1_les_trois_modeles', () => {
+  // Remplace l'ancien I1 (modèles en français), accord de l'utilisateur à l'étape 18.
+  it('I1_les_trois_modeles_en_anglais', () => {
     const message = line(mention('user'), text(' '), mention('role'), text(' '), mention('channel'));
-    expect(serialize(message)).toBe('<@ID_UTILISATEUR> <@&ID_ROLE> <#ID_SALON>');
-    expect(parse('<@ID_UTILISATEUR> <@&ID_ROLE> <#ID_SALON>')).toEqual(message);
+    expect(serialize(message)).toBe('<@ID_USER> <@&ID_ROLE> <#ID_CHANNEL>');
+    expect(parse('<@ID_USER> <@&ID_ROLE> <#ID_CHANNEL>')).toEqual(message);
+  });
+
+  it('anciens_modeles_lus_comme_mentions_et_reecrits_tels_quels', () => {
+    const old = '<@ID_UTILISATEUR> <@&ID_ROLE> <#ID_SALON>';
+    const message = line(mention('user', 'ID_UTILISATEUR'), text(' '), mention('role'), text(' '), mention('channel', 'ID_SALON'));
+    expect(parse(old)).toEqual(message);
+    expect(serialize(parse(old))).toBe(old);
+    // Un modèle d'une autre sorte reste refusé, ancien compris.
+    expect(() => mention('channel', 'ID_UTILISATEUR')).toThrow();
+    expect(parse('<#ID_UTILISATEUR>')).toEqual(line(raw('<#ID_UTILISATEUR>')));
   });
 
   it('mentions_completees', () => {
@@ -194,10 +205,16 @@ describe('Modèles à compléter (S8)', () => {
     expect(unfilledTemplates('')).toEqual([]);
   });
 
+  it('detection_des_modeles_en_anglais_et_noms_affiches', () => {
+    expect(unfilledTemplates('<@ID_USER> et <#ID_CHANNEL>')).toEqual(['user', 'channel']);
+    expect(foundTemplateWords('<@ID_USER> <#ID_SALON> <@&ID_ROLE>')).toEqual(['ID_USER', 'ID_ROLE', 'ID_SALON']);
+    expect(foundTemplateWords('<@123>')).toEqual([]);
+  });
+
   it('l_avertissement_disparait_quand_le_modele_est_complete', () => {
     const before = serialize(line(text('Salut '), mention('user')));
     expect(unfilledTemplates(before)).toEqual(['user']);
-    expect(unfilledTemplates(before.replace('ID_UTILISATEUR', '123'))).toEqual([]);
+    expect(unfilledTemplates(before.replace('ID_USER', '123'))).toEqual([]);
   });
 });
 

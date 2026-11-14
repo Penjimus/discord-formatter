@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User guide: Discord Formatter</title>
+    <style>
+      :root {
+        --bg: #f2f3f5;
+        --panel: #ffffff;
+        --border: #d4d7dc;
+        --text: #2e3338;
+        --muted: #5c6370;
+        --accent: #5865f2;
+        --code-bg: #f0f1f3;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: var(--text);
+      }
+      body { margin: 0; background: var(--bg); line-height: 1.55; }
+      main {
+        max-width: 820px; margin: 24px auto; padding: 24px 32px;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+      }
+      h1 { margin-top: 0; font-size: 1.6rem; }
+      h2 { margin-top: 2em; font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+      p.intro { color: var(--muted); }
+      code, kbd {
+        background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+        padding: 0 4px; font-family: Consolas, 'Courier New', monospace; font-size: 0.9em;
+      }
+      table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+      th, td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+      th { background: var(--code-bg); }
+      a { color: var(--accent); }
+      li { margin: 4px 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>User guide</h1>
+      <p class="intro">
+        Discord Formatter helps you prepare a well-formatted Discord message. You write on the left as in a word
+        processor; on the right appears the text ready to paste into Discord. Everything happens in your browser:
+        your messages are not sent anywhere.
+      </p>
+      <p><a href="./">← Back to the app</a> · <a href="guide.html" lang="fr">Version française</a></p>
+
+      <h2>1. The two panels</h2>
+      <ul>
+        <li><strong>On the left, the editor</strong>: you see the message almost as on Discord (bold, headings, lists, colors…).</li>
+        <li><strong>On the right, the Discord message</strong>: the text with its symbols (<code>**</code>, <code>&gt;</code>, <code>```</code>…). This is what you copy.</li>
+        <li>Both sides stay in sync: change one, the other updates. You can also <strong>paste an existing Discord message on the right</strong> to rework it on the left.</li>
+        <li>The <strong>Copy</strong> button, at the top right, copies the full message; then paste it into Discord.</li>
+      </ul>
+
+      <h2>2. Formatting text</h2>
+      <ul>
+        <li>Select some text, then click <strong>Bold</strong>, <strong>Italic</strong>, <strong>Underline</strong>, <strong>Strikethrough</strong>, <strong>Spoiler</strong> or <strong>Code</strong>. Styles add up.</li>
+        <li><strong>H1, H2, H3</strong>: headings in three sizes. <strong>Subtext</strong>: small grey text.</li>
+        <li><strong>• List</strong> and <strong>1. List</strong>: bulleted or numbered lists. <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> change the level (11 levels at most).</li>
+        <li><strong>Quote</strong>: the line is quoted, with Discord's grey bar.</li>
+        <li>A <strong>greyed-out</strong> button is an option Discord does not allow at this place; hover over it to find out why.</li>
+      </ul>
+
+      <h2>3. Code blocks and colors</h2>
+      <ul>
+        <li><strong>Code block</strong> inserts a block. In the <strong>Language</strong> field, type or choose a language (<code>js</code>, <code>py</code>…): the block is highlighted as on Discord.</li>
+        <li>To color text yourself, leave the language empty (or choose <code>ansi</code>), select text in the block and click a <strong>Text</strong> or <strong>Background</strong> color, or Bold, Italic, Underline, Strikethrough on the <strong>ANSI</strong> row.</li>
+        <li>Colors only show on Discord desktop: on a phone, the text appears without color.</li>
+      </ul>
+
+      <h2>4. Mentions, emojis, timestamps</h2>
+      <ul>
+        <li><strong>@ User</strong>, <strong>@ Role</strong>, <strong># Channel</strong> insert a template (for example <code>&lt;@ID_USER&gt;</code>). You can also type <kbd>@</kbd> or <kbd>#</kbd> on the left. A warning reminds you to replace the template with the real ID on Discord.</li>
+        <li><strong>Emoji</strong> opens the picker; search works in English, in French and with the codes (<code>:star:</code>).</li>
+        <li><strong>Timestamp</strong>: choose a date, a time and a style; each reader will see the time in their own time zone. Click a timestamp on the left to edit it.</li>
+        <li>The smileys <code>:)</code> <code>:(</code> <code>:D</code> <code>:P</code> <code>;)</code> <code>&lt;3</code> <code>:o</code>, surrounded by spaces, are turned into emojis by Discord. The editor therefore already shows them as emojis (🙂 🙁 😄 😛 😉 ❤️ 😮).</li>
+      </ul>
+
+      <h2>5. Links</h2>
+      <ul>
+        <li><strong>🔗 Link</strong>: select some text, click the button and enter the address. The text becomes clickable on Discord and the address stays hidden (<code>[text](address)</code>). Without a selection, the window also asks for the text.</li>
+        <li>Allowed addresses: <code>https://</code>, <code>http://</code>, <code>mailto:</code>, <code>tel:</code>, <code>discord://</code>. Others (without <code>https://</code>, <code>www.</code>, <code>ftp://</code>…) are not clickable on Discord: the app refuses them. A space in the address is written <code>%20</code>.</li>
+        <li><strong>No preview</strong>: tick the box so that Discord does not show a card under the message (the address is then written between <code>&lt; &gt;</code>).</li>
+        <li>Hover over a link on the left: a bubble shows its address, with <strong>Edit</strong> (address, preview, remove the link) and <strong>Open</strong> (new tab). The link text is edited directly, with all styles.</li>
+        <li>An emoji, a mention or a lone <code>[</code> cannot be in the text of a link: if there is one, it leaves the link, which is cut into two pieces with the same address. A timestamp is allowed.</li>
+      </ul>
+
+      <h2>6. The counter</h2>
+      <ul>
+        <li>Under the right panel, the counter shows the length of the message and what is left. The <strong>2,000</strong> and <strong>4,000</strong> buttons choose the limit (4,000 with Nitro).</li>
+        <li>Over the limit, the bar turns red, but nothing is cut: you keep writing freely.</li>
+        <li><strong>Message too long</strong>: one frame per message appears under the right panel, in sending order, each with its counter and its <strong>Copy</strong> button. The text on the right does not change. Styles, quotes, code blocks and colors that are cut are closed and reopened, so that each message displays correctly on its own.</li>
+        <li>To save space, the frames are <strong>collapsed</strong> to their title. Click a message title to expand it: the full message then collapses at the top. Click <strong>Full message</strong> to go back. The <strong>Copy</strong> button works even when the frame is collapsed.</li>
+        <li>A copied message stays marked <strong>✓ Copied</strong> until the next change to the text: you know where you are. Another click copies it again.</li>
+        <li>If a message contains a mention to fill in (<code>&lt;@ID_USER&gt;</code>…), the warning also appears in its frame: you know which message to fix.</li>
+        <li>The count follows Discord's: an emoji often counts as 2, a flag as 4, and formatting symbols count too.</li>
+      </ul>
+
+      <h2>7. The Discord-style preview</h2>
+      <ul>
+        <li>Under the two panels, the <strong>preview</strong> shows your message as Discord will display it on desktop, in dark theme, with the name “You” and the time. It updates while you write. Scroll the page to see all of it.</li>
+        <li>It is only for looking: it changes nothing in your text. Spoilers are hidden, a click reveals them; links open in a new tab.</li>
+        <li>Message too long: the preview shows the split messages one below the other, as if sent in a row. Hovering over a message shows its time on the left.</li>
+        <li>The <strong>Hide the preview</strong> button gives the panels the full height back; <strong>Show the preview</strong> brings it back.</li>
+        <li>Colors, sizes and fonts are close to Discord's, without being exact. Mentions show the template or the ID (the app does not know the names), Discord's link cards are not shown, and syntax the app does not recognize is shown as is: Discord may interpret it.</li>
+      </ul>
+
+      <h2>8. Keyboard shortcuts</h2>
+      <p>On a Mac, replace <kbd>Ctrl</kbd> with <kbd>Cmd</kbd>.</p>
+      <table>
+        <thead><tr><th>Shortcut</th><th>Effect (left editor)</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>I</kbd> / <kbd>U</kbd></td><td>Bold / italic / underline (in a code block: ANSI version)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>Strikethrough</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Inline code</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd>, <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo, redo (also on the right)</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>New line with the same layout (quote, list, heading)</td></tr>
+          <tr><td><kbd>Enter</kbd> on an empty formatted line</td><td>Removes one layer of layout (list, then heading, then quote)</td></tr>
+          <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>List level + / −, with the sub-items</td></tr>
+          <tr><td><kbd>Backspace</kbd> on an empty bullet</td><td>Leaves the list</td></tr>
+          <tr><td><kbd>Enter</kbd> on an empty line at the end of a code block</td><td>Leaves the block</td></tr>
+          <tr><td><kbd>@</kbd> or <kbd>#</kbd></td><td>Mention suggestions; arrows, <kbd>Enter</kbd> or <kbd>Tab</kbd> to choose, <kbd>Esc</kbd> or <kbd>Space</kbd> to close</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Closes the emoji picker, the timestamp or link window</td></tr>
+        </tbody>
+      </table>
+
+      <h2>9. Good to know</h2>
+      <ul>
+        <li><strong>Language</strong>: the <strong>FR</strong> and <strong>EN</strong> buttons, at the top right, switch the whole interface to French or English. The text on the right does not change. On first launch, the app uses your browser's language; after that, it keeps your choice. Timestamps are shown in the chosen language, as Discord shows them in each reader's language.</li>
+        <li><strong>Draft</strong>: your text and the chosen limit (2,000 or 4,000) are saved automatically, half a second after each change and when the page closes; <strong>✓ Draft saved</strong> appears next to the counter. When you reopen the page, you find them again. There is only one draft: to start another text, clear the text. The draft stays in this browser, on this computer, and nothing is sent anywhere; it disappears if you clear your browsing data, or when a private window is closed.</li>
+        <li><strong>Blank lines at the start or end</strong>: Discord removes them when sending (and refuses a message that is too long if it starts with blank lines). The app therefore does not write them on the right, and the counter counts exactly what is sent.</li>
+        <li><strong>Blank line in a quote</strong>: possible at the start or in the middle of a quote, as long as quoted text follows (on the left: put the cursor at the start of a quoted line and press <kbd>Enter</kbd>). A quoted blank line as the last line becomes an ordinary blank line.</li>
+        <li><strong>Subtext in a list</strong>: Discord does not apply it if a styled line is just above; the button is then greyed out. A blank line above the list solves the problem.</li>
+        <li>What the app does not recognize (link with a non-clickable address, server emoji…) is <strong>kept as is</strong>: nothing is ever lost.</li>
+        <li>The colors shown on the left are very close to Discord's, without being exactly identical.</li>
+        <li>Not planned yet: the phone version.</li>
+      </ul>
+    </main>
+  </body>
+</html>

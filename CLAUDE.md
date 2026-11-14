@@ -79,7 +79,7 @@ L'appli manipule des caractères **invisibles** : `U+001B` (ESC, pour l'ANSI) et
 - application qui tourne **dans le navigateur uniquement** : pas de serveur, pas de compte, pas de base de données ;
 - technologies **courantes et bien documentées**, pas de choix exotiques ;
 - lancement local avec **une seule commande**, mise en ligne gratuite possible plus tard ;
-- interface en **français** ;
+- interface en **français et en anglais**, au choix (étape 18) ; le texte produit pour Discord ne dépend jamais de la langue ;
 - ordinateur d'abord (mobile hors périmètre de la première version).
 
 **Procédure** : propose 2 ou 3 options à l'utilisateur (voir « Qui est l'utilisateur »), attends sa décision, puis **inscris ici** le choix et ses raisons, pour qu'il ne soit pas remis en cause d'une session à l'autre.
@@ -94,16 +94,17 @@ L'appli manipule des caractères **invisibles** : `U+001B` (ESC, pour l'ANSI) et
 - `src/core/` : cœur du formatage, fonctions pures, **aucun import de React ni du navigateur**.
 - `src/core/characters.ts` : constantes des caractères invisibles (`ESC`, `ZERO_WIDTH_SPACE`).
 - `src/ui/` : interface React.
+- `src/ui/i18n/` : **tous les textes de l'interface**, `fr.ts` et `en.ts` (mêmes entrées, vérifiées par `tests/ui/texts.test.ts`), et `language.ts` (langue choisie, gardée dans le navigateur). Aucun texte d'interface écrit ailleurs. Une raison de grisage ou de refus venue du cœur a un nom (`src/core/reasons.ts`) ; son texte est dans `fr.ts` et `en.ts`.
 - `tests/core/` : tests automatiques du cœur (`*.test.ts`), nommés d'après les ID du cahier.
 - `docs/tests-discord/` : messages de test d'origine à coller dans Discord.
-- `guide.html` : guide d'utilisation (une page, en français), construit avec l'appli ; lien dans l'en-tête. À tenir à jour quand une fonction ou un raccourci change.
+- `guide.html` (français) et `guide-en.html` (anglais) : guide d'utilisation, construit avec l'appli ; le lien de l'en-tête ouvre celui de la langue choisie. Les deux sont à tenir à jour quand une fonction ou un raccourci change.
 
 ## Commandes
 
 - Lancer l'appli en local : `npm run dev` (ouvre le navigateur sur http://localhost:5173)
 - Lancer les tests : `npm test`
 - Vérification du code (lint) : `npm run lint` (contrôle des types TypeScript)
-- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`, deux pages : l'appli et le guide)
+- Construire la version à mettre en ligne : `npm run build` (dossier `dist/`, trois pages : l'appli et le guide en français et en anglais)
 - Mise en ligne : pas encore faite (choix de l'utilisateur, étape 13). GitHub Pages reste possible (dépôt `Penjimus/discord-formatter`, dépôt public nécessaire).
 
 ## Tests
@@ -143,6 +144,6 @@ Les fichiers de référence sont volumineux (`docs/discord-rules.md` et `docs/ca
 
 ## Conventions de code (par défaut, à modifier par l'utilisateur)
 
-- Identifiants du code (variables, fonctions, fichiers) en **anglais** ; textes de l'interface et messages à l'utilisateur en **français** ; commentaires courts, en français.
+- Identifiants du code (variables, fonctions, fichiers) en **anglais** ; textes de l'interface dans `src/ui/i18n/` (français et anglais), messages à l'utilisateur en **français** ; commentaires courts, en français.
 - Code simple et lisible plutôt que malin. Une fonction = une responsabilité.
 - Pas de dépendance ajoutée sans l'expliquer à l'utilisateur.

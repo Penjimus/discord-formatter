@@ -12,6 +12,7 @@ import { highlightRanges, loadHighlighter } from './syntaxHighlight';
 import { analyzeLists, type TimestampStyle } from '../core/document';
 import { timestampPreview } from '../core/timestampPreview';
 import { loadedEmojiIndex } from './emojiLibrary';
+import { currentLanguage, currentTexts, onLanguageChange } from './i18n/language';
 import { EMOTICON_EMOJIS, findEmoticons } from '../core/emoticons';
 import { linkKeepMask, type LinkPiece } from '../core/links';
 import { MentionSuggest } from './mentionSuggest';
@@ -87,6 +88,24 @@ function chip(name: string, view: (attrs: Record<string, unknown>) => ChipView, 
       const classes = `chip chip-${name}${extraClass ? ` ${extraClass}` : ''}`;
       return ['span', { class: classes, contenteditable: 'false', ...(title ? { title } : {}) }, label];
     },
+    // À l'écran, la pastille se redessine quand la langue change (horodatage, bulle d'aide, S36) :
+    // l'éditeur garderait sinon l'ancien affichage d'un élément inchangé.
+    addNodeView() {
+      return ({ node }) => {
+        const dom = document.createElement('span');
+        dom.contentEditable = 'false';
+        const draw = () => {
+          const { label, title, extraClass } = view(node.attrs);
+          dom.className = `chip chip-${name}${extraClass ? ` ${extraClass}` : ''}`;
+          dom.textContent = label;
+          if (title) dom.title = title;
+          else dom.removeAttribute('title');
+        };
+        draw();
+        const stop = onLanguageChange(draw);
+        return { dom, destroy: stop };
+      };
+    },
   });
 }
 
@@ -106,10 +125,10 @@ const MentionNode = chip('mention', (attrs) => {
   const prefix = attrs.kind === 'user' ? '<@' : attrs.kind === 'role' ? '<@&' : '<#';
   return { label: `${prefix}${String(attrs.id)}>` };
 }, ['kind', 'id']);
-// Aperçu lisible de la date dans le style choisi (S8c) ; un clic rouvre le calendrier.
+// Aperçu lisible de la date dans le style choisi et la langue de l'interface (S8c, S38) ; un clic rouvre le calendrier.
 const TimestampNode = chip('timestamp', (attrs) => ({
-  label: timestampPreview(Number(attrs.seconds), (attrs.style ?? null) as TimestampStyle | null),
-  title: `${timestampText(attrs)} : cliquer pour modifier`,
+  label: timestampPreview(Number(attrs.seconds), (attrs.style ?? null) as TimestampStyle | null, { language: currentLanguage() }),
+  title: currentTexts().editor.timestampChipTitle(timestampText(attrs)),
 }), ['seconds', 'style']);
 
 /**

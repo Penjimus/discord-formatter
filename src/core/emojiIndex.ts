@@ -1,7 +1,7 @@
 // Émojis standards (bibliothèque emojibase) : codes `:nom:` et recherche pour le sélecteur (S8b, docs/discord-rules.md §9).
 // Les données sont fournies par l'appelant : le cœur ne charge rien lui-même.
 
-/** Un émoji tel que fourni par emojibase (liste « compacte », en français). */
+/** Un émoji tel que fourni par emojibase (liste « compacte », dans une langue). */
 export interface EmojiSource {
   hexcode: string;
   label: string;
@@ -11,7 +11,7 @@ export interface EmojiSource {
   tags?: string[];
 }
 
-/** Une catégorie emojibase (nom en français). */
+/** Une catégorie emojibase (nom dans la langue de l'interface). */
 export interface EmojiGroupSource {
   key: string;
   message: string;
@@ -23,12 +23,14 @@ export type ShortcodeSource = Record<string, string | string[]>;
 
 export interface Emoji {
   unicode: string;
-  /** Nom français. */
+  /** Nom dans la langue de l'interface. */
   label: string;
   /** Noms des codes `:nom:`, sans les deux-points. */
   shortcodes: string[];
   /** Ce sur quoi porte la recherche : nom, mots-clés, codes, sans accents ni majuscules. */
   searchText: string[];
+  /** Nom dans l'autre langue, sans accents ni majuscules (classé comme le nom, S39). */
+  otherLabel: string;
 }
 
 export interface EmojiCategory {
@@ -59,7 +61,10 @@ export function buildEmojiIndex(
   sources: readonly EmojiSource[],
   shortcodes: ShortcodeSource,
   groups: readonly EmojiGroupSource[],
+  /** Les mêmes émojis dans l'autre langue : leurs noms et mots-clés sont aussi cherchés (S39). */
+  otherLanguage: readonly EmojiSource[] = [],
 ): EmojiIndex {
+  const otherWords = new Map(otherLanguage.map((source) => [source.hexcode, [source.label, ...(source.tags ?? [])]]));
   const byCode = new Map<string, string>();
   const categories = [...groups]
     .sort((a, b) => a.order - b.order)
@@ -77,7 +82,8 @@ export function buildEmojiIndex(
       unicode: source.unicode,
       label: source.label,
       shortcodes: names,
-      searchText: [source.label, ...(source.tags ?? []), ...names].map(normalizeSearch),
+      searchText: [source.label, ...(source.tags ?? []), ...names, ...(otherWords.get(source.hexcode) ?? [])].map(normalizeSearch),
+      otherLabel: normalizeSearch(otherWords.get(source.hexcode)?.[0] ?? ''),
     });
   }
 
@@ -98,10 +104,10 @@ export function buildEmojiIndex(
       for (const emoji of all) {
         const [label] = emoji.searchText;
         const codes = emoji.shortcodes.map(normalizeSearch);
-        if (label === wanted) ranked[0].push(emoji);
+        if (label === wanted || emoji.otherLabel === wanted) ranked[0].push(emoji);
         else if (codes.includes(wanted)) ranked[1].push(emoji);
         else if (emoji.searchText.includes(wanted)) ranked[2].push(emoji);
-        else if (label.startsWith(wanted)) ranked[3].push(emoji);
+        else if (label.startsWith(wanted) || (emoji.otherLabel !== '' && emoji.otherLabel.startsWith(wanted))) ranked[3].push(emoji);
         else if (emoji.searchText.some((text) => text.includes(wanted))) ranked[4].push(emoji);
       }
       return ranked.flat().slice(0, MAX_RESULTS);

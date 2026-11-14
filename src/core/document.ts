@@ -1,5 +1,6 @@
 // Le « document » : la source de vérité unique, indépendante de l'interface.
 import { ESC } from './characters';
+import { RuleError } from './reasons';
 import { linkKeepMask, sameLink, type LinkPiece, type LinkTarget } from './links';
 
 export { link, type LinkTarget } from './links';
@@ -42,10 +43,21 @@ export type MentionKind = 'user' | 'role' | 'channel';
 
 /** Modèles insérés par les boutons, à compléter dans Discord (§7). */
 export const MENTION_TEMPLATES: Readonly<Record<MentionKind, string>> = {
-  user: 'ID_UTILISATEUR',
+  user: 'ID_USER',
   role: 'ID_ROLE',
+  channel: 'ID_CHANNEL',
+};
+
+/** Anciens modèles (avant l'étape 18) : toujours reconnus, réécrits tels quels (§7). */
+export const LEGACY_MENTION_TEMPLATES: Readonly<Partial<Record<MentionKind, string>>> = {
+  user: 'ID_UTILISATEUR',
   channel: 'ID_SALON',
 };
+
+/** `id` est-il un modèle (actuel ou ancien) de cette sorte de mention ? */
+export function isTemplateId(kind: MentionKind, id: string): boolean {
+  return id === MENTION_TEMPLATES[kind] || id === LEGACY_MENTION_TEMPLATES[kind];
+}
 
 /** Mention d'utilisateur, de rôle ou de salon. `id` : un nombre, ou le modèle de sa sorte. */
 export interface MentionNode {
@@ -177,18 +189,18 @@ function linkField(target: LinkTarget | undefined): { link?: LinkTarget } {
 
 export function text(content: string, marks: readonly Mark[] = [], target?: LinkTarget): TextNode {
   if (content.includes('\n')) {
-    throw new Error('Un texte ne contient pas de saut de ligne : utiliser un paragraphe par ligne.');
+    throw new RuleError('textNewline', 'Un texte ne contient pas de saut de ligne : utiliser un paragraphe par ligne.');
   }
   return { type: 'text', text: content, marks: normalizeMarks(marks), ...linkField(target) };
 }
 
 export function code(content: string, marks: readonly Mark[] = [], target?: LinkTarget): CodeNode {
   if (content === '' || content.includes('\n')) {
-    throw new Error('Un code en ligne ne peut être ni vide ni sur plusieurs lignes.');
+    throw new RuleError('inlineCodeShape', 'Un code en ligne ne peut être ni vide ni sur plusieurs lignes.');
   }
   // Cas non testés dans Discord (§5) : on ne permet pas de les construire.
   if (content.startsWith('`') || content.endsWith('`') || content.includes('``')) {
-    throw new Error('Code en ligne non pris en charge : accent grave en bord ou doublé.');
+    throw new RuleError('inlineCodeBacktick', 'Code en ligne non pris en charge : accent grave en bord ou doublé.');
   }
   // Le code est une entité unique : tous les styles de texte sont permis autour (§5, X8).
   return { type: 'code', code: content, marks: normalizeMarks(marks), ...linkField(target) };
@@ -196,25 +208,26 @@ export function code(content: string, marks: readonly Mark[] = [], target?: Link
 
 export function raw(content: string, marks: readonly Mark[] = []): RawNode {
   if (content === '' || content.includes('\n')) {
-    throw new Error('Un morceau brut ne peut être ni vide ni sur plusieurs lignes.');
+    throw new RuleError('rawShape', 'Un morceau brut ne peut être ni vide ni sur plusieurs lignes.');
   }
   return { type: 'raw', raw: content, marks: normalizeMarks(marks) };
 }
 
 /**
- * Mention (§7). Sans identifiant, c'est le modèle à compléter (`<@ID_UTILISATEUR>`…).
+ * Mention (§7). Sans identifiant, c'est le modèle à compléter (`<@ID_USER>`…) ; un ancien modèle
+ * (`ID_UTILISATEUR`, `ID_SALON`) est gardé tel quel.
  * Les styles sont permis : sans effet visible, sauf le spoiler (M2, M3, convention §1).
  */
 export function mention(kind: MentionKind, id: string = MENTION_TEMPLATES[kind], marks: readonly Mark[] = []): MentionNode {
-  if (!/^[0-9]+$/.test(id) && id !== MENTION_TEMPLATES[kind]) {
-    throw new Error(`Identifiant de mention impossible : des chiffres, ou ${MENTION_TEMPLATES[kind]}.`);
+  if (!/^[0-9]+$/.test(id) && !isTemplateId(kind, id)) {
+    throw new RuleError('mentionId', `Identifiant de mention impossible : des chiffres, ou ${MENTION_TEMPLATES[kind]}.`, { template: MENTION_TEMPLATES[kind] });
   }
   return { type: 'mention', kind, id, marks: normalizeMarks(marks) };
 }
 
 /** La mention est-elle un modèle encore à compléter ? */
 export function isTemplate(node: MentionNode): boolean {
-  return node.id === MENTION_TEMPLATES[node.kind];
+  return isTemplateId(node.kind, node.id);
 }
 
 /** Horodatage (§8) : nombre entier de secondes, positif ou nul ; styles visibles (H3). */
@@ -225,10 +238,10 @@ export function timestamp(
   target?: LinkTarget,
 ): TimestampNode {
   if (!Number.isSafeInteger(seconds) || seconds < 0) {
-    throw new Error('Horodatage impossible : un nombre entier de secondes, positif ou nul.');
+    throw new RuleError('timestampSeconds', 'Horodatage impossible : un nombre entier de secondes, positif ou nul.');
   }
   if (style !== null && !TIMESTAMP_STYLES.includes(style)) {
-    throw new Error(`Style d'horodatage inconnu : ${TIMESTAMP_STYLES.join(', ')}, ou aucun.`);
+    throw new RuleError('timestampStyle', `Style d'horodatage inconnu : ${TIMESTAMP_STYLES.join(', ')}, ou aucun.`, { styles: TIMESTAMP_STYLES.join(', ') });
   }
   return { type: 'timestamp', seconds, style, marks: normalizeMarks(marks), ...linkField(target) };
 }
@@ -319,19 +332,19 @@ export function layoutLine(layout: LineLayout, ...content: InlineNode[]): Paragr
     const { kind, level } = layout.list;
     const start = layout.list.start ?? null;
     if (!Number.isInteger(level) || level < 1 || level > MAX_LIST_LEVEL) {
-      throw new Error(`Niveau de liste impossible : de 1 à ${MAX_LIST_LEVEL}.`);
+      throw new RuleError('listLevel', `Niveau de liste impossible : de 1 à ${MAX_LIST_LEVEL}.`, { max: MAX_LIST_LEVEL });
     }
     if (start !== null && (kind !== 'ordered' || !Number.isInteger(start) || start < 0 || start > MAX_LIST_START)) {
-      throw new Error('Numéro de départ impossible.');
+      throw new RuleError('listStart', 'Numéro de départ impossible.');
     }
     list = { kind, level, start };
   }
   if (list && style.startsWith('heading')) {
-    throw new Error('Un titre ne peut pas être dans une puce (D14).');
+    throw new RuleError('headingInBullet', 'Un titre ne peut pas être dans une puce (D14).');
   }
   // Sous-texte dans une citation : permis (G29). Ligne citée vide : voir `emptyQuoteLine` (G28).
   if ((quote || list || style !== 'normal') && merged.length === 0) {
-    throw new Error('Une citation, une puce, un titre ou un sous-texte ne peut pas être vide.');
+    throw new RuleError('emptyLayout', 'Une citation, une puce, un titre ou un sous-texte ne peut pas être vide.');
   }
   return { type: 'paragraph', quote, list, style, content: merged };
 }
@@ -381,21 +394,21 @@ export function codeBlock(content: string, options: CodeBlockOptions = {}): Code
   const inBullet = options.inBullet ?? false;
   const marks = normalizeMarks(options.marks ?? []);
   if (/[\s`]/u.test(language)) {
-    throw new Error('Le langage est un mot sans espace ni accent grave.');
+    throw new RuleError('codeLanguageWord', 'Le langage est un mot sans espace ni accent grave.');
   }
   const lines = content.split('\n');
   while (lines.length > 0 && lines[0] === '') lines.shift();
   while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
-  if (lines.length === 0) throw new Error('Un bloc de code ne peut pas être vide.');
+  if (lines.length === 0) throw new RuleError('codeBlockEmpty', 'Un bloc de code ne peut pas être vide.');
   // Ligne vide dans un bloc cité : forme non testée (`> ` seul, voir G3).
   if (quote && lines.includes('')) {
-    throw new Error('Ligne vide dans un bloc de code cité : non testé dans Discord.');
+    throw new RuleError('quotedBlockBlankLine', 'Ligne vide dans un bloc de code cité : non testé dans Discord.');
   }
   if (inBullet) {
     // Une ligne vide casse le bloc placé dans une puce (G6, G11).
-    if (lines.includes('')) throw new Error('Pas de ligne vide dans un bloc placé dans une puce (G11).');
-    if (quote) throw new Error('Bloc dans une liste citée : non testé dans Discord.');
-    if (marks.length > 0) throw new Error('Style autour d\'un bloc placé dans une puce : non testé dans Discord.');
+    if (lines.includes('')) throw new RuleError('bulletBlockBlankLine', 'Pas de ligne vide dans un bloc placé dans une puce (G11).');
+    if (quote) throw new RuleError('bulletBlockQuoted', 'Bloc dans une liste citée : non testé dans Discord.');
+    if (marks.length > 0) throw new RuleError('bulletBlockStyled', 'Style autour d\'un bloc placé dans une puce : non testé dans Discord.');
   }
   return { type: 'codeBlock', quote, inBullet, language, code: lines.join('\n'), segments: null, marks };
 }
@@ -421,17 +434,17 @@ function checkColor(color: AnsiColor | null, min: number, name: string): AnsiCol
   if (color === null) return null;
   if (isRgb(color)) {
     if (![color.r, color.g, color.b].every(isByte)) {
-      throw new Error(`${name} au choix impossible : rouge, vert et bleu de 0 à 255.`);
+      throw new RuleError('ansiRgb', `${name} au choix impossible : rouge, vert et bleu de 0 à 255.`, { target: min === 40 ? 'background' : 'color' });
     }
     return { r: color.r, g: color.g, b: color.b };
   }
   if (isIndexed(color)) {
-    if (!isByte(color.index)) throw new Error(`${name} du mode 256 couleurs impossible : de 0 à 255.`);
+    if (!isByte(color.index)) throw new RuleError('ansiIndexed', `${name} du mode 256 couleurs impossible : de 0 à 255.`, { target: min === 40 ? 'background' : 'color' });
     return { index: color.index };
   }
   const inRange = (start: number) => color >= start && color <= start + 7;
   if (!(Number.isInteger(color) && (inRange(min) || inRange(min + 60)))) {
-    throw new Error(`${name} ANSI impossible : code de ${min} à ${min + 7} ou de ${min + 60} à ${min + 67}.`);
+    throw new RuleError('ansiCode', `${name} ANSI impossible : code de ${min} à ${min + 7} ou de ${min + 60} à ${min + 67}.`, { target: min === 40 ? 'background' : 'color', min, max: min + 7, brightMin: min + 60, brightMax: min + 67 });
   }
   return color;
 }
@@ -475,7 +488,7 @@ export function ansiCodes(style: AnsiStyle): string[] {
 
 /** Morceau de texte d'un bloc `ansi`. Le caractère ESC n'y est pas permis : l'appli écrit les codes. */
 export function ansiText(content: string, style: Partial<AnsiStyle> = {}): AnsiSegment {
-  if (content.includes(ESC)) throw new Error('Le caractère ESC ne s\'écrit pas dans le texte.');
+  if (content.includes(ESC)) throw new RuleError('escInText', 'Le caractère ESC ne s\'écrit pas dans le texte.');
   return { text: content, style: ansiStyle(style) };
 }
 
@@ -546,7 +559,7 @@ function ansiTrimBorders(merged: AnsiSegment[]): void {
 export function colorBlock(block: CodeBlock, segments: readonly AnsiSegment[]): CodeBlock {
   // Le langage est insensible à la casse (F2, E14b).
   if (block.language !== '' && block.language.toLowerCase() !== 'ansi') {
-    throw new Error('Un bloc avec un langage ne peut pas être coloré.');
+    throw new RuleError('languageNotColorable', 'Un bloc avec un langage ne peut pas être coloré.');
   }
   return ansiBlock(segments, { marks: block.marks, quote: block.quote, inBullet: block.inBullet });
 }
@@ -571,18 +584,18 @@ export function createDocument(...blocks: Block[]): DiscordDocument {
   checkBlocksInBullets(blocks);
   blocks.forEach((_, i) => {
     const problem = subtextBulletProblem(blocks, i) ?? emptyQuoteLineProblem(blocks, i);
-    if (problem) throw new Error(problem);
+    if (problem) throw problem;
   });
   const positions = analyzeLists(blocks);
   const checked = blocks.map((block, i) => {
     const position = positions[i];
     if (position === null || block.type !== 'paragraph' || !block.list) return block;
-    if (position === 'too-deep') throw new Error('Sous-niveau de liste sans niveau parent.');
+    if (position === 'too-deep') throw new RuleError('listTooDeep', 'Sous-niveau de liste sans niveau parent.');
     if (block.list.kind !== position.kind) {
-      throw new Error('À un même niveau, tous les éléments ont le type du premier (D3).');
+      throw new RuleError('listKindMismatch', 'À un même niveau, tous les éléments ont le type du premier (D3).');
     }
     if (!position.first && block.list.start !== null) {
-      throw new Error('Seul le premier élément numéroté porte un numéro de départ (G2).');
+      throw new RuleError('listStartNotFirst', 'Seul le premier élément numéroté porte un numéro de départ (G2).');
     }
     if (position.first && block.list.kind === 'ordered' && block.list.start === null) {
       return { ...block, list: { ...block.list, start: 1 } };
@@ -604,12 +617,12 @@ export function listLevelBefore(blocks: readonly Block[], index: number): number
  * Ce qui suit est libre : la liste continue (E14e, E14f) ou s'arrête (E14g).
  * Non testé : deux blocs de suite, sous un élément numéroté, dans une liste citée.
  */
-export function blockInBulletProblem(blocks: readonly Block[], index: number): string | null {
+export function blockInBulletProblem(blocks: readonly Block[], index: number): RuleError | null {
   const previous = blocks[index - 1];
   const position = analyzeLists(blocks)[index - 1];
   const afterBullet = previous?.type === 'paragraph' && !previous.quote && previous.list !== null
     && position !== null && position !== undefined && position !== 'too-deep' && position.kind === 'bullet';
-  return afterBullet ? null : 'Un bloc placé dans une puce suit une puce, pas un élément numéroté (D13).';
+  return afterBullet ? null : new RuleError('bulletBlockAfterNumbered', 'Un bloc placé dans une puce suit une puce, pas un élément numéroté (D13).');
 }
 
 /** Ligne vide ordinaire (sans citation). Une ligne citée vide (`> `, G28) n'en est pas une. */
@@ -627,13 +640,13 @@ export function isEmptyQuoteLine(block: Block | undefined): boolean {
  * Une ligne citée vide s'affiche vide en première ligne (G28) ou au milieu (G30) d'une citation,
  * si du texte cité la suit. Plusieurs de suite : généralisé. En dernière ligne : non retenu.
  */
-export function emptyQuoteLineProblem(blocks: readonly Block[], index: number): string | null {
+export function emptyQuoteLineProblem(blocks: readonly Block[], index: number): RuleError | null {
   if (!isEmptyQuoteLine(blocks[index])) return null;
   let next = index + 1;
   while (isEmptyQuoteLine(blocks[next])) next++;
   return blocks[next]?.quote
     ? null
-    : 'Une ligne vide dans une citation doit être suivie de texte cité (G28, G30).';
+    : new RuleError('emptyQuoteLineAlone', 'Une ligne vide dans une citation doit être suivie de texte cité (G28, G30).');
 }
 
 /** Bloc qui porte un style hors du texte d'une puce : ligne sans puce stylée, bloc de code entouré d'un style. */
@@ -647,15 +660,15 @@ export function isStyledOutsideBullet(block: Block): boolean {
  * X7 (G12 à G27, §3) : Discord n'applique pas le sous-texte dans une puce si une ligne stylée la
  * précède sans ligne vide entre les deux. L'écriture place les styles des puces après le tiret (G14).
  */
-export function subtextBulletProblem(blocks: readonly Block[], index: number): string | null {
+export function subtextBulletProblem(blocks: readonly Block[], index: number): RuleError | null {
   const block = blocks[index];
   if (block?.type !== 'paragraph' || block.list === null || block.style !== 'subtext') return null;
   for (let i = index - 1; i >= 0; i--) {
     const previous = blocks[i];
     if (isBlankLine(previous)) return null; // Ligne vide (G21).
     if (isStyledOutsideBullet(previous)) {
-      return 'Discord n\'applique pas le sous-texte dans une puce placée sous une ligne stylée : '
-        + 'ajoutez une ligne vide au-dessus de la liste (X7).';
+      return new RuleError('subtextBulletBelowStyled', 'Discord n\'applique pas le sous-texte dans une puce placée sous une ligne stylée : '
+        + 'ajoutez une ligne vide au-dessus de la liste (X7).');
     }
   }
   return null;
@@ -665,7 +678,7 @@ function checkBlocksInBullets(blocks: readonly Block[]): void {
   blocks.forEach((block, i) => {
     if (block.type !== 'codeBlock' || !block.inBullet) return;
     const problem = blockInBulletProblem(blocks, i);
-    if (problem) throw new Error(problem);
+    if (problem) throw problem;
   });
 }
 

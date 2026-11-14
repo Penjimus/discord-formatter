@@ -1,6 +1,7 @@
 // Validation d'un document (docs/discord-rules.md §3, §5, §6, §10).
 // Les règles ne sont écrites qu'une fois, dans les constructeurs de document.ts : on reconstruit
 // chaque élément avec eux, et toute erreur levée est un problème.
+import { RuleError, reasonOf, type ReasonCode, type ReasonParams } from './reasons';
 import {
   ansiBlock,
   code,
@@ -25,13 +26,16 @@ import {
 export interface Problem {
   readonly block: number | null;
   readonly message: string;
+  /** Nom de la raison, pour l'interface (`null` : cas imprévu). */
+  readonly code: ReasonCode | null;
+  readonly params: ReasonParams;
 }
 
 /** Adresse vérifiée à nouveau (elle doit déjà être sous sa forme écrite). */
 function rebuildLink(target: LinkTarget | undefined): LinkTarget | undefined {
   if (!target) return undefined;
   const rebuilt = link(target.url, target.noPreview);
-  if (rebuilt.url !== target.url) throw new Error('Adresse de lien mal écrite (espace ou parenthèse seule).');
+  if (rebuilt.url !== target.url) throw new RuleError('linkMalformed', 'Adresse de lien mal écrite (espace ou parenthèse seule).');
   return rebuilt;
 }
 
@@ -56,7 +60,7 @@ function checkLinks(original: readonly InlineNode[], rebuilt: readonly InlineNod
   const flatten = (nodes: readonly InlineNode[]) => nodes.flatMap((node) =>
     node.type === 'text' ? [...node.text].map(() => linkOf(node)) : [linkOf(node)]);
   if (JSON.stringify(flatten(original)) !== JSON.stringify(flatten(rebuilt))) {
-    throw new Error('Un lien contient ce qui ne peut pas être dans son texte (émoji, mention, « [ » seul, L5, L11).');
+    throw new RuleError('linkContent', 'Un lien contient ce qui ne peut pas être dans son texte (émoji, mention, « [ » seul, L5, L11).');
   }
 }
 
@@ -72,16 +76,16 @@ function rebuildBlock(block: Block): Block {
   if (block.segments === null) return codeBlock(block.code, { ...options, language: block.language });
   // Bloc coloré : toujours un bloc `ansi` (§5, « langage et couleur »).
   if (block.language.toLowerCase() !== 'ansi') {
-    throw new Error('Un bloc avec un langage ne peut pas être coloré.');
+    throw new RuleError('languageNotColorable', 'Un bloc avec un langage ne peut pas être coloré.');
   }
   if (block.segments.map((segment) => segment.text).join('') !== block.code) {
-    throw new Error('Le texte du bloc coloré ne correspond pas à ses morceaux.');
+    throw new RuleError('coloredBlockMismatch', 'Le texte du bloc coloré ne correspond pas à ses morceaux.');
   }
   return ansiBlock(block.segments, options);
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+function problemOf(block: number | null, error: unknown): Problem {
+  return { block, message: error instanceof Error ? error.message : String(error), ...reasonOf(error) };
 }
 
 /** Liste des problèmes du document : vide s'il est valide. */
@@ -91,14 +95,14 @@ export function validate(message: DiscordDocument): Problem[] {
     try {
       rebuildBlock(block);
     } catch (error) {
-      problems.push({ block: index, message: errorMessage(error) });
+      problems.push(problemOf(index, error));
     }
   });
   // Règles entre blocs : listes (D3, G2, niveaux) et blocs placés dans une puce (D13).
   try {
     createDocument(...message.blocks);
   } catch (error) {
-    problems.push({ block: null, message: errorMessage(error) });
+    problems.push(problemOf(null, error));
   }
   return problems;
 }

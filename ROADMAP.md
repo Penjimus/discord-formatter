@@ -282,7 +282,7 @@ Choix faits : aperçu sous les deux panneaux, sur toute la largeur (panneaux un 
 
 Mêmes règles que la partie 3 (une étape = une session, plan d'abord, scénarios écrits dans `SPEC.md` §6 au début de l'étape, tests, validation, commit).
 
-### [ ] Étape 18 : Interface en anglais (français toujours disponible)
+### [x] Étape 18 : Interface en anglais (français toujours disponible)
 
 **Objectif** : utiliser l'appli en anglais ou en français, au choix.
 
@@ -582,6 +582,15 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 17 | Étape validée par l'utilisateur (aperçu comparé à Discord, messages découpés réductibles) | — |
 | 2026-11-14 | — | Partie 4 : interface en anglais avec le français toujours disponible (étape 18), puis mise en ligne sur GitHub Pages (étape 19), dépôt rendu public par l'utilisateur après l'étape 18. La mise en ligne quitte « Toujours hors périmètre » ; `SPEC.md` §7 et §9 mis à jour | Choix de l'utilisateur |
 | 2026-11-14 | — | Contenu des étapes 18 et 19 (questions à trancher, vérification de ce qui devient public avant d'ouvrir le dépôt) | Proposé par Claude ; à valider étape par étape |
+| 2026-11-14 | 18 | Langue au premier lancement : celle du navigateur (français si `fr…`, anglais sinon), puis choix gardé dans le navigateur (1A) ; horodatages dans la langue de l'interface (3A) ; recherche d'émojis dans les deux langues, noms affichés dans celle de l'interface (4B) ; un guide par langue (5A) ; textes écrits par l'appli, sans bibliothèque (6A) | Choix de l'utilisateur |
+| 2026-11-14 | 18 | Modèles de mention en anglais dans les deux langues : `ID_USER`, `ID_ROLE`, `ID_CHANNEL` (2B) ; anciens `ID_UTILISATEUR`, `ID_SALON` toujours lus et réécrits tels quels, avec l'avertissement. Test I1 remplacé, test « l'avertissement disparaît » ajusté (mot remplacé) | Choix et accord de l'utilisateur ; garder les anciens tels quels décidé par Claude (aucun texte existant modifié) |
+| 2026-11-14 | 18 | Raisons de grisage et de refus : un nom par raison dans le cœur (`src/core/reasons.ts`), texte dans chaque langue dans `src/ui/i18n/` ; message français du cœur inchangé (option A) | Choix de l'utilisateur |
+| 2026-11-14 | 18 | Bouton « FR \| EN » en haut à droite de l'en-tête, même aspect que 2000 / 4000 ; chaque bouton nommé dans sa langue (« Interface en français », « Interface in English ») | Décidé par Claude |
+| 2026-11-14 | 18 | Suivent aussi la langue : format des nombres (« 2 000 » / « 2,000 »), heure de l'aperçu, vérification d'orthographe de l'éditeur de gauche, langue de la page | Décidé par Claude |
+| 2026-11-14 | 18 | Anglais : formes de l'anglais américain pour l'aperçu des horodatages (À tester, §8) ; « Ctrl+Shift+S », « H1 H2 H3 », bouton « Save » dans les fenêtres de modification | Décidé par Claude |
+| 2026-11-14 | 18 | Propositions @ # : « ro », « util », « sal » (français) et « role », « us », « chan » (anglais) marchent dans les deux langues | Décidé par Claude, comme la recherche d'émojis (4B) |
+| 2026-11-14 | 18 | Noms des couleurs ANSI retirés de `ansiPalette.ts`, placés dans les textes ; pastilles de l'éditeur redessinées au changement de langue | Un seul endroit pour les textes (ROADMAP) |
+| 2026-11-14 | 18 | Étape validée par l'utilisateur (passage FR ↔ EN dans toute l'appli, texte de droite identique, langue gardée, guides) | — |
 
 ---
 

@@ -1,13 +1,25 @@
 // Panneau droit : le texte Discord brut (CodeMirror 6), avec le bouton « Copier ».
 import { useEffect, useRef, useState } from 'react';
-import { Annotation, EditorState } from '@codemirror/state';
+import { Annotation, Compartment, EditorState } from '@codemirror/state';
 import { EditorView, highlightSpecialChars, keymap, placeholder } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { copyText } from './clipboard';
 import { textChange } from './textChange';
+import { currentTexts, onLanguageChange, useTexts } from './i18n/language';
 
 /** Marque les mises à jour venues de la gauche : le panneau n'y réagit pas (pas de boucle, S13). */
 const fromOutside = Annotation.define<boolean>();
+
+/** Textes de l'éditeur qui suivent la langue de l'interface (S36). */
+const languageTexts = new Compartment();
+
+function languageExtensions() {
+  const t = currentTexts().textPanel;
+  return [
+    placeholder(t.placeholder),
+    EditorView.contentAttributes.of({ 'aria-label': t.ariaLabel, spellcheck: 'false' }),
+  ];
+}
 
 /** Commande donnée par l'application au panneau droit. */
 export interface DiscordTextHandle {
@@ -64,8 +76,7 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice,
           // Montre les caractères invisibles (ESC, U+200B) sous forme de point rouge.
           highlightSpecialChars(),
           EditorView.lineWrapping,
-          placeholder('Collez ou écrivez ici un message Discord…'),
-          EditorView.contentAttributes.of({ 'aria-label': 'Message Discord (texte brut)', spellcheck: 'false' }),
+          languageTexts.of(languageExtensions()),
           EditorView.updateListener.of((update) => {
             if (!update.docChanged) return;
             if (update.transactions.some((tr) => tr.annotation(fromOutside))) return;
@@ -75,6 +86,8 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice,
       }),
     });
     viewRef.current = view;
+    const stopListening = onLanguageChange(() =>
+      view.dispatch({ effects: languageTexts.reconfigure(languageExtensions()) }));
     handleRef.current = {
       setText(text) {
         const change = textChange(view.state.doc.toString(), text);
@@ -82,6 +95,7 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice,
       },
     };
     return () => {
+      stopListening();
       handleRef.current = null;
       viewRef.current = null;
       view.destroy();
@@ -96,7 +110,8 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice,
     window.setTimeout(() => setCopyState('idle'), 2000);
   }
 
-  const copyLabel = copyState === 'done' ? 'Copié !' : copyState === 'failed' ? 'Copie impossible' : 'Copier';
+  const t = useTexts().textPanel;
+  const copyLabel = copyState === 'done' ? t.copied : copyState === 'failed' ? t.copyFailed : t.copy;
 
   return (
     <section className={`panel${collapsed ? ' is-collapsed' : ''}`}>
@@ -104,7 +119,7 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice,
         aria-expanded={onHeaderClick ? !collapsed : undefined}>
         <h2>
           {onHeaderClick && <span className="toggle-arrow" aria-hidden="true">{collapsed ? '▸' : '▾'}</span>}
-          {onHeaderClick ? 'Message complet' : 'Message Discord'}
+          {onHeaderClick ? t.fullMessage : t.discordMessage}
         </h2>
         <button type="button" className="copy-button" onClick={copy}>{copyLabel}</button>
       </header>

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { linkAt, type EditorLink } from './editorCommands';
+import { useTexts } from './i18n/language';
 
 interface Props {
   editor: Editor;
@@ -18,6 +19,7 @@ interface Shown {
 const HIDE_DELAY = 300;
 
 export function LinkBubble({ editor, onEdit }: Props) {
+  const t = useTexts().linkBubble;
   const [shown, setShown] = useState<Shown | null>(null);
   const hideTimer = useRef<number | undefined>(undefined);
 
@@ -71,13 +73,13 @@ export function LinkBubble({ editor, onEdit }: Props) {
     <div
       className="link-bubble"
       role="dialog"
-      aria-label="Lien"
+      aria-label={t.ariaLabel}
       style={{ left: shown.left, top: shown.top }}
       onMouseEnter={cancelHide}
       onMouseLeave={hideSoon}
     >
       <span className="link-bubble-url" title={current.url}>{current.url}</span>
-      {current.noPreview && <span className="link-bubble-note">sans aperçu</span>}
+      {current.noPreview && <span className="link-bubble-note">{t.noPreview}</span>}
       <button
         type="button"
         className="style-button"
@@ -87,7 +89,7 @@ export function LinkBubble({ editor, onEdit }: Props) {
           onEdit(current);
         }}
       >
-        Modifier
+        {t.edit}
       </button>
       <button
         type="button"
@@ -95,7 +97,7 @@ export function LinkBubble({ editor, onEdit }: Props) {
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => window.open(current.url, '_blank', 'noopener,noreferrer')}
       >
-        Ouvrir
+        {t.open}
       </button>
     </div>
   );

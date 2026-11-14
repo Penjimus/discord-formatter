@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import compact from 'emojibase-data/fr/compact.json';
 import github from 'emojibase-data/en/shortcodes/github.json';
 import messages from 'emojibase-data/fr/messages.json';
+import enCompact from 'emojibase-data/en/compact.json';
+import enMessages from 'emojibase-data/en/messages.json';
 import { buildEmojiIndex, type EmojiSource } from '../../src/core/emojiIndex';
 
 const index = buildEmojiIndex(compact as unknown as EmojiSource[], github, messages.groups);
@@ -52,5 +54,23 @@ describe('Catégories', () => {
     const star = index.categories.flatMap((category) => category.emojis).find((emoji) => emoji.unicode === '⭐');
     expect(star?.label).toBe('étoile');
     expect(star?.shortcodes).toEqual(['star']);
+  });
+});
+
+describe('Étape 18 : noms dans la langue de l\'interface, recherche dans les deux langues (S39)', () => {
+  const fr = compact as unknown as EmojiSource[];
+  const en = enCompact as unknown as EmojiSource[];
+  const english = buildEmojiIndex(en, github, enMessages.groups, fr);
+  const french = buildEmojiIndex(fr, github, messages.groups, en);
+  const find = (emojiIndex: typeof index, unicode: string) =>
+    emojiIndex.categories.flatMap((category) => category.emojis).find((emoji) => emoji.unicode === unicode);
+
+  it('noms et catégories en anglais', () => {
+    expect(find(english, '⭐')?.label).toBe('star');
+    expect(english.categories[0].name).toBe('smileys & emotion');
+  });
+  it('recherche en français dans l\'index anglais, et l\'inverse', () => {
+    expect(english.search('étoile')[0]?.unicode).toBe('⭐');
+    expect(french.search('dog').map((emoji) => emoji.unicode)).toContain('🐕');
   });
 });

@@ -12,6 +12,7 @@ import { LinkDialog, type LinkDialogTarget } from './LinkDialog';
 import { MentionMenu } from './MentionMenu';
 import { TimestampDialog, type TimestampTarget } from './TimestampDialog';
 import { Toolbar } from './Toolbar';
+import { currentLanguage, currentTexts, useLanguage, useTexts } from './i18n/language';
 
 /** Commande donnée par l'application au panneau gauche. */
 export interface VisualHandle {
@@ -71,7 +72,7 @@ export function VisualPanel({ initialDocument, onUserChange, handleRef }: Props)
     extensions: EDITOR_EXTENSIONS,
     content: documentToEditor(initialDocument),
     editorProps: {
-      attributes: { 'aria-label': 'Éditeur visuel', spellcheck: 'true', lang: 'fr' },
+      attributes: { 'aria-label': currentTexts().editor.ariaLabel, spellcheck: 'true', lang: currentLanguage() },
       // Clic sur un horodatage : le calendrier se rouvre pour le modifier (S8c).
       handleClickOn(_view, _pos, node, nodePos, _event, direct) {
         if (!direct || node.type.name !== 'timestamp') return false;
@@ -86,6 +87,14 @@ export function VisualPanel({ initialDocument, onUserChange, handleRef }: Props)
     onUpdate: ({ editor: current }) => onUserChange(current.getJSON() as EditorNode),
   });
 
+  // Langue changée : nom de l'éditeur et langue de la vérification d'orthographe (S36).
+  const texts = useTexts();
+  const language = useLanguage();
+  useEffect(() => {
+    editor.view.dom.setAttribute('aria-label', texts.editor.ariaLabel);
+    editor.view.dom.setAttribute('lang', language);
+  }, [editor, texts, language]);
+
   // Donne à l'application le moyen de redessiner la gauche (l'éditeur peut être recréé).
   useEffect(() => {
     handleRef.current = { showDocument: (message) => showDocument(editor, message) };
@@ -97,7 +106,7 @@ export function VisualPanel({ initialDocument, onUserChange, handleRef }: Props)
   return (
     <section className="panel">
       <header className="panel-header">
-        <h2>Éditeur</h2>
+        <h2>{texts.editor.title}</h2>
       </header>
       <Toolbar
         editor={editor}

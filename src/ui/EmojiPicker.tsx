@@ -1,10 +1,11 @@
-// Sélecteur d'émojis standards (S8b) : recherche par nom (français ou code Discord), catégories, insertion.
+// Sélecteur d'émojis standards (S8b, S39) : recherche par nom (français, anglais ou code Discord), catégories, insertion.
 import { useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import type { Emoji, EmojiIndex } from '../core/emojiIndex';
 import type { OptionState } from '../core/compatibility';
 import { insertEmoji } from './editorCommands';
 import { loadEmojiIndex } from './emojiLibrary';
+import { greyedTitle, useLanguage, useTexts } from './i18n/language';
 
 /** Largeur de la fenêtre, en pixels (la même que dans styles.css). */
 const PANEL_WIDTH = 340;
@@ -15,6 +16,9 @@ function emojiTitle(emoji: Emoji): string {
 }
 
 export function EmojiPicker({ editor, state }: { editor: Editor; state: OptionState | undefined }) {
+  const texts = useTexts();
+  const t = texts.emoji;
+  const language = useLanguage();
   const enabled = state?.enabled ?? false;
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState<EmojiIndex | null>(null);
@@ -24,11 +28,13 @@ export function EmojiPicker({ editor, state }: { editor: Editor; state: OptionSt
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // Les émojis ne sont chargés qu'à la première ouverture.
+  // Les émojis ne sont chargés qu'à la première ouverture ; noms dans la langue de l'interface (S39).
   useEffect(() => {
-    if (!open || index) return;
-    loadEmojiIndex().then(setIndex, () => setFailed(true));
-  }, [open, index]);
+    if (!open) return;
+    let current = true;
+    loadEmojiIndex(language).then((loaded) => { if (current) setIndex(loaded); }, () => setFailed(true));
+    return () => { current = false; };
+  }, [open, language]);
 
   // Un clic ailleurs ou la touche Échap ferme le sélecteur.
   useEffect(() => {
@@ -63,7 +69,7 @@ export function EmojiPicker({ editor, state }: { editor: Editor; state: OptionSt
         type="button"
         className={`style-button${open ? ' is-active' : ''}`}
         disabled={!enabled}
-        title={enabled ? 'Insérer un émoji' : `Émoji : impossible ici. ${state?.reason ?? ''}`}
+        title={enabled ? t.title : greyedTitle(texts, t.name, state)}
         aria-expanded={open}
         onMouseDown={(event) => event.preventDefault()}
         onClick={(event) => {
@@ -73,15 +79,15 @@ export function EmojiPicker({ editor, state }: { editor: Editor; state: OptionSt
           setOpen((value) => !value);
         }}
       >
-        😀 Émoji
+        {t.button}
       </button>
       {open && (
-        <div className="emoji-panel" role="dialog" aria-label="Choisir un émoji" style={position}>
+        <div className="emoji-panel" role="dialog" aria-label={t.dialog} style={position}>
           <input
             type="search"
             className="emoji-search"
-            placeholder="Rechercher (étoile, star…)"
-            aria-label="Rechercher un émoji"
+            placeholder={t.search}
+            aria-label={t.searchLabel}
             value={query}
             autoFocus
             onChange={(event) => setQuery(event.target.value)}
@@ -93,7 +99,7 @@ export function EmojiPicker({ editor, state }: { editor: Editor; state: OptionSt
             }}
           />
           {index && !query.trim() && (
-            <div className="emoji-tabs" role="tablist" aria-label="Catégories">
+            <div className="emoji-tabs" role="tablist" aria-label={t.categories}>
               {index.categories.map((item, position) => (
                 <button
                   key={item.key}
@@ -110,9 +116,9 @@ export function EmojiPicker({ editor, state }: { editor: Editor; state: OptionSt
             </div>
           )}
           <div className="emoji-caption">
-            {failed ? 'Chargement des émojis impossible.'
-              : !index ? 'Chargement des émojis…'
-                : query.trim() ? `${shown.length} résultat${shown.length > 1 ? 's' : ''}`
+            {failed ? t.loadFailed
+              : !index ? t.loading
+                : query.trim() ? t.results(shown.length)
                   : index.categories[category]?.name}
           </div>
           <div className="emoji-grid">

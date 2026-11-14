@@ -460,11 +460,13 @@ Une mention repose sur un identifiant numérique, que l'appli ne peut pas conna�
 
 | Bouton | Modèle inséré | Syntaxe Discord finale | Statut de la syntaxe |
 |---|---|---|---|
-| Mention d'utilisateur | `<@ID_UTILISATEUR>` | `<@123456789012345678>` | Documenté |
+| Mention d'utilisateur | `<@ID_USER>` | `<@123456789012345678>` | Documenté |
 | Mention de rôle | `<@&ID_ROLE>` | `<@&123456789012345678>` | Documenté |
-| Lien vers un salon | `<#ID_SALON>` | `<#123456789012345678>` | Testé (I2, pour le salon) |
+| Lien vers un salon | `<#ID_CHANNEL>` | `<#123456789012345678>` | Testé (I2, pour le salon) |
 
-L'avertissement se déclenche dès que le texte contient `ID_UTILISATEUR`, `ID_ROLE` ou `ID_SALON`, et disparaît quand plus aucun ne subsiste.
+Les modèles sont en anglais quelle que soit la langue de l'interface (étape 18) : le texte produit ne dépend pas de la langue. Les anciens modèles `ID_UTILISATEUR` et `ID_SALON` (écrits avant l'étape 18) restent reconnus : lus comme des mentions à compléter et réécrits tels quels.
+
+L'avertissement se déclenche dès que le texte contient `ID_USER`, `ID_ROLE`, `ID_CHANNEL` (ou un ancien modèle `ID_UTILISATEUR`, `ID_SALON`), et disparaît quand plus aucun ne subsiste.
 
 Pour obtenir un identifiant dans Discord : Paramètres utilisateur > Avancés > activer le « Mode développeur », puis clic droit > Copier l'identifiant. L'utilisateur peut aussi, dans Discord, mentionner le salon directement à la place du modèle.
 
@@ -480,7 +482,7 @@ Pour obtenir un identifiant dans Discord : Paramètres utilisateur > Avancés > 
 | Mention dans un sous-texte (`-#`) : elle fonctionne | Testé (M7) |
 
 *Convention de l'appli* (étape 5) :
-- **Écriture** : `<@ID>`, `<@&ID>`, `<#ID>`, où `ID` est un nombre (chiffres seulement) ou le modèle `ID_UTILISATEUR`, `ID_ROLE`, `ID_SALON`. Les styles autour d'une mention sont écrits tels quels (convention de la section 1).
+- **Écriture** : `<@ID>`, `<@&ID>`, `<#ID>`, où `ID` est un nombre (chiffres seulement) ou le modèle de sa sorte : `ID_USER`, `ID_ROLE`, `ID_CHANNEL` (ou l'ancien `ID_UTILISATEUR`, `ID_SALON`, gardé tel quel). Les styles autour d'une mention sont écrits tels quels (convention de la section 1).
 - **Lecture** : seules ces formes sont lues comme des mentions. Toute autre forme (`<@!123>`, `<#ID_SALON_REEL>`, `<@ abc>`…) reste en texte brut, réécrite telle quelle (S12).
 - La syntaxe des mentions d'utilisateur et de rôle reste « Documenté » : codée sans test supplémentaire, à la demande de l'auteur.
 
@@ -531,6 +533,8 @@ Les lettres sont sensibles à la casse (`t` et `T` sont différents).
 - Un horodatage en millisecondes collé dans le message est lu comme le lit Discord, en secondes (date absurde, H2) : l'appli ne le corrige pas, pour ne pas changer le rendu.
 
 *Convention de l'appli* (étape 10) : à gauche, l'horodatage est montré comme dans la colonne « Exemple » ci-dessus, dans le fuseau horaire de l'ordinateur. Pour `R`, les seuils de passage d'une unité à l'autre (secondes, minutes, heures, jours, mois, ans) sont ceux de l'appli : ceux de Discord sont À tester, l'aperçu peut donc différer légèrement.
+
+*Convention de l'appli* (étape 18) : avec l'interface en anglais, l'aperçu suit les formes habituelles de l'anglais américain (`t` 1:00 AM, `d` 1/1/2025, `D` January 1, 2025, `F` Wednesday, January 1, 2025 1:00 AM, `R` in 2 months). Affichage anglais de Discord : À tester ; l'aperçu peut différer. Le texte produit (`<t:…>`) ne dépend pas de la langue.
 
 ---
 

@@ -1,5 +1,6 @@
 // Liens masqués `[texte](adresse)` (docs/discord-rules.md §4, série L du cahier).
 // Ce fichier n'importe rien de document.ts : document.ts s'appuie sur lui.
+import { RuleError } from './reasons';
 
 /** Adresse d'un lien, et lien sans aperçu (`[texte](<adresse>)`, L8b). */
 export interface LinkTarget {
@@ -37,11 +38,11 @@ export function link(url: string, noPreview = false): LinkTarget {
   const trimmed = url.trim();
   const protocol = LINK_PROTOCOLS.find((start) => trimmed.startsWith(start));
   if (!protocol || trimmed.length === protocol.length) {
-    throw new Error(`Adresse impossible : elle doit commencer par ${LINK_PROTOCOLS.join(', ')} (L7).`);
+    throw new RuleError('linkProtocol', `Adresse impossible : elle doit commencer par ${LINK_PROTOCOLS.join(', ')} (L7).`, { protocols: LINK_PROTOCOLS.join(', ') });
   }
   // Caractères non testés dans une adresse : refusés par prudence.
   if (/[<>\\\u0000-\u001f\u007f]/u.test(trimmed)) {
-    throw new Error('Adresse impossible : les caractères < > et \\ ne sont pas permis.');
+    throw new RuleError('linkCharacters', 'Adresse impossible : les caractères < > et \\ ne sont pas permis.');
   }
   return { url: encodeAddress(trimmed), noPreview };
 }

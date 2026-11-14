@@ -10,6 +10,8 @@ import { timestampPreview } from '../core/timestampPreview';
 import { colorToAttr, cssColor } from './ansiPalette';
 import { loadedEmojiIndex, onEmojiIndexLoaded } from './emojiLibrary';
 import { highlightRanges, isHighlighted, loadHighlighter } from './syntaxHighlight';
+import { useLanguage, useTexts, type Language } from './i18n/language';
+import type { Texts } from './i18n/fr';
 
 interface Props {
   /** Les messages à afficher : un seul, ou les messages découpés (S34). */
@@ -26,6 +28,8 @@ interface RenderContext {
   readonly revealed: Revealed;
   readonly reveal: (key: string) => void;
   readonly hljs: HLJSApi | null;
+  readonly texts: Texts;
+  readonly language: Language;
 }
 
 /** Balises HTML des styles de texte (le spoiler est traité à part). */
@@ -54,7 +58,7 @@ function Spoiler({ id, context, block = false, children }: {
   const Tag = block ? 'div' : 'span';
   return (
     <Tag className={`dp-spoiler${block ? ' dp-spoiler-block' : ''}${revealed ? ' is-revealed' : ''}`}
-      title={revealed ? undefined : 'Spoiler : cliquer pour révéler'}
+      title={revealed ? undefined : context.texts.preview.spoiler}
       onClick={(event) => {
         if (revealed) return;
         // Un premier clic sur un lien caché le révèle seulement, sans l'ouvrir.
@@ -67,7 +71,7 @@ function Spoiler({ id, context, block = false, children }: {
 }
 
 /** Le contenu d'un morceau, sans ses styles. */
-function nodeContent(node: InlineNode): ReactNode {
+function nodeContent(node: InlineNode, context: RenderContext): ReactNode {
   switch (node.type) {
     case 'text':
       return node.text;
@@ -76,7 +80,7 @@ function nodeContent(node: InlineNode): ReactNode {
     case 'mention':
       return <span className="dp-mention">{MENTION_SIGNS[node.kind]}{node.id}</span>;
     case 'timestamp':
-      return <span className="dp-timestamp">{timestampPreview(node.seconds, node.style)}</span>;
+      return <span className="dp-timestamp">{timestampPreview(node.seconds, node.style, { language: context.language })}</span>;
     case 'raw': {
       // Émoticône ou code `:nom:` : l'émoji, comme Discord ; sinon le texte tel quel (S33).
       const emoji = EMOTICON_EMOJIS[node.raw] ?? loadedEmojiIndex()?.emojiForCode(node.raw) ?? null;
@@ -86,7 +90,7 @@ function nodeContent(node: InlineNode): ReactNode {
 }
 
 function renderNode({ node, spoiler }: PreviewNode, key: number, context: RenderContext): ReactNode {
-  let content = nodeContent(node);
+  let content = nodeContent(node, context);
   // Du plus intérieur au plus extérieur (§2.1).
   for (const mark of [...node.marks].reverse()) {
     if (mark === 'spoiler') continue;
@@ -180,9 +184,11 @@ function renderGroup(group: PreviewGroup, key: number, context: RenderContext) {
  * Heure d'envoi : maintenant. « Aujourd'hui à 14:32 » sur le premier message ; l'heure seule,
  * au survol, sur les suivants (messages envoyés à la suite, comme dans Discord).
  */
-function sendTime(): { full: string; short: string } {
-  const short = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date());
-  return { full: `Aujourd’hui à ${short}`, short };
+function sendTime(texts: Texts): { full: string; short: string } {
+  const short = new Intl.DateTimeFormat(texts.locale, texts.locale === 'fr-FR'
+    ? { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+    : { hour: 'numeric', minute: '2-digit' }).format(new Date());
+  return { full: texts.preview.today(short), short };
 }
 
 /** Un bloc de code avec un langage colorable est-il présent ? (Highlight.js chargé seulement alors.) */
@@ -192,6 +198,9 @@ function needsHighlighter(messages: readonly DiscordDocument[]): boolean {
 }
 
 export function DiscordPreview({ messages, shown, onToggle }: Props) {
+  const texts = useTexts();
+  const t = texts.preview;
+  const language = useLanguage();
   const [revealed, setRevealed] = useState<Revealed>(new Set());
   const [hljs, setHljs] = useState<HLJSApi | null>(null);
   const [, setEmojiVersion] = useState(0);
@@ -206,25 +215,25 @@ export function DiscordPreview({ messages, shown, onToggle }: Props) {
   const reveal = (key: string) => setRevealed((old) => new Set(old).add(key));
   const previews = shown ? messages.map(previewOf) : [];
   const empty = previews.every((groups) => groups.length === 0);
-  const time = sendTime();
+  const time = sendTime(texts);
 
   return (
-    <section className={`discord-preview${shown ? '' : ' is-hidden'}`} aria-label="Aperçu façon Discord">
+    <section className={`discord-preview${shown ? '' : ' is-hidden'}`} aria-label={t.title}>
       <header className="discord-preview-header">
-        <h2>Aperçu façon Discord</h2>
-        {shown && messages.length > 1 && <span className="discord-preview-note">{messages.length} messages</span>}
-        <button type="button" onClick={onToggle}>{shown ? 'Masquer l’aperçu' : 'Afficher l’aperçu'}</button>
+        <h2>{t.title}</h2>
+        {shown && messages.length > 1 && <span className="discord-preview-note">{t.messages(messages.length)}</span>}
+        <button type="button" onClick={onToggle}>{shown ? t.hide : t.show}</button>
       </header>
       {shown && (
         <div className="dp-chat">
-          {empty ? <p className="dp-empty">Le message apparaîtra ici.</p> : previews.map((groups, index) => (
+          {empty ? <p className="dp-empty">{t.empty}</p> : previews.map((groups, index) => (
             <article key={index} className={`dp-message${index === 0 ? ' is-first' : ''}`}>
               {index === 0 ? <>
                 <div className="dp-avatar" aria-hidden="true" />
-                <div className="dp-author"><span className="dp-name">Vous</span><span className="dp-time">{time.full}</span></div>
+                <div className="dp-author"><span className="dp-name">{t.author}</span><span className="dp-time">{time.full}</span></div>
               </> : <span className="dp-hover-time" aria-hidden="true">{time.short}</span>}
               <div className="dp-content">
-                {groups.map((group, i) => renderGroup(group, i, { message: index, revealed, reveal, hljs }))}
+                {groups.map((group, i) => renderGroup(group, i, { message: index, revealed, reveal, hljs, texts, language }))}
               </div>
             </article>
           ))}

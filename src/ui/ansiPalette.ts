@@ -2,45 +2,44 @@
 // Palette provisoire (À tester) : elle ne touche que l'affichage, jamais le texte produit.
 import { isIndexed, isRgb, type AnsiColor } from '../core/document';
 
+/** Une couleur prédéfinie ; son nom est dans les textes de l'interface (i18n, `palette`). */
 export interface PaletteEntry {
   readonly code: number;
-  readonly name: string;
   readonly css: string;
 }
 
 /** Couleurs de texte 30 à 37. */
 export const TEXT_COLORS: readonly PaletteEntry[] = [
-  { code: 30, name: 'Gris foncé', css: '#4f545c' },
-  { code: 31, name: 'Rouge', css: '#dc322f' },
-  { code: 32, name: 'Vert', css: '#859900' },
-  { code: 33, name: 'Jaune', css: '#b58900' },
-  { code: 34, name: 'Bleu', css: '#268bd2' },
-  { code: 35, name: 'Rose', css: '#d33682' },
-  { code: 36, name: 'Cyan', css: '#2aa198' },
-  { code: 37, name: 'Blanc', css: '#ffffff' },
+  { code: 30, css: '#4f545c' },
+  { code: 31, css: '#dc322f' },
+  { code: 32, css: '#859900' },
+  { code: 33, css: '#b58900' },
+  { code: 34, css: '#268bd2' },
+  { code: 35, css: '#d33682' },
+  { code: 36, css: '#2aa198' },
+  { code: 37, css: '#ffffff' },
 ];
 
 /** Couleurs de fond 40 à 47. */
 export const BACKGROUND_COLORS: readonly PaletteEntry[] = [
-  { code: 40, name: 'Bleu nuit foncé', css: '#002b36' },
-  { code: 41, name: 'Orange / rouge brique', css: '#cb4b16' },
-  { code: 42, name: 'Gris marbré', css: '#586e75' },
-  { code: 43, name: 'Gris turquoise', css: '#657b83' },
-  { code: 44, name: 'Gris clair', css: '#839496' },
-  { code: 45, name: 'Indigo', css: '#6c71c4' },
-  { code: 46, name: 'Gris très clair', css: '#93a1a1' },
-  { code: 47, name: 'Blanc', css: '#fdf6e3' },
+  { code: 40, css: '#002b36' },
+  { code: 41, css: '#cb4b16' },
+  { code: 42, css: '#586e75' },
+  { code: 43, css: '#657b83' },
+  { code: 44, css: '#839496' },
+  { code: 45, css: '#6c71c4' },
+  { code: 46, css: '#93a1a1' },
+  { code: 47, css: '#fdf6e3' },
 ];
 
 /** Teintes claires (codes 90 à 97 et 100 à 107, E16) : valeurs habituelles des terminaux. */
 const BRIGHT_CSS = ['#808080', '#ff5555', '#55ff55', '#ffff55', '#5555ff', '#ff55ff', '#55ffff', '#ffffff'];
-const BRIGHT_NAMES = ['Gris', 'Rouge clair', 'Vert clair', 'Jaune clair', 'Bleu clair', 'Rose clair', 'Cyan clair', 'Blanc vif'];
 
 /** Couleurs de texte claires 90 à 97 (E16). */
-export const BRIGHT_TEXT_COLORS: readonly PaletteEntry[] = BRIGHT_CSS.map((css, i) => ({ code: 90 + i, name: BRIGHT_NAMES[i], css }));
+export const BRIGHT_TEXT_COLORS: readonly PaletteEntry[] = BRIGHT_CSS.map((css, i) => ({ code: 90 + i, css }));
 
 /** Fonds clairs 100 à 107 (E16). */
-export const BRIGHT_BACKGROUND_COLORS: readonly PaletteEntry[] = BRIGHT_CSS.map((css, i) => ({ code: 100 + i, name: `Fond ${BRIGHT_NAMES[i].toLowerCase()}`, css }));
+export const BRIGHT_BACKGROUND_COLORS: readonly PaletteEntry[] = BRIGHT_CSS.map((css, i) => ({ code: 100 + i, css }));
 
 const hex = (part: number) => part.toString(16).padStart(2, '0');
 

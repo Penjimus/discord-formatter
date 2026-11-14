@@ -111,9 +111,15 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 ### Aperçu façon Discord (étape 17)
 - **S31** — Sous les deux panneaux, sur toute leur largeur, un aperçu montre mon message comme Discord l'affichera sur ordinateur (thème sombre) : une ligne avec un rond coloré, le nom « Vous » et l'heure, puis le contenu mis en forme (styles, titres, sous-texte, listes, citations, blocs de code colorés, couleurs ANSI, liens, mentions, émojis, horodatages). Il est en lecture seule et se met à jour pendant que j'écris, à gauche comme à droite. Les panneaux sont un peu moins hauts que l'écran : on lit le début de l'aperçu sans rien faire, et on fait défiler la page pour le voir en entier. Un bouton le masque ou le réaffiche ; masqué, les panneaux reprennent toute la hauteur.
 - **S32** — L'aperçu est un affichage : il ne modifie jamais le document, le texte de droite, le compteur ni le brouillon.
-- **S33** — Un spoiler est caché dans l'aperçu ; un clic le révèle, comme dans Discord. Un lien s'ouvre dans un nouvel onglet. Une mention s'affiche en pastille avec son modèle (« @ID_UTILISATEUR ») ou son identifiant. Une syntaxe non reconnue s'affiche telle quelle, en texte simple.
+- **S33** — Un spoiler est caché dans l'aperçu ; un clic le révèle, comme dans Discord. Un lien s'ouvre dans un nouvel onglet. Une mention s'affiche en pastille avec son modèle (« @ID_USER ») ou son identifiant. Une syntaxe non reconnue s'affiche telle quelle, en texte simple.
 - **S34** — Mon texte dépasse la limite choisie → l'aperçu montre les messages découpés (S25) l'un sous l'autre, comme envoyés à la suite dans Discord, avec le nom et l'heure sur le premier seulement.
 - **S35** — Mon texte dépasse la limite → les cadres des messages découpés (S25) sont réduits à leur en-tête (numéro, compteur, « Copier », avertissement éventuel). Un clic sur l'en-tête d'un message le déroule et réduit le message complet (seuls son en-tête et le compteur restent) ; les autres messages restent réduits en dessous. Un clic sur l'en-tête du message complet le déroule à nouveau et réduit les messages découpés. Un seul message est déroulé à la fois.
+
+### Interface en anglais (étape 18)
+- **S36** — Un bouton « FR | EN » dans l'en-tête change la langue de toute l'interface d'un clic : barre d'outils, bulles d'aide, fenêtres, propositions @ #, avertissements, compteur, messages découpés, aperçu, mention « brouillon enregistré ». Mon texte, ma limite, le brouillon et l'aperçu ne sont pas touchés ; il ne reste aucun texte de l'autre langue.
+- **S37** — Au tout premier lancement, l'interface est en français si mon navigateur est en français, en anglais sinon. Mon choix de langue est ensuite gardé dans le navigateur, d'une ouverture à l'autre (comme la limite, S29).
+- **S38** — Le texte de droite est exactement le même dans les deux langues. Les modèles de mention sont en anglais dans les deux langues (`<@ID_USER>`, `<@&ID_ROLE>`, `<#ID_CHANNEL>`) ; un texte qui contient encore les anciens modèles (`ID_UTILISATEUR`, `ID_SALON`) les garde tels quels, avec l'avertissement. Les horodatages, à gauche et dans l'aperçu, s'affichent dans la langue de l'interface, comme Discord les affiche dans la langue de chaque lecteur ; les nombres du compteur aussi.
+- **S39** — Le sélecteur d'émojis trouve un émoji par son nom en français comme en anglais, quelle que soit la langue ; il affiche les noms dans la langue de l'interface. Le lien « Guide » de l'en-tête ouvre le guide dans la langue choisie ; chaque guide propose un lien vers l'autre langue.
 
 ## 7. Contraintes techniques
 
@@ -126,7 +132,7 @@ Exprimées en langage simple. Le choix précis des technologies est laissé à C
 - **Une seule structure de données interne** (le « document ») est la source de vérité. Les deux panneaux en sont deux vues : le panneau gauche l'affiche visuellement, le panneau droit le convertit en texte Discord. Aucune conversion directe gauche ↔ droite.
 - Le cœur du formatage (lire un texte Discord, produire un texte Discord, vérifier la validité) est **indépendant de l'interface** et couvert par des tests automatiques tirés de `docs/discord-rules.md`.
 - Le modèle de document doit **permettre le découpage futur en plusieurs messages** (section 9) sans être refait.
-- Interface en **français** ; en anglais aussi à partir de l'étape 18 (§9), le français restant disponible.
+- Interface en **français et en anglais**, au choix (étape 18, S36 à S39). Le texte produit pour Discord ne dépend pas de la langue.
 - Utilisable sur ordinateur en priorité ; le mobile n'est pas un objectif de la première version.
 
 ## 8. Critères d'acceptation globaux

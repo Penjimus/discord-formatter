@@ -8,20 +8,18 @@ import type { MentionKind } from '../core/document';
 import { normalizeSearch } from '../core/emojiIndex';
 import { analysisDocument, insertMention } from './editorCommands';
 import { CODE_MARK } from './editorConvert';
+import { LANGUAGES, TEXTS } from './i18n/language';
 
 export type MentionTrigger = '@' | '#';
 
+/** Une proposition ; son nom est dans les textes de l'interface (`mentionMenu.choices`). */
 export interface MentionChoice {
   kind: MentionKind;
-  label: string;
 }
 
-const CHOICES: Readonly<Record<MentionTrigger, MentionChoice[]>> = {
-  '@': [
-    { kind: 'user', label: 'Utilisateur' },
-    { kind: 'role', label: 'Rôle' },
-  ],
-  '#': [{ kind: 'channel', label: 'Salon' }],
+const CHOICES: Readonly<Record<MentionTrigger, MentionKind[]>> = {
+  '@': ['user', 'role'],
+  '#': ['channel'],
 };
 
 /** Propositions ouvertes : où est le « @ » ou « # », ce qui a été tapé après, la proposition en surbrillance. */
@@ -37,10 +35,16 @@ type Meta = { open: { from: number; trigger: MentionTrigger } } | { close: true 
 
 export const mentionSuggestKey = new PluginKey<SuggestState | null>('mentionSuggest');
 
-/** Propositions dont le nom commence par le texte tapé (sans accents ni majuscules : « role » trouve « Rôle »). */
+/**
+ * Propositions dont le nom, en français ou en anglais, commence par le texte tapé (sans accents ni
+ * majuscules : « role » trouve « Rôle », « sal » et « chan » trouvent le salon).
+ */
 export function matchingChoices(trigger: MentionTrigger, query: string): MentionChoice[] {
   const wanted = normalizeSearch(query);
-  return CHOICES[trigger].filter((choice) => normalizeSearch(choice.label).startsWith(wanted));
+  return CHOICES[trigger]
+    .filter((kind) => LANGUAGES.some((language) =>
+      normalizeSearch(TEXTS[language].mentionMenu.choices[kind]).startsWith(wanted)))
+    .map((kind) => ({ kind }));
 }
 
 /** Une mention est-elle permise au curseur ? (grisage de l'étape 6 : pas dans du code) */

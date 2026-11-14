@@ -14,6 +14,7 @@ import {
   type Paragraph,
 } from './document';
 import { validate } from './validate';
+import { reasonOf, type ReasonCode, type ReasonParams } from './reasons';
 
 /** Options de la barre d'outils. */
 export const TOOLBAR_OPTIONS = [
@@ -52,6 +53,9 @@ export type ToolbarOption = (typeof TOOLBAR_OPTIONS)[number];
 export interface OptionState {
   readonly enabled: boolean;
   readonly reason: string | null;
+  /** Nom de la raison, que l'interface affiche dans sa langue (`null` : permise, ou cas imprévu). */
+  readonly code: ReasonCode | null;
+  readonly params: ReasonParams;
 }
 
 /** Position du curseur : le bloc, et s'il est dans un code en ligne. */
@@ -62,18 +66,18 @@ export interface Position {
 
 type Toolbar = Record<ToolbarOption, OptionState>;
 
-const ALLOWED: OptionState = { enabled: true, reason: null };
+const ALLOWED: OptionState = { enabled: true, reason: null, code: null, params: {} };
 
-function greyed(reason: string): OptionState {
-  return { enabled: false, reason };
+function greyed(code: ReasonCode | null, reason: string, params: ReasonParams = {}): OptionState {
+  return { enabled: false, reason, code, params };
 }
 
 const TEXT_STYLES = ['bold', 'italic', 'underline', 'strike', 'spoiler'] as const;
 const ANSI_OPTIONS = ['ansiColor', 'ansiBackground', 'ansiBold', 'ansiItalic', 'ansiUnderline', 'ansiStrike'] as const;
 
-const NOTHING_IN_CODE = 'Rien n\'est interprété dans un bloc de code (D7, D8).';
-const NOTHING_IN_INLINE_CODE = 'Rien n\'est interprété dans du code en ligne (D6, I2).';
-const ANSI_ONLY_IN_BLOCK = 'Les couleurs ANSI n\'existent que dans un bloc de code ansi (§5, §10).';
+const NOTHING_IN_CODE = greyed('nothingInCode', 'Rien n\'est interprété dans un bloc de code (D7, D8).');
+const NOTHING_IN_INLINE_CODE = greyed('nothingInInlineCode', 'Rien n\'est interprété dans du code en ligne (D6, I2).');
+const ANSI_ONLY_IN_BLOCK = greyed('ansiOnlyInBlock', 'Les couleurs ANSI n\'existent que dans un bloc de code ansi (§5, §10).');
 
 /**
  * Essaie une modification : l'option est permise si le document obtenu est valide.
@@ -82,9 +86,9 @@ const ANSI_ONLY_IN_BLOCK = 'Les couleurs ANSI n\'existent que dans un bloc de co
 function attempt(build: () => readonly Block[]): OptionState {
   try {
     const problems = validate({ blocks: build() });
-    return problems.length === 0 ? ALLOWED : greyed(problems[0].message);
+    return problems.length === 0 ? ALLOWED : greyed(problems[0].code, problems[0].message, problems[0].params);
   } catch (error) {
-    return greyed(error instanceof Error ? error.message : String(error));
+    return greyed(reasonOf(error).code, error instanceof Error ? error.message : String(error), reasonOf(error).params);
   }
 }
 
@@ -168,23 +172,23 @@ function lineToolbar(blocks: readonly Block[], index: number, line: Paragraph, i
   };
 
   const changeLevel = (delta: 1 | -1): OptionState => {
-    if (!line.list) return greyed('Seul un élément de liste change de niveau.');
-    if (delta === -1 && line.list.level === 1) return greyed('L\'élément est déjà au premier niveau.');
+    if (!line.list) return greyed('levelNotList', 'Seul un élément de liste change de niveau.');
+    if (delta === -1 && line.list.level === 1) return greyed('levelAlreadyFirst', 'L\'élément est déjà au premier niveau.');
     const changes = new Map(subtreeIndices(base, index).map((i) => [i, withLevel(base[i], delta)] as const));
     return attempt(() => replaced(base, changes));
   };
 
   const insertCodeBlock = (): OptionState => {
-    if (inInlineCode) return greyed(NOTHING_IN_INLINE_CODE);
-    if (line.style !== 'normal') return greyed('Un bloc de code ne peut pas être dans un titre ou un sous-texte (§10).');
+    if (inInlineCode) return NOTHING_IN_INLINE_CODE;
+    if (line.style !== 'normal') return greyed('codeBlockInHeading', 'Un bloc de code ne peut pas être dans un titre ou un sous-texte (§10).');
     return attempt(() => {
       const block = codeBlock('x', { quote: line.quote, inBullet: line.list !== null });
       return [...base.slice(0, index + 1), block, ...base.slice(index + 1)];
     });
   };
 
-  const insideCode = inInlineCode ? greyed(NOTHING_IN_INLINE_CODE) : ALLOWED;
-  const ansi = greyed(ANSI_ONLY_IN_BLOCK);
+  const insideCode = inInlineCode ? NOTHING_IN_INLINE_CODE : ALLOWED;
+  const ansi = ANSI_ONLY_IN_BLOCK;
   return {
     // Styles permis partout, sauf au-dessus d'une puce en sous-texte (X7) ; dans un code en ligne,
     // ils entourent tout le code (§5, X8).
@@ -200,22 +204,22 @@ function lineToolbar(blocks: readonly Block[], index: number, line: Paragraph, i
     outdent: changeLevel(-1),
     quote: change({ quote: !line.quote }),
     codeBlock: insertCodeBlock(),
-    codeLanguage: greyed('Le langage se choisit dans un bloc de code.'),
+    codeLanguage: greyed('languageOnlyInBlock', 'Le langage se choisit dans un bloc de code.'),
     ...Object.fromEntries(ANSI_OPTIONS.map((option) => [option, ansi])),
     mention: insideCode,
     timestamp: insideCode,
     emoji: ALLOWED,
     // Lien permis dans toute ligne (§10, L4) ; pas dans du code (S19).
     link: insideCode,
-    blankLine: line.quote ? greyed('Une ligne vide ordinaire termine la citation.') : ALLOWED,
+    blankLine: line.quote ? greyed('blankLineEndsQuote', 'Une ligne vide ordinaire termine la citation.') : ALLOWED,
   } as Toolbar;
 }
 
 /** Options dans un bloc de code (S6) ou un bloc `ansi` (S7). */
 function codeBlockToolbar(blocks: readonly Block[], index: number, block: CodeBlock): Toolbar {
-  const nothing = greyed(NOTHING_IN_CODE);
+  const nothing = NOTHING_IN_CODE;
   const colorable = block.language === '' || block.language.toLowerCase() === 'ansi';
-  const ansi = colorable ? ALLOWED : greyed('Un bloc avec un langage ne peut pas être coloré (§5).');
+  const ansi = colorable ? ALLOWED : greyed('languageNotColorable', 'Un bloc avec un langage ne peut pas être coloré (§5).');
   const toggleQuote = attempt(() => {
     const options = { marks: block.marks, quote: !block.quote, inBullet: block.inBullet };
     const moved = block.segments
@@ -224,14 +228,14 @@ function codeBlockToolbar(blocks: readonly Block[], index: number, block: CodeBl
     return replaced(blocks, new Map([[index, moved]]));
   });
   let blankLine = ALLOWED;
-  if (block.inBullet) blankLine = greyed('Une ligne vide casse un bloc placé sous une puce (G11).');
-  else if (block.quote) blankLine = greyed('Ligne vide dans un bloc cité : non testé dans Discord.');
+  if (block.inBullet) blankLine = greyed('bulletBlockBlankLine', 'Une ligne vide casse un bloc placé sous une puce (G11).');
+  else if (block.quote) blankLine = greyed('blankLineQuotedBlock', 'Ligne vide dans un bloc cité : non testé dans Discord.');
 
   const result = Object.fromEntries(TOOLBAR_OPTIONS.map((option) => [option, nothing])) as Toolbar;
   return {
     ...result,
     codeLanguage: block.segments
-      ? greyed('Un bloc coloré est un bloc ansi : retirer les couleurs pour changer de langage (§5).')
+      ? greyed('coloredBlockLanguage', 'Un bloc coloré est un bloc ansi : retirer les couleurs pour changer de langage (§5).')
       : ALLOWED,
     ...Object.fromEntries(ANSI_OPTIONS.map((option) => [option, ansi])),
     quote: toggleQuote,
