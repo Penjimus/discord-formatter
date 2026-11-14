@@ -264,7 +264,7 @@ Mêmes règles que les parties 1 et 2 (une étape = une session, plan d'abord, t
 
 Choix faits (1A, 2A, 3A) : un seul brouillon, enregistré automatiquement (texte de droite tel quel et limite), mention « ✓ Brouillon enregistré » près du compteur. Scénarios S27 à S30 (`SPEC.md` §6). Cœur : `src/core/draft.ts` ; mémoire du navigateur : `src/ui/draftStorage.ts`.
 
-### [ ] Étape 17 : Aperçu façon Discord
+### [x] Étape 17 : Aperçu façon Discord
 
 **Objectif** : voir le message comme Discord l'affichera, avant de le copier.
 
@@ -273,6 +273,8 @@ Choix faits (1A, 2A, 3A) : un seul brouillon, enregistré automatiquement (texte
 - C'est un **affichage** : le document et le texte de droite ne changent pas.
 
 **Validation** : l'utilisateur compare l'aperçu et Discord sur les exemples de `examples/`.
+
+Choix faits : aperçu sous les deux panneaux, sur toute la largeur (panneaux un peu moins hauts, la page défile) ; nom « Vous », rond coloré et heure ; messages découpés affichés l'un sous l'autre. Scénarios S31 à S34 (`SPEC.md` §6). Cœur : `src/core/preview.ts` ; affichage : `src/ui/DiscordPreview.tsx`.
 
 ## Mises à jour possibles plus tard
 
@@ -534,6 +536,13 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 16 | On enregistre le texte de droite tel quel, pas le document (rien n'est perdu, forme du document libre de changer) ; mémoire du navigateur (`localStorage`) ; brouillon relu à l'ouverture comme un texte collé à droite | Décidé par Claude |
 | 2026-11-14 | 16 | Enregistrement 0,5 s après la dernière modification, et tout de suite à la fermeture de la page ; « ✓ Brouillon enregistré » près du compteur, masqué si le navigateur refuse ; brouillon illisible ou mémoire bloquée : texte vide, limite 2000, aucun message (S30) ; historique « Annuler » et position du curseur non gardés | Décidé par Claude |
 | 2026-11-14 | 16 | Étape validée par l'utilisateur (texte et limite retrouvés après fermeture et réouverture de la page) | — |
+| 2026-11-14 | 17 | Aperçu sous les deux panneaux, sur toute la largeur : panneaux un peu moins hauts que l'écran, la page défile pour voir tout l'aperçu (mélange des options proposées) ; nom « Vous », rond coloré, heure (Q2 B) ; aperçu de chaque message découpé (Q3 A). Scénarios S31 à S34 | Choix de l'utilisateur |
+| 2026-11-14 | 17 | Bouton « Masquer l'aperçu » (panneaux à pleine hauteur), aperçu affiché à chaque ouverture, non mémorisé | Décidé par Claude, accepté dans S31 |
+| 2026-11-14 | 17 | Cœur `previewOf` : lignes vides du bord retirées (J5), citations voisines sous une seule barre, numéros et type de liste (G1, D3), morceaux d'un même lien réunis, spoilers voisins (même sur plusieurs lignes) révélés d'un seul clic | Décidé par Claude, d'après les règles existantes |
+| 2026-11-14 | 17 | Affichage : teintes, tailles, polices, puces par niveau (•, ◦, ▪) reproduites à l'œil (écart accepté, comme l'ANSI) ; mention en pastille avec modèle ou identifiant ; `:nom:` et émoticônes en émoji ; syntaxe inconnue en texte ; pas de vignette de lien ; messages découpés sans nom, heure au survol | Décidé par Claude ; apparence, pas règle de formatage |
+| 2026-11-14 | 17 | Cadres des messages découpés réduits à leur en-tête ; un clic en déroule un et réduit le message complet ; un clic sur le message complet revient. Scénario S35 | Demande de l'utilisateur (gagner de la place) |
+| 2026-11-14 | 17 | Un seul message déroulé à la fois ; second clic sur un message déroulé = retour au message complet ; « Copier » et avertissement visibles cadre réduit ; compteur gardé sous le message complet réduit ; titre « Message complet » quand il y a découpage ; texte déroulé qui défile dans son cadre (tous les titres restent visibles) | Décidé par Claude |
+| 2026-11-14 | 17 | Étape validée par l'utilisateur (aperçu comparé à Discord, messages découpés réductibles) | — |
 
 ---
 

@@ -108,6 +108,13 @@ Chaque scénario est un critère de réussite. Les résultats exacts dépendent 
 - **S29** — Je choisis la limite 4000, je ferme et je rouvre la page → la limite est toujours 4000.
 - **S30** — Le navigateur refuse la sauvegarde (mémoire bloquée ou pleine) ou le brouillon est illisible → l'appli fonctionne normalement, en partant d'un texte vide, sans message d'erreur.
 
+### Aperçu façon Discord (étape 17)
+- **S31** — Sous les deux panneaux, sur toute leur largeur, un aperçu montre mon message comme Discord l'affichera sur ordinateur (thème sombre) : une ligne avec un rond coloré, le nom « Vous » et l'heure, puis le contenu mis en forme (styles, titres, sous-texte, listes, citations, blocs de code colorés, couleurs ANSI, liens, mentions, émojis, horodatages). Il est en lecture seule et se met à jour pendant que j'écris, à gauche comme à droite. Les panneaux sont un peu moins hauts que l'écran : on lit le début de l'aperçu sans rien faire, et on fait défiler la page pour le voir en entier. Un bouton le masque ou le réaffiche ; masqué, les panneaux reprennent toute la hauteur.
+- **S32** — L'aperçu est un affichage : il ne modifie jamais le document, le texte de droite, le compteur ni le brouillon.
+- **S33** — Un spoiler est caché dans l'aperçu ; un clic le révèle, comme dans Discord. Un lien s'ouvre dans un nouvel onglet. Une mention s'affiche en pastille avec son modèle (« @ID_UTILISATEUR ») ou son identifiant. Une syntaxe non reconnue s'affiche telle quelle, en texte simple.
+- **S34** — Mon texte dépasse la limite choisie → l'aperçu montre les messages découpés (S25) l'un sous l'autre, comme envoyés à la suite dans Discord, avec le nom et l'heure sur le premier seulement.
+- **S35** — Mon texte dépasse la limite → les cadres des messages découpés (S25) sont réduits à leur en-tête (numéro, compteur, « Copier », avertissement éventuel). Un clic sur l'en-tête d'un message le déroule et réduit le message complet (seuls son en-tête et le compteur restent) ; les autres messages restent réduits en dessous. Un clic sur l'en-tête du message complet le déroule à nouveau et réduit les messages découpés. Un seul message est déroulé à la fois.
+
 ## 7. Contraintes techniques
 
 Exprimées en langage simple. Le choix précis des technologies est laissé à Claude Code, qui doit **proposer 2-3 options avec leurs compromis et une recommandation, puis attendre ma décision**.
@@ -167,6 +174,7 @@ Ces fonctions entrent dans le périmètre, **une étape à la fois**, dans l'ord
 | Limite de caractères | Bouton 2000 / 4000 choisi par l'utilisateur |
 | Dépassement | Écriture libre, barre de progression ; messages découpés affichés en cadres sous le panneau droit (étape 15b) |
 | Brouillon | Étape 16 : un seul, enregistré automatiquement dans le navigateur (texte de droite et limite) ; plusieurs brouillons nommés : évolution possible plus tard |
+| Aperçu façon Discord | Étape 17 : sous les deux panneaux, sur toute la largeur, la page défile ; « Vous », rond coloré et heure ; messages découpés l'un sous l'autre ; bouton pour le masquer |
 
 ### À préciser
 Aucun point ouvert pour l'instant.

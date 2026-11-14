@@ -22,9 +22,31 @@ interface Props {
   handleRef: React.MutableRefObject<DiscordTextHandle | null>;
   /** Message affiché sous le texte (avertissement des modèles à compléter). */
   notice?: React.ReactNode;
+  /** Texte réduit (un message découpé est déroulé) : seuls l'en-tête et le compteur restent. */
+  collapsed?: boolean;
+  /** Clic sur l'en-tête : dérouler le message complet. Absent quand il n'y a rien à réduire. */
+  onHeaderClick?: () => void;
 }
 
-export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice }: Props) {
+/** Rend un en-tête cliquable au clavier aussi (Entrée, Espace), sans gêner ses boutons. */
+export function headerToggle(onClick: (() => void) | undefined) {
+  if (!onClick) return {};
+  return {
+    role: 'button',
+    tabIndex: 0,
+    onClick: (event: React.MouseEvent) => {
+      if ((event.target as HTMLElement).closest('button')) return;
+      onClick();
+    },
+    onKeyDown: (event: React.KeyboardEvent) => {
+      if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      onClick();
+    },
+  };
+}
+
+export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice, collapsed = false, onHeaderClick }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onUserChange);
@@ -77,9 +99,13 @@ export function DiscordTextPanel({ initialText, onUserChange, handleRef, notice 
   const copyLabel = copyState === 'done' ? 'Copié !' : copyState === 'failed' ? 'Copie impossible' : 'Copier';
 
   return (
-    <section className="panel">
-      <header className="panel-header">
-        <h2>Message Discord</h2>
+    <section className={`panel${collapsed ? ' is-collapsed' : ''}`}>
+      <header className={`panel-header${onHeaderClick ? ' is-toggle' : ''}`} {...headerToggle(onHeaderClick)}
+        aria-expanded={onHeaderClick ? !collapsed : undefined}>
+        <h2>
+          {onHeaderClick && <span className="toggle-arrow" aria-hidden="true">{collapsed ? '▸' : '▾'}</span>}
+          {onHeaderClick ? 'Message complet' : 'Message Discord'}
+        </h2>
         <button type="button" className="copy-button" onClick={copy}>{copyLabel}</button>
       </header>
       <div className="panel-body discord-text" ref={hostRef} />

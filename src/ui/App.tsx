@@ -10,6 +10,7 @@ import { split } from '../core/split';
 import { editorToDocument, type EditorNode } from './editorConvert';
 import { loadEmojiIndex, loadedEmojiIndex, mayContainEmojiCode, onEmojiIndexLoaded } from './emojiLibrary';
 import { CharacterCounter } from './CharacterCounter';
+import { DiscordPreview } from './DiscordPreview';
 import { DiscordTextPanel, type DiscordTextHandle } from './DiscordTextPanel';
 import { SplitMessages } from './SplitMessages';
 import { TemplateWarning } from './TemplateWarning';
@@ -37,6 +38,8 @@ export function App() {
   const [discordText, setDiscordText] = useState(initialDraft.text);
   const [limit, setLimit] = useState<MessageLimit>(initialDraft.limit);
   const [draftSaved, setDraftSaved] = useState(false);
+  // Aperçu façon Discord sous les panneaux (S31) ; affiché à chaque ouverture, non mémorisé.
+  const [previewShown, setPreviewShown] = useState(true);
 
   // Les émojis chargés : les codes `:nom:` déjà affichés à gauche sont redessinés en émoji.
   useEffect(() => onEmojiIndexLoaded(() => visualRef.current?.showDocument(documentRef.current)), []);
@@ -102,8 +105,24 @@ export function App() {
     [discordText, limit],
   );
 
+  // Un seul message déroulé à la fois : le message complet (`null`) ou un message découpé.
+  // Le message complet revient dès qu'il n'y a plus de découpage ou que le message choisi n'existe plus.
+  const [openedSplit, setOpenedSplit] = useState<number | null>(null);
+  const splitting = messages !== null;
+  useEffect(() => { if (!splitting) setOpenedSplit(null); }, [splitting]);
+  const expandedSplit = messages &&openedSplit !== null && openedSplit < messages.length ? openedSplit : null;
+  // Clic sur un message découpé : il se déroule ; un second clic revient au message complet.
+  const toggleSplit = useCallback((index: number) => setOpenedSplit((old) => (old === index ? null : index)), []);
+
+  // Aperçu : le document, ou chaque message découpé relu (S34). Simple affichage (S32).
+  // Le document est tenu à jour avant chaque changement du texte de droite.
+  const previewMessages = useMemo(
+    () => (messages ? messages.map(parse) : [documentRef.current]),
+    [messages, discordText],
+  );
+
   return (
-    <div className="app">
+    <div className={`app${previewShown ? '' : ' preview-hidden'}`}>
       <header className="app-header">
         <h1>Discord Formatter</h1>
         <p>
@@ -115,13 +134,18 @@ export function App() {
         {visualPanel}
         <div className="right-column">
           <DiscordTextPanel initialText={initialDraft.text} onUserChange={onTextChange} handleRef={textRef}
+            collapsed={expandedSplit !== null}
+            onHeaderClick={messages ? () => setOpenedSplit(null) : undefined}
             notice={<>
               <CharacterCounter text={discordText} limit={limit} onLimitChange={setLimit} draftSaved={draftSaved} />
               <TemplateWarning kinds={templates} />
             </>} />
-          {messages && <SplitMessages messages={messages} limit={limit} />}
+          {messages && <SplitMessages messages={messages} limit={limit}
+            expanded={expandedSplit} onHeaderClick={toggleSplit} />}
         </div>
       </main>
+      <DiscordPreview messages={previewMessages} shown={previewShown}
+        onToggle={() => setPreviewShown((shown) => !shown)} />
     </div>
   );
 }

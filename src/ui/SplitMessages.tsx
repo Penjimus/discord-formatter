@@ -7,10 +7,15 @@ import { discordLength } from '../core/length';
 import { TemplateWarning } from './TemplateWarning';
 import { copyText } from './clipboard';
 import { formatNumber } from './CharacterCounter';
+import { headerToggle } from './DiscordTextPanel';
 
 interface Props {
   messages: string[];
   limit: number;
+  /** Numéro (à partir de 0) du seul message déroulé, `null` si tous sont réduits. */
+  expanded: number | null;
+  /** Clic sur l'en-tête d'un message. */
+  onHeaderClick(index: number): void;
 }
 
 const INVISIBLE_NAMES: Record<string, string> = {
@@ -29,7 +34,7 @@ function showInvisibles(message: string): React.ReactNode[] {
 
 type CopyState = 'done' | 'failed';
 
-export function SplitMessages({ messages, limit }: Props) {
+export function SplitMessages({ messages, limit, expanded, onHeaderClick }: Props) {
   // État de copie de chaque message, effacé à chaque modification du texte ou de la limite.
   const [copied, setCopied] = useState<Record<number, CopyState>>({});
   useEffect(() => setCopied({}), [messages]);
@@ -40,17 +45,22 @@ export function SplitMessages({ messages, limit }: Props) {
   }
 
   return (
-    <section className="split-messages" aria-label="Messages découpés">
+    <section className={`split-messages${expanded === null ? '' : ' has-expanded'}`} aria-label="Messages découpés">
       <p className="split-intro">
         Votre texte dépasse la limite : il est découpé en <strong>{messages.length} messages</strong>.
-        Copiez-les et envoyez-les dans l'ordre.
+        Copiez-les et envoyez-les dans l'ordre. Cliquez sur un titre pour voir le message.
       </p>
       {messages.map((message, index) => {
         const state = copied[index];
+        const open = expanded === index;
         return (
-          <article key={index} className="split-message">
-            <header className="split-message-header">
-              <h3>Message {index + 1} / {messages.length}</h3>
+          <article key={index} className={`split-message${open ? ' is-expanded' : ''}`}>
+            <header className="split-message-header is-toggle" {...headerToggle(() => onHeaderClick(index))}
+              aria-expanded={open}>
+              <h3>
+                <span className="toggle-arrow" aria-hidden="true">{open ? '▾' : '▸'}</span>
+                Message {index + 1} / {messages.length}
+              </h3>
               <span className="split-message-count">
                 {formatNumber(discordLength(message))} / {formatNumber(limit)}
               </span>
@@ -59,7 +69,7 @@ export function SplitMessages({ messages, limit }: Props) {
                 {state === 'done' ? '✓ Copié' : state === 'failed' ? 'Copie impossible' : 'Copier'}
               </button>
             </header>
-            <pre className="split-message-text">{showInvisibles(message)}</pre>
+            {open && <pre className="split-message-text">{showInvisibles(message)}</pre>}
             <TemplateWarning kinds={unfilledTemplates(message)} />
           </article>
         );
