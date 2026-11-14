@@ -160,7 +160,7 @@ Légende : `[ ]` à faire, `[~]` en cours, `[x]` terminée et validée par l'uti
 **Scénarios** : S8, S8b, S8c.
 **Validation** : l'utilisateur insère chaque élément, colle dans Discord, vérifie le rendu (pour une mention, il complète l'identifiant dans Discord).
 
-### [ ] Étape 11 : Compteur et barre de progression
+### [x] Étape 11 : Compteur et barre de progression
 
 **Objectif** : la limite de caractères dans l'interface.
 
@@ -380,6 +380,10 @@ Sur Mac, Ctrl est remplacé par Cmd.
 | 2026-11-14 | 10 | Un espace est ajouté après un modèle choisi dans les propositions (pas après les boutons de la barre) | Demande de l'utilisateur ; « pas après les boutons » décidé par Claude |
 | 2026-11-14 | 10 | Étape validée par l'utilisateur (mentions et propositions @ #, sélecteur d'émojis, `:nom:` affichés, horodatage avec calendrier et modification par clic) | — |
 | 2026-11-14 | 10 | Configuration « app-verif » ajoutée à `.claude/launch.json` (port de secours pour les vérifications de Claude) | Le port 5173 était pris par une autre session |
+| 2026-11-14 | 11 | Compteur sous le panneau de droite (1A) ; limite 2000 à chaque ouverture, non mémorisée (2A) ; deux aspects seulement, normal et dépassement en rouge (3A) | Choix de l'utilisateur |
+| 2026-11-14 | 11 | Affichage « longueur / limite · N restants » ou « N de trop », nombres au format français ; barre pleine (100 %) dès la limite atteinte et au-delà ; rouge seulement au-delà de la limite (2000 pile accepté, K1) ; bulle d'aide « avec / sans Nitro » sur les boutons | Décidé par Claude |
+| 2026-11-14 | 11 | Calcul de la barre dans le cœur (`progressRatio`, tests à part) ; l'éditeur de gauche n'est pas redessiné à chaque frappe pour le compteur | Décidé par Claude |
+| 2026-11-14 | 11 | Étape validée par l'utilisateur (compteur, bascule 2000 / 4000, dépassement sans coupure) | — |
 
 ---
 

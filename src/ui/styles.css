@@ -182,3 +182,19 @@ button:disabled:hover { background: var(--panel); }
 .mention-option { padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 .mention-option.is-active, .mention-option:hover { background: var(--accent-soft); color: var(--accent); }
 .mention-hint { padding: 4px 8px 2px; font-size: 0.75em; color: var(--muted); }
+
+/* Compteur de caractères (S9, S9b, S9c) */
+.char-counter { padding: 8px 12px; border-top: 1px solid var(--border); font-size: 0.85rem; }
+.char-counter-line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.char-counter-count { color: var(--muted); }
+.char-counter-count strong { color: var(--text); }
+.char-counter-limits { display: inline-flex; }
+.char-counter-limits button { border-radius: 0; }
+.char-counter-limits button:first-child { border-radius: 6px 0 0 6px; }
+.char-counter-limits button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+.char-counter-limits button.is-active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.char-counter-bar { margin-top: 6px; height: 8px; border-radius: 4px; background: var(--code-bg); overflow: hidden; }
+.char-counter-fill { height: 100%; background: var(--accent); transition: width 0.15s; }
+.char-counter.is-over .char-counter-count { color: #c0262d; font-weight: 600; }
+.char-counter.is-over .char-counter-count strong { color: #c0262d; }
+.char-counter.is-over .char-counter-fill { background: #da373c; }

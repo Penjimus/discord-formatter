@@ -23,3 +23,8 @@ export function checkLength(text: string, limit: MessageLimit): LengthCheck {
   const length = discordLength(text);
   return { length, limit, remaining: limit - length, over: length > limit };
 }
+
+/** Part remplie de la barre de progression, de 0 à 1 ; reste à 1 en cas de dépassement. */
+export function progressRatio(check: LengthCheck): number {
+  return Math.min(check.length / check.limit, 1);
+}
